@@ -6,6 +6,7 @@
     <File Path=".editorconfig" />
     <File Path="README.md" />
   </Folder>
+  <Project Path="Challenge.CLI/Challenge.CLI.csproj" />
   <Project Path="Challenge.Collections/Challenge.Collections.csproj" />
   <Project Path="Challenge.Maths/Challenge.Maths.csproj" />
   <Project Path="Challenge.Solvers/Challenge.Solvers.csproj" />
