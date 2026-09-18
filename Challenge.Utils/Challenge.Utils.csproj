@@ -6,6 +6,8 @@
     <Nullable>enable</Nullable>
     <AssemblyVersion>2025.1.0</AssemblyVersion>
     <FileVersion>2025.1.0</FileVersion>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>Properties\Challenge.Utils.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
