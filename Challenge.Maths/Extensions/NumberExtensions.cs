@@ -373,7 +373,6 @@ public static class NumberExtensions
         /// <summary>
         /// Gets the maximum of all numbers passed
         /// </summary>
-        /// <typeparam name="T">Type of numbers</typeparam>
         /// <param name="numbers">List of numbers to get the maximum of</param>
         /// <returns>The maximum of all the passed numbers</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -382,7 +381,6 @@ public static class NumberExtensions
         /// <summary>
         /// Gets the maximum of all numbers passed
         /// </summary>
-        /// <typeparam name="T">Type of numbers</typeparam>
         /// <param name="numbers">List of numbers to get the maximum of</param>
         /// <returns>The maximum of all the passed numbers</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -391,7 +389,6 @@ public static class NumberExtensions
         /// <summary>
         /// Gets the minimum of all numbers passed
         /// </summary>
-        /// <typeparam name="T">Type of numbers</typeparam>
         /// <param name="numbers">List of numbers to get the minimum of</param>
         /// <returns>The minimum of all the passed numbers</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -400,7 +397,6 @@ public static class NumberExtensions
         /// <summary>
         /// Gets the minimum of all numbers passed
         /// </summary>
-        /// <typeparam name="T">Type of numbers</typeparam>
         /// <param name="numbers">List of numbers to get the minimum of</param>
         /// <returns>The minimum of all the passed numbers</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

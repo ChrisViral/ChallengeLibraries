@@ -13,14 +13,23 @@ namespace Challenge.Maths.Vectors;
 [PublicAPI]
 public enum Direction
 {
+    /// <summary> No direction </summary>
     NONE  = 0b0000,
+    /// <summary> Moving up </summary>
     UP    = 0b0101,
+    /// <summary> Moving down </summary>
     DOWN  = 0b0110,
+    /// <summary> Moving left </summary>
     LEFT  = 0b1001,
+    /// <summary> Moving right </summary>
     RIGHT = 0b1010,
+    /// <summary> Moving north (up) </summary>
     NORTH = UP,
+    /// <summary> Moving south (down) </summary>
     SOUTH = DOWN,
+    /// <summary> Moving east (left) </summary>
     EAST  = RIGHT,
+    /// <summary> Moving west (right) </summary>
     WEST  = LEFT
 }
 

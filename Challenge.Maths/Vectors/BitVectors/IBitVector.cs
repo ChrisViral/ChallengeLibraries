@@ -22,7 +22,7 @@ public interface IBitVector
     /// <returns><see langword="true"/> when the bit at <paramref name="index"/> is set, otherwise <see langword="false"/></returns>
     bool this[int index] { get; set; }
 
-    /// <inheritdoc cref="Item(int)"/>
+    /// <inheritdoc cref="this[int]"/>
     bool this[Index index] { get; set; }
 
     /// <summary>
