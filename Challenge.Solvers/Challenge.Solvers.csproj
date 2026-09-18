@@ -32,4 +32,8 @@
     <ProjectReference Include="..\Challenge.Utils\Challenge.Utils.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Remove="Challenge.Solvers.csproj.DotSettings" />
+  </ItemGroup>
+
 </Project>

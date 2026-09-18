@@ -5,8 +5,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
-    <AssemblyVersion></AssemblyVersion>
-    <FileVersion></FileVersion>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>Properties\Challenge.Maths.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
@@ -32,6 +30,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Challenge.Utils\Challenge.Utils.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Challenge.Maths.csproj.DotSettings" />
   </ItemGroup>
 
 </Project>
