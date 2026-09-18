@@ -45,7 +45,7 @@ public static class EnumExtensions
         /// </summary>
         /// <param name="flags">Flags to check for</param>
         /// <typeparam name="TInteger">Check integer type</typeparam>
-        /// <returns><see langword="true"/> if the flags are set in <see cref="value"/>, otherwise <see langword="false"/></returns>
+        /// <returns><see langword="true"/> if the flags are set in the value, otherwise <see langword="false"/></returns>
         public bool HasFlags<TInteger>(T flags)
             where TInteger : unmanaged, IBinaryInteger<TInteger>
         {
@@ -56,7 +56,7 @@ public static class EnumExtensions
         /// Checks if the enum value has the given flags set using <see cref="int"/> for checks
         /// </summary>
         /// <param name="flags">Flags to check for</param>
-        /// <returns><see langword="true"/> if the flags are set in <see cref="value"/>, otherwise <see langword="false"/></returns>
+        /// <returns><see langword="true"/> if the flags are set in the value, otherwise <see langword="false"/></returns>
         public bool HasFlags(T flags)
         {
             return (Unsafe.As<T, int>(ref value) & Unsafe.As<T, int>(ref flags)) != 0;

@@ -13,10 +13,12 @@ namespace Challenge.CLI;
 /// Solve a specific challenge instance
 /// </summary>
 [CliCommand(Description = "Solve a specific challenge instance", Name = "solve", Parent = typeof(ChallengeCommand))]
-public sealed partial class SolveCommand(ILogger<SolveCommand> logger, ISolverResolver resolver) : ICliRunAsyncWithContextAndReturn
+public sealed partial class SolveCommand(ILoggerFactory loggerFactory, ISolverResolver resolver) : ICliRunAsyncWithContextAndReturn
 {
     private static readonly Type BaseSolverType = typeof(Solver);
-    private static readonly Type[] ConstructorParamTypes = [typeof(string)];
+    private static readonly Type[] ConstructorParamTypes = [typeof(string), typeof(ILogger)];
+
+    private readonly ILoggerFactory loggerFactory = loggerFactory;
 
     /// <summary>
     /// Challenge year
@@ -41,7 +43,7 @@ public sealed partial class SolveCommand(ILogger<SolveCommand> logger, ISolverRe
     /// <summary>
     /// Logger instance
     /// </summary>
-    private ILogger Logger { get; } = logger;
+    private ILogger Logger { get; } = loggerFactory.CreateLogger<SolveCommand>();
 
     /// <summary>
     /// Input fetcher instance
@@ -51,9 +53,6 @@ public sealed partial class SolveCommand(ILogger<SolveCommand> logger, ISolverRe
     /// <inheritdoc />
     public async Task<int> RunAsync(CliContext cliContext)
     {
-        // Making sure our solver types are valid
-        Debug.Assert(typeof(ISolver).IsAssignableFrom(BaseSolverType), $"{BaseSolverType} does not inherit from {typeof(ISolver)}");
-
         // Fetch input
         LogFetchingInput(this.Logger, this.Resolver.ChallengeName, this.Year, this.Day, this.ModuleString);
         Result<string> result = await this.Resolver.FetchInput(this.Year, this.Day, this.Module, cliContext.CancellationToken).ConfigureAwait(false);
@@ -67,35 +66,22 @@ public sealed partial class SolveCommand(ILogger<SolveCommand> logger, ISolverRe
 
         // Create solver instance
         string solverFullName = this.Resolver.GetSolverFullName(this.Year, this.Day, this.Module);
-        if (!TryCreateSolver(input, solverFullName, out ISolver? solver, out Stopwatch? parseWatch))
+        if (!TryCreateSolver(input, solverFullName, out Solver? solver, out Stopwatch? parseWatch))
         {
             LogFailedCreateSolver(this.Logger, this.Resolver.ChallengeName, this.Year, this.Day, this.ModuleString);
             return 1;
         }
 
-        //Setup trace file
-#if DEBUG
-        FileInfo resultsFile = new FileInfo(Path.Combine("..", "..", "..", "..", this.Resolver.ChallengeName, "results.txt"));
-#else
-        FileInfo resultsFile = new FileInfo("results.txt"));
-#endif
-        if (!resultsFile.Directory?.Exists ?? false)
-        {
-            resultsFile.Directory.Create();
-        }
-
-        using TextWriterTraceListener textListener = new(resultsFile.CreateText());
-        Trace.Listeners.Add(textListener);
-        using ConsoleTraceListener consoleListener = new();
-        Trace.Listeners.Add(consoleListener);
-        Trace.AutoFlush = true;
-
+        // Log input parse time
         LogInputParsed(this.Logger, ChallengeUtils.GetElapsedString(parseWatch.Elapsed));
 
 #if !DEBUG
-        //In debug mode we want to break at the exception location
-        solver.RunAndStartStopwatch();
-        solver.Dispose();
+        // In debug mode we want to break at the exception location
+        using (solver)
+        {
+            solver.RunAndStartStopwatch();
+            solver.LogElapsed();
+        }
 #else
         try
         {
@@ -105,24 +91,19 @@ public sealed partial class SolveCommand(ILogger<SolveCommand> logger, ISolverRe
         catch (Exception e)
         {
             //Log any exceptions that occur
-            LogExceptionWhileCreatingSolver(this.Logger, solverFullName, this.Resolver.ChallengeName, this.Year, this.Day, this.ModuleString, e);
+            LogExceptionWhileRunningSolver(this.Logger, solverFullName, this.Resolver.ChallengeName, this.Year, this.Day, this.ModuleString, e);
             return 1;
         }
         finally
         {
+            solver.LogElapsed();
             solver.Dispose();
         }
 #endif
-
-        //Write total timer
-        ChallengeUtils.LogElapsed();
-
-        //Cleanup and exit
-        Trace.Close();
         return 0;
     }
 
-    private bool TryCreateSolver(string input, string solverFullName, [NotNullWhen(true)] out ISolver? solver, [NotNullWhen(true)] out Stopwatch? parseWatch)
+    private bool TryCreateSolver(string input, string solverFullName, [NotNullWhen(true)] out Solver? solver, [NotNullWhen(true)] out Stopwatch? parseWatch)
     {
         try
         {
@@ -144,7 +125,7 @@ public sealed partial class SolveCommand(ILogger<SolveCommand> logger, ISolverRe
 
             // Insantiate solver
             parseWatch = Stopwatch.StartNew();
-            solver = Activator.CreateInstance(solverType, input) as ISolver;
+            solver = Activator.CreateInstance(solverType, input, this.loggerFactory.CreateLogger(solverType)) as Solver;
             parseWatch.Stop();
             return solver is not null;
         }

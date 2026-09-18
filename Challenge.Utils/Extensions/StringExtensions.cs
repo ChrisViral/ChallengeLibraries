@@ -1,7 +1,6 @@
 ﻿using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Text;
-using Challenge.Utils;
 using JetBrains.Annotations;
 
 // ReSharper disable once CheckNamespace
@@ -23,7 +22,7 @@ public static class StringExtensions
         /// Converts this character to a letter index with 'a' as 0<br/>
         /// This handles uppercase and lowercase ASCII letters as well as ASCII digits
         /// </summary>
-        /// <exception cref="ArgumentException">If <see cref="value"/> is neither a lower or upper ASCII letter, and not an ASCII digit</exception>
+        /// <exception cref="ArgumentException">If the value is neither a lower or upper ASCII letter, and not an ASCII digit</exception>
         public int AsIndex
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -104,7 +103,7 @@ public static class StringExtensions
         /// <summary>
         /// Converts this character to it's matching lower ASCII letter
         /// </summary>
-        /// <exception cref="ArgumentOutOfRangeException">If <see cref="value"/> is less than zero, or greater than the highest letter value</exception>
+        /// <exception cref="ArgumentOutOfRangeException">If the value is less than zero, or greater than the highest letter value</exception>
         public char AsAsciiLower
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -118,7 +117,7 @@ public static class StringExtensions
         /// <summary>
         /// Converts this character to it's matching upper ASCII letter
         /// </summary>
-        /// <exception cref="ArgumentOutOfRangeException">If <see cref="value"/> is less than zero, or greater than the highest letter value</exception>
+        /// <exception cref="ArgumentOutOfRangeException">If the value is less than zero, or greater than the highest letter value</exception>
         public char AsAsciiUpper
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -132,7 +131,7 @@ public static class StringExtensions
         /// <summary>
         /// Converts this character to it's matching ASCII digit
         /// </summary>
-        /// <exception cref="ArgumentOutOfRangeException">If <see cref="value"/> is less than zero, or greater than the highest digit value</exception>
+        /// <exception cref="ArgumentOutOfRangeException">If the value is less than zero, or greater than the highest digit value</exception>
         public char AsAsciiDigit
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]

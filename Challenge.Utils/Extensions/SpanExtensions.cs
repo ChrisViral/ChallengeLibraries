@@ -65,6 +65,10 @@ public static class SpanExtensions
             return new ValueEnumerable<FromSpan2D<T>, T>(new FromSpan2D<T>(span));
         }
 
+        /// <summary>
+        /// Applies the given modification to every element of the span
+        /// </summary>
+        /// <param name="modification">Modification function to apply</param>
         public void Apply([InstantHandle] Func<T, T> modification)
         {
             foreach (int j in ..span.Height)

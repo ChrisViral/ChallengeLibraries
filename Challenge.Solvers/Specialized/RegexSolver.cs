@@ -1,6 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 using Challenge.Utils;
 using JetBrains.Annotations;
+using Microsoft.Extensions.Logging;
 
 namespace Challenge.Solvers.Specialized;
 
@@ -19,10 +20,11 @@ public abstract class RegexSolver<[MeansImplicitUse(ImplicitUseTargetFlags.WithM
     /// Creates a new <see cref="RegexSolver{T}"/> parsing the input lines using <see cref="Matcher"/>
     /// </summary>
     /// <param name="input">Puzzle input</param>
+    /// <param name="logger">Logger instance</param>
     /// <param name="splitters">Splitting characters, defaults to newline only</param>
     /// <param name="options">Input parsing options, defaults to removing empty entries and trimming entries</param>
     /// <exception cref="InvalidOperationException">Thrown if the conversion the regex parsing fails</exception>
-    protected RegexSolver(string input, char[]? splitters = null, StringSplitOptions options = DEFAULT_OPTIONS) : base(input, splitters, options) { }
+    protected RegexSolver(string input, ILogger logger, char[]? splitters = null, StringSplitOptions options = DEFAULT_OPTIONS) : base(input, logger, splitters, options) { }
 
     /// <inheritdoc />
     protected sealed override T[] Convert(string[] rawInput) => RegexFactory<T>.ConstructObjects(this.Matcher, rawInput);

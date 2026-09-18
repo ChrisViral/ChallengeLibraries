@@ -1,8 +1,6 @@
-﻿using System.Diagnostics;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using CommunityToolkit.HighPerformance;
 using JetBrains.Annotations;
-using TextCopy;
 
 namespace Challenge.Utils;
 
@@ -12,13 +10,6 @@ namespace Challenge.Utils;
 [PublicAPI]
 public static class ChallengeUtils
 {
-    private static TimeSpan part1Elapsed;
-
-    /// <summary>
-    /// The Stopwatch for individual parts
-    /// </summary>
-    public static Stopwatch PartsWatch { get; } = new();
-
     /// <summary>
     /// Combines input lines into sequences, separated by empty lines
     /// </summary>
@@ -47,63 +38,6 @@ public static class ChallengeUtils
             yield return pack;
         }
     }
-
-    /// <summary>
-    /// Logs the answer to Part 1 to the console and results file.<br/>
-    /// This also adds the answer to the clipboard.
-    /// </summary>
-    /// <param name="answer">Answer to log</param>
-    public static void LogPart1<T>(T answer) where T : notnull
-    {
-        PartsWatch.Stop();
-        part1Elapsed = PartsWatch.Elapsed;
-        string text = answer.ToString() ?? string.Empty;
-        if (!string.IsNullOrEmpty(text))
-        {
-            ClipboardService.SetText(text);
-        }
-
-        Trace.WriteLine($"Part 1: {text}\nin {GetElapsedString(PartsWatch.Elapsed)}\n");
-
-        GC.Collect();
-        PartsWatch.Restart();
-    }
-
-    /// <summary>
-    /// Logs the answer to Part 2 to the console and results file<br/>
-    /// This also adds the answer to the clipboard.
-    /// </summary>
-    /// <param name="answer">Answer to log</param>
-    public static void LogPart2<T>(T answer) where T : notnull
-    {
-        PartsWatch.Stop();
-        string text = answer.ToString() ?? string.Empty;
-        if (!string.IsNullOrEmpty(text))
-        {
-            ClipboardService.SetText(text);
-        }
-        Trace.WriteLine($"Part 2: {text}\nin {GetElapsedString(PartsWatch.Elapsed)}\n");
-    }
-
-    /// <summary>
-    /// Logs a message to the console and the log file
-    /// </summary>
-    /// <param name="message">Message to log</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Log<T>(T message) where T : notnull => Trace.WriteLine(message);
-
-    /// <summary>
-    /// Logs the parse time elapsed time
-    /// </summary>
-    /// <param name="watch">Stopwatch measuring the parsing time</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void LogParse(Stopwatch watch) => Trace.WriteLine($"Problem input parsed in: {GetElapsedString(watch.Elapsed)}\n");
-
-    /// <summary>
-    /// Logs the total elapsed time of the solver
-    /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void LogElapsed() => Trace.WriteLine($"Total elapsed time: {GetElapsedString(PartsWatch.Elapsed + part1Elapsed)}\n");
 
     /// <summary>
     /// Produces a interval-based formatted time string

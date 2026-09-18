@@ -1,14 +1,18 @@
 using System.Collections;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using Challenge.Utils;
 using JetBrains.Annotations;
+using Microsoft.Extensions.Logging;
+using TextCopy;
 
 namespace Challenge.Solvers;
 
 /// <summary>
 /// Solver base class
 /// </summary>
-[PublicAPI]
-public abstract class Solver : ISolver
+[PublicAPI, UsedImplicitly(ImplicitUseKindFlags.InstantiatedWithFixedConstructorSignature, ImplicitUseTargetFlags.WithInheritors)]
+public abstract partial class Solver : IDisposable
 {
     /// <summary>
     /// Default split options
@@ -19,19 +23,30 @@ public abstract class Solver : ISolver
     /// </summary>
     private static readonly char[] DefaultSplitters = ['\n'];
 
+    private int part;
+    private TimeSpan solveTime;
+    private readonly Stopwatch partWatch = new();
+
     /// <summary>
     /// Input data
     /// </summary>
     protected string[] Data { get; }
 
     /// <summary>
+    /// Logger instance
+    /// </summary>
+    protected ILogger Logger { get; }
+
+    /// <summary>
     /// Creates a new <see cref="Solver"/> from the specified file
     /// </summary>
     /// <param name="input">Puzzle input</param>
+    /// <param name="logger">Logger instance</param>
     /// <param name="splitters">Splitting characters, defaults to newline only</param>
     /// <param name="options">Input parsing options, defaults to removing empty entries and trimming entries</param>
-    protected Solver(string input, char[]? splitters = null, StringSplitOptions options = DEFAULT_OPTIONS)
+    protected Solver(string input, ILogger logger, char[]? splitters = null, StringSplitOptions options = DEFAULT_OPTIONS)
     {
+        this.Logger = logger;
         if (splitters?.Length is 0)
         {
             this.Data = (options & StringSplitOptions.TrimEntries) is not 0 ? [input] : [input.Trim()];
@@ -47,8 +62,10 @@ public abstract class Solver : ISolver
     /// </summary>
     public void RunAndStartStopwatch()
     {
-        ChallengeUtils.PartsWatch.Restart();
+        this.part = 1;
+        this.partWatch.Restart();
         Run();
+        this.partWatch.Stop();
     }
 
     /// <summary>
@@ -56,7 +73,47 @@ public abstract class Solver : ISolver
     /// </summary>
     public abstract void Run();
 
-    /// <inheritdoc cref="IDisposable.Dispose"/>
+    /// <summary>
+    /// Logs the answer to Part 1 to the console and results file.<br/>
+    /// This also adds the answer to the clipboard.
+    /// </summary>
+    /// <param name="answer">Answer to log</param>
+    public void LogAnswer<T>(T answer) where T : notnull
+    {
+        // Stop watches
+        this.partWatch.Stop();
+        this.solveTime += this.partWatch.Elapsed;
+
+        // Get answer and put into clipboard
+        string answerText = answer.ToString() ?? string.Empty;
+        if (!string.IsNullOrEmpty(answerText))
+        {
+            ClipboardService.SetText(answerText);
+        }
+
+        // Log answer
+        LogPartAnswer(this.Logger, this.part++, answerText);
+        LogPartTime(this.Logger, ChallengeUtils.GetElapsedString(this.partWatch.Elapsed));
+
+        // Collect GC and then restart watches
+        GC.Collect();
+        this.partWatch.Restart();
+    }
+
+    /// <summary>
+    /// Logs a message to the console and the log file
+    /// </summary>
+    /// <param name="message">Message to log</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Log<T>(T message) where T : notnull => LogMessage(this.Logger, message);
+
+    /// <summary>
+    /// Logs the total elapsed time of the solver
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void LogElapsed() => LogElapsed(this.Logger, ChallengeUtils.GetElapsedString(this.solveTime));
+
+    /// <inheritdoc />
     public virtual void Dispose() => GC.SuppressFinalize(this);
 }
 
@@ -81,10 +138,11 @@ public abstract class Solver<T> : Solver
     /// Creates a new generic <see cref="Solver{T}"/> with the input data properly parsed
     /// </summary>
     /// <param name="input">Puzzle input</param>
+    /// <param name="logger">Logger instance</param>
     /// <param name="splitters">Splitting characters, defaults to newline only</param>
     /// <param name="options">Input parsing options, defaults to removing empty entries and trimming entries</param>
     /// <exception cref="InvalidOperationException">Thrown if the conversion to <typeparamref name="T"/> fails</exception>
-    protected Solver(string input, char[]? splitters = null, StringSplitOptions options = DEFAULT_OPTIONS) : base(input, splitters, options)
+    protected Solver(string input, ILogger logger, char[]? splitters = null, StringSplitOptions options = DEFAULT_OPTIONS) : base(input, logger, splitters, options)
     {
 #if !DEBUG
         //Convert is intended to be a Pure function, therefore it should be safe to call in the constructor

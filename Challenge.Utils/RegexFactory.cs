@@ -130,7 +130,6 @@ public sealed class RegexFactory<[MeansImplicitUse(ImplicitUseTargetFlags.WithMe
     /// then populates the parameters by converting the captures to the parameter type.<br/>
     /// Additionally, all the parameter types must implement <see cref="IConvertible"/>.
     /// </summary>
-    /// <typeparam name="T">Type of object to create</typeparam>
     /// <param name="input">Input string</param>
     /// <returns>The created <typeparamref name="T"/> object</returns>
     /// <exception cref="InvalidCastException">If an error happens while casting the parameters</exception>
@@ -161,7 +160,6 @@ public sealed class RegexFactory<[MeansImplicitUse(ImplicitUseTargetFlags.WithMe
     /// Additionally, all the parameter types must implement <see cref="IConvertible"/>.<br/>
     /// This construction uses a single input string and finds all matches within it.
     /// </summary>
-    /// <typeparam name="T">Type of object to create</typeparam>
     /// <param name="input">Input string</param>
     /// <returns>An array of the created <typeparamref name="T"/> objects</returns>
     /// <exception cref="InvalidCastException">If an error happens while casting the parameters</exception>
@@ -199,7 +197,6 @@ public sealed class RegexFactory<[MeansImplicitUse(ImplicitUseTargetFlags.WithMe
     /// then populates the parameters by converting the captures to the parameter type.<br/>
     /// Additionally, all the parameter types must implement <see cref="IConvertible"/>.
     /// </summary>
-    /// <typeparam name="T">Type of object to create</typeparam>
     /// <param name="input">Input strings</param>
     /// <returns>An array of the created <typeparamref name="T"/> objects</returns>
     /// <exception cref="InvalidCastException">If an error happens while casting the parameters</exception>
@@ -226,7 +223,6 @@ public sealed class RegexFactory<[MeansImplicitUse(ImplicitUseTargetFlags.WithMe
     /// into key/value pairs if there are exactly two captures. The value is then applied to the public field matched with the key.<br/>
     /// Additionally, all the field types must implement <see cref="IConvertible"/>.
     /// </summary>
-    /// <typeparam name="T">Type of object to populate</typeparam>
     /// <param name="input">Input string</param>
     /// <returns>The populated <typeparamref name="T"/> object</returns>
     /// <exception cref="InvalidCastException">If an error happens while casting the parameters</exception>
@@ -264,7 +260,6 @@ public sealed class RegexFactory<[MeansImplicitUse(ImplicitUseTargetFlags.WithMe
     /// into key/value pairs if there are exactly two captures. The value is then applied to the public field matched with the key.<br/>
     /// Additionally, all the field types must implement <see cref="IConvertible"/>.
     /// </summary>
-    /// <typeparam name="T">Type of object to populate</typeparam>
     /// <param name="input">Input strings</param>
     /// <returns>An array of the populated <typeparamref name="T"/> objects</returns>
     /// <exception cref="InvalidCastException">If an error happens while casting the parameters</exception>
@@ -290,10 +285,8 @@ public sealed class RegexFactory<[MeansImplicitUse(ImplicitUseTargetFlags.WithMe
     /// then populates the parameters by converting the captures to the parameter type.<br/>
     /// Additionally, all the parameter types must implement <see cref="IConvertible"/>.
     /// </summary>
-    /// <typeparam name="T">Type of object to create</typeparam>
     /// <param name="regex">Regex matcher</param>
     /// <param name="input">Input strings</param>
-    /// <returns>The created <typeparamref name="T"/> objects</returns>
     /// <exception cref="ArgumentException">If the passed pattern has length 0</exception>
     /// <exception cref="InvalidCastException">If an error happens while casting the parameters</exception>
     /// <exception cref="KeyNotFoundException">If no matching constructor with the right amount of parameters is found</exception>
@@ -310,10 +303,8 @@ public sealed class RegexFactory<[MeansImplicitUse(ImplicitUseTargetFlags.WithMe
     /// then populates the parameters by converting the captures to the parameter type.<br/>
     /// Additionally, all the parameter types must implement <see cref="IConvertible"/>.
     /// </summary>
-    /// <typeparam name="T">Type of object to create</typeparam>
     /// <param name="regex">Regex matcher</param>
     /// <param name="input">Input string</param>
-    /// <returns>The created <typeparamref name="T"/> objects</returns>
     /// <exception cref="ArgumentException">If the passed pattern has length 0</exception>
     /// <exception cref="InvalidCastException">If an error happens while casting the parameters</exception>
     /// <exception cref="KeyNotFoundException">If no matching constructor with the right amount of parameters is found</exception>
@@ -330,7 +321,6 @@ public sealed class RegexFactory<[MeansImplicitUse(ImplicitUseTargetFlags.WithMe
     /// into key/value pairs if there are exactly two captures. The value is then applied to the public field matched with the key.<br/>
     /// Additionally, all the field types must implement <see cref="IConvertible"/>.
     /// </summary>
-    /// <typeparam name="T">Type of object to populate</typeparam>
     /// <param name="regex">Regex matcher</param>
     /// <param name="input">Input strings</param>
     /// <returns>An array of the populated <typeparamref name="T"/> objects</returns>

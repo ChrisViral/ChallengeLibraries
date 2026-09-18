@@ -46,7 +46,6 @@ public static class ArrayExtensions
         /// <summary>
         /// Creates a shallow copy of the specified array
         /// </summary>
-        /// <typeparam name="T">Type of element in the array</typeparam>
         /// <returns>The copy of <paramref name="array"/></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T[] Copy()
@@ -67,7 +66,6 @@ public static class ArrayExtensions
         /// <summary>
         /// Fills the array with new values
         /// </summary>
-        /// <typeparam name="T">Type of values in the array</typeparam>
         /// <param name="getValue">Value getter function</param>
         public void Fill([InstantHandle] Func<T> getValue)
         {
@@ -108,7 +106,6 @@ public static class ArrayExtensions
         /// <summary>
         /// Iterates over all the permutations of the given array
         /// </summary>
-        /// <typeparam name="T">Type of element in the array</typeparam>
         /// <returns>An enumerable returning all the permutations of the original array</returns>
         public IEnumerable<T[]> Permutations()
         {

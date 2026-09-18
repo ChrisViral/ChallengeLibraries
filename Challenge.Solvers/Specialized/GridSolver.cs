@@ -2,6 +2,7 @@
 using Challenge.Utils.Extensions.Enums;
 using Challenge.Utils.Extensions.Ranges;
 using JetBrains.Annotations;
+using Microsoft.Extensions.Logging;
 
 namespace Challenge.Solvers.Specialized;
 
@@ -40,10 +41,11 @@ public abstract class GridSolver<T> : Solver<Grid<T>>
     /// Creates a new <see cref="GridSolver{T}"/> Solver with the input data properly parsed
     /// </summary>
     /// <param name="input">Puzzle input</param>
+    /// <param name="logger">Logger instance</param>
     /// <param name="splitters">Splitting characters, defaults to newline only</param>
     /// <param name="options">Input parsing options, defaults to removing empty entries and trimming entries</param>
     /// <exception cref="InvalidOperationException">Thrown if the conversion to <see cref="Grid{T}"/> fails</exception>
-    protected GridSolver(string input, char[]? splitters = null, StringSplitOptions options = DEFAULT_OPTIONS) : base(input, splitters, options) { }
+    protected GridSolver(string input, ILogger logger, char[]? splitters = null, StringSplitOptions options = DEFAULT_OPTIONS) : base(input, logger, splitters, options) { }
 
     /// <inheritdoc />
     protected sealed override Grid<T> Convert(string[] rawInput)
