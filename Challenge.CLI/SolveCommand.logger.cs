@@ -22,6 +22,6 @@ public partial class SolveCommand
     [LoggerMessage(LogLevel.Error, "Encountered exception while running solver {Name} for {Challenge} {Year} {Day}{Module}")]
     static partial void LogExceptionWhileRunningSolver(ILogger logger, string name, string challenge, int year, int day, string module, Exception exception);
 
-    [LoggerMessage(LogLevel.Information, "Problem input parsed in: {Elapsed}")]
+    [LoggerMessage(LogLevel.Information, "Problem input parsed in: {Elapsed}\n")]
     static partial void LogInputParsed(ILogger logger, string elapsed);
 }

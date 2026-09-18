@@ -7,7 +7,7 @@ namespace Challenge.Solvers
         [LoggerMessage(LogLevel.Information, "Part {Part}: {Answer}")]
         static partial void LogPartAnswer(ILogger logger, int part, string answer);
 
-        [LoggerMessage(LogLevel.Information, "Time: {Time}")]
+        [LoggerMessage(LogLevel.Information, "Time: {Time}\n")]
         static partial void LogPartTime(ILogger logger, string time);
 
         [LoggerMessage(LogLevel.Information, "{Message}")]
