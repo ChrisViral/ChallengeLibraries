@@ -39,4 +39,8 @@
     <None Remove="Challenge.CLI.csproj.DotSettings" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Challenge.Solvers\Challenge.Solvers.csproj" />
+  </ItemGroup>
+
 </Project>
