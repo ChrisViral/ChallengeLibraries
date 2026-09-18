@@ -23,6 +23,7 @@
     <PackageReference Include="CommunityToolkit.HighPerformance" Version="8.4.2" />
     <PackageReference Include="FastEnum" Version="2.0.8" />
     <PackageReference Include="JetBrains.Annotations" Version="2026.2.0" />
+    <PackageReference Include="JetBrains.ExternalAnnotations" Version="10.2.170" />
     <PackageReference Include="TextCopy" Version="6.2.1" />
     <PackageReference Include="ZLinq" Version="1.5.6" />
     <PackageReference Include="ZLinq.DropInGenerator" Version="1.5.6">
