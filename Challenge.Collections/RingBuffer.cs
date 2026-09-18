@@ -162,7 +162,7 @@ public sealed class RingBuffer<T> : IList<T>
         }
     }
 
-    /// <inheritdoc cref="RingBuffer{T}.Item(int)" />
+    /// <inheritdoc cref="RingBuffer{T}.this[int]" />
     public T this[Index index]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

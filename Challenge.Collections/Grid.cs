@@ -27,9 +27,13 @@ namespace Challenge.Collections;
 [Flags]
 public enum Wrap
 {
+    /// <summary> Do not wrap values </summary>
     NONE       = 0b00,
+    /// <summary> Wrap values vertically </summary>
     VERTICAL   = 0b01,
+    /// <summary> Wrap values horizontally </summary>
     HORIZONTAL = 0b10,
+    /// <summary> Wrap values in both directions </summary>
     BOTH       = 0b11
 }
 
@@ -42,8 +46,11 @@ public class Grid<T> : IGrid<T>
 {
     private static readonly EqualityComparer<T> Comparer = EqualityComparer<T>.Default;
 
+    /// <summary> Grid backing array </summary>
     protected readonly T[,] grid;
+    /// <summary> Grid row buffer size, in bytes </summary>
     protected readonly int rowBufferSize;
+    /// <summary> Grid item to string conversion function </summary>
     protected readonly Converter<T, string> toString;
 
     /// <summary>

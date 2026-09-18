@@ -55,7 +55,7 @@ public sealed class Deque<T> : IList<T>
         set => this.buffer[index] = value;
     }
 
-    /// <inheritdoc cref="Deque{T}.Item(int)" />
+    /// <inheritdoc cref="Deque{T}.this[int]" />
     public T this[Index index]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

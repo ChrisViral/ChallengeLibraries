@@ -10,6 +10,7 @@ namespace Challenge.Collections.Pooling.Arrays;
 /// </summary>
 /// <param name="array">Array to wrap</param>
 /// <param name="pool">Pool the array came from</param>
+/// <param name="requestedLength">Requested array length</param>
 /// <typeparam name="T">Array element type</typeparam>
 [PublicAPI]
 public readonly ref struct FromArrayPool<T>(T[] array, ArrayPool<T> pool, int requestedLength) : IDisposable

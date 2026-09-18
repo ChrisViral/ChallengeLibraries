@@ -52,7 +52,7 @@ public sealed class DefaultDictionary<TKey, TValue> : IDictionary<TKey, TValue>,
         get => this.dictionary.Values;
     }
 
-    /// <inheritdoc cref="Dictionary{TKey, TValue}.Item"/>
+    /// <inheritdoc cref="Dictionary{TKey, TValue}.this[TKey]"/>
     public TValue this[TKey key]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

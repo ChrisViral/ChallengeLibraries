@@ -17,10 +17,15 @@ namespace Challenge.Collections;
 [PublicAPI]
 public enum Anchor
 {
+    /// <summary> Anchor positions to the top left of the screen </summary>
     TOP_LEFT,
+    /// <summary> Anchor positions to the top right of the screen </summary>
     TOP_RIGHT,
+    /// <summary> Anchor positions to the bottom left of the screen </summary>
     BOTTOM_LEFT,
+    /// <summary> Anchor positions to the bottom right of the screen </summary>
     BOTTOM_RIGHT,
+    /// <summary> Anchor positions to the middle of the screen </summary>
     MIDDLE
 }
 
