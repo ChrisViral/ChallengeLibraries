@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
 using Challenge.Solvers;
 using Challenge.Utils;
 using CSharpFunctionalExtensions;
@@ -76,10 +75,16 @@ public sealed partial class SolveCommand(ILogger<SolveCommand> logger, ISolverRe
 
         //Setup trace file
 #if DEBUG
-        using TextWriterTraceListener textListener = new(File.CreateText(Path.Combine("..", "..", "..", "..", this.Resolver.ChallengeName, "results.txt")));
+        FileInfo resultsFile = new FileInfo(Path.Combine("..", "..", "..", "..", this.Resolver.ChallengeName, "results.txt"));
 #else
-        using TextWriterTraceListener textListener = new(File.CreateText("results.txt"));
+        FileInfo resultsFile = new FileInfo("results.txt"));
 #endif
+        if (!resultsFile.Directory?.Exists ?? false)
+        {
+            resultsFile.Directory.Create();
+        }
+
+        using TextWriterTraceListener textListener = new(resultsFile.CreateText());
         Trace.Listeners.Add(textListener);
         using ConsoleTraceListener consoleListener = new();
         Trace.Listeners.Add(consoleListener);
@@ -122,11 +127,12 @@ public sealed partial class SolveCommand(ILogger<SolveCommand> logger, ISolverRe
         try
         {
             // Get solver type
-            Type? solverType = Assembly.GetEntryAssembly()?
-                                       .GetTypes()
-                                       .Where(t => t is { IsAbstract: false, IsGenericType: false }
-                                                && t.IsAssignableTo(BaseSolverType)
-                                                && t.GetConstructor(ConstructorParamTypes) is not null)
+            Type? solverType = AppDomain.CurrentDomain
+                                        .GetAssemblies()
+                                        .SelectMany(a => a.GetTypes())
+                                        .Where(t => t is { IsAbstract: false, IsGenericType: false }
+                                                 && t.IsAssignableTo(BaseSolverType)
+                                                 && t.GetConstructor(ConstructorParamTypes) is not null)
                                        .SingleOrDefault(t => t.FullName == solverFullName);
             // Check type
             if (solverType is null)
