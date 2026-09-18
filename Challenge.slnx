@@ -1,0 +1,13 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+  </Configurations>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path="README.md" />
+  </Folder>
+  <Project Path="Challenge.Collections/Challenge.Collections.csproj" />
+  <Project Path="Challenge.Maths/Challenge.Maths.csproj" />
+  <Project Path="Challenge.Solvers/Challenge.Solvers.csproj" />
+  <Project Path="Challenge.Utils/Challenge.Utils.csproj" />
+</Solution>
