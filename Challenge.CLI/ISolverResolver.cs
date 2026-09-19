@@ -1,4 +1,5 @@
-﻿using CSharpFunctionalExtensions;
+﻿using Challenge.Solvers;
+using CSharpFunctionalExtensions;
 using JetBrains.Annotations;
 
 namespace Challenge.CLI;
@@ -17,12 +18,10 @@ public interface ISolverResolver
     /// <summary>
     /// Fetch the challenge input for a given problem
     /// </summary>
-    /// <param name="year">Challenge year</param>
-    /// <param name="day">Challenge day</param>
-    /// <param name="module">Challenge module</param>
+    /// <param name="data">Solver data</param>
     /// <param name="token">Cancellation token</param>
     /// <returns>A <see cref="Result{T}"/> object containing the fetched input, or an error if failed</returns>
-    Task<Result<string, Exception>> FetchInput(uint year, uint day, string module, CancellationToken token = default);
+    Task<Result<string, Exception>> FetchInput(SolverData data, CancellationToken token = default);
 
     /// <summary>
     /// Submits the answer for verification
