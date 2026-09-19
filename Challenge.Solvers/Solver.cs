@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Diagnostics;
+using System.Reflection;
 using System.Runtime.CompilerServices;
+using Challenge.Utils.Extensions.Enums;
 using Challenge.Utils.Extensions.TimeSpans;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
@@ -23,9 +25,14 @@ public abstract partial class Solver : IDisposable
     /// </summary>
     private static readonly char[] DefaultSplitters = ['\n'];
 
-    private int part;
+    private uint part;
     private TimeSpan solveTime;
     private readonly Stopwatch partWatch = new();
+
+    /// <summary>
+    /// Last answer logged by this solver
+    /// </summary>
+    public string LastAnswer { get; private set; } = string.Empty;
 
     /// <summary>
     /// Input data
@@ -46,14 +53,21 @@ public abstract partial class Solver : IDisposable
     /// <param name="options">Input parsing options, defaults to removing empty entries and trimming entries</param>
     protected Solver(string input, ILogger logger, char[]? splitters = null, StringSplitOptions options = DEFAULT_OPTIONS)
     {
+        // Setup data
         this.Logger = logger;
-        if (splitters?.Length is 0)
+        SolverAttribute? attribute = GetType().GetCustomAttribute<SolverAttribute>();
+        this.part = attribute?.Part.GetValueOrDefault() ?? 1;
+
+        splitters ??= DefaultSplitters;
+        if (splitters.Length is 0)
         {
-            this.Data = (options & StringSplitOptions.TrimEntries) is not 0 ? [input] : [input.Trim()];
+            // If no spliter, set data as is
+            this.Data = options.HasFlags(StringSplitOptions.TrimEntries)? [input] : [input.Trim()];
         }
         else
         {
-            this.Data = input.Split(splitters ?? DefaultSplitters, options);
+            // Else split data
+            this.Data = input.Split(splitters, options);
         }
     }
 
@@ -62,7 +76,6 @@ public abstract partial class Solver : IDisposable
     /// </summary>
     public void RunAndStartStopwatch()
     {
-        this.part = 1;
         this.partWatch.Restart();
         Run();
         this.partWatch.Stop();
@@ -86,6 +99,7 @@ public abstract partial class Solver : IDisposable
 
         // Get answer and put into clipboard
         string answerText = answer.ToString() ?? string.Empty;
+        this.LastAnswer = answerText;
         if (!string.IsNullOrEmpty(answerText))
         {
             ClipboardService.SetText(answerText);

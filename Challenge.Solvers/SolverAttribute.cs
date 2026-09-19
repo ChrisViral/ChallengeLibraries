@@ -21,6 +21,11 @@ public sealed class SolverAttribute(uint year, uint day) : Attribute
     public uint Day { get; } = day;
 
     /// <summary>
+    /// Challenge part
+    /// </summary>
+    public uint? Part { get; init; }
+
+    /// <summary>
     /// Solver module
     /// </summary>
     public string Module { get; init; } = string.Empty;
