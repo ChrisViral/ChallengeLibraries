@@ -23,5 +23,5 @@ public interface ISolverResolver
     /// <param name="module">Challenge module</param>
     /// <param name="token">Cancellation token</param>
     /// <returns>A <see cref="Result{T}"/> object containing the fetched input, or an error if failed</returns>
-    Task<Result<string>> FetchInput(int year, int day, string module, CancellationToken token = default);
+    Task<Result<string>> FetchInput(uint year, uint day, string module, CancellationToken token = default);
 }

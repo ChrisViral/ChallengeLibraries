@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Challenge.Solvers;
@@ -26,13 +26,13 @@ public sealed partial class SolveCommand(ILoggerFactory loggerFactory, ISolverRe
     /// Challenge year
     /// </summary>
     [CliArgument(Description = "Challenge year")]
-    public int Year { get; set; }
+    public uint Year { get; set; }
 
     /// <summary>
     /// Challenge day
     /// </summary>
     [CliArgument(Description = "Challenge day")]
-    public int Day { get; set; }
+    public uint Day { get; set; }
 
     /// <summary>
     /// Challenge module
@@ -112,10 +112,13 @@ public sealed partial class SolveCommand(ILoggerFactory loggerFactory, ISolverRe
             Type? solverType = AppDomain.CurrentDomain
                                         .GetAssemblies()
                                         .SelectMany(a => a.GetTypes())
-                                        .Where(t => t is { IsAbstract: false, IsGenericType: false }
+                                        .Where(t => t is { IsClass: true, IsAbstract: false, IsGenericType: false }
                                                  && t.IsAssignableTo(BaseSolverType)
                                                  && t.GetConstructor(ConstructorParamTypes) is not null)
-                                       .SingleOrDefault(t => t.FullName == solverFullName);
+                                        .Select(t => (type: t, attribute: t.GetCustomAttribute<SolverAttribute>()))
+                                        .SingleOrDefault(d => d.attribute?.Year == this.Year
+                                                           && d.attribute.Day == this.Day)
+                                        .type;
             // Check type
             if (solverType is null)
             {
