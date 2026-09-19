@@ -2,7 +2,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Challenge.Solvers;
-using Challenge.Utils;
 using Challenge.Utils.Extensions.TimeSpans;
 using CSharpFunctionalExtensions;
 using DotMake.CommandLine;

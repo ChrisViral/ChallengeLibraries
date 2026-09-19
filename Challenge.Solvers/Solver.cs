@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using Challenge.Utils;
 using Challenge.Utils.Extensions.TimeSpans;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;

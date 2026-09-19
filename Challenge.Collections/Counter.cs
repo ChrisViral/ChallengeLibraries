@@ -2,8 +2,8 @@
 using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
-using Challenge.Utils.Extensions.Enumerables;
 using Challenge.Collections.DebugViews;
+using Challenge.Utils.Extensions.Enumerables;
 using JetBrains.Annotations;
 using ZLinq;
 using ZLinq.Linq;

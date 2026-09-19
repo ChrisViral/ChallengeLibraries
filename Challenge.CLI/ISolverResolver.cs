@@ -1,5 +1,4 @@
-﻿using Challenge.Solvers;
-using CSharpFunctionalExtensions;
+﻿using CSharpFunctionalExtensions;
 using JetBrains.Annotations;
 
 namespace Challenge.CLI;

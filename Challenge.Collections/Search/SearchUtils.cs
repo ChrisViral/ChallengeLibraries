@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
-using Challenge.Utils.Extensions.Collections;
 using Challenge.Collections.Pooling;
+using Challenge.Utils.Extensions.Collections;
 using JetBrains.Annotations;
 using ZLinq;
 

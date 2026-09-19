@@ -1,8 +1,8 @@
 ﻿using System.Numerics;
 using System.Runtime.CompilerServices;
+using Challenge.Maths.Vectors;
 using Challenge.Utils.Extensions.Enumerables;
 using Challenge.Utils.Extensions.Numbers;
-using Challenge.Maths.Vectors;
 using CommunityToolkit.HighPerformance;
 using JetBrains.Annotations;
 using ZLinq;

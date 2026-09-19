@@ -3,8 +3,8 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
-using Challenge.Utils.Extensions.Arrays;
 using Challenge.Collections.DebugViews;
+using Challenge.Utils.Extensions.Arrays;
 using JetBrains.Annotations;
 
 /* ==================================================================================== *\

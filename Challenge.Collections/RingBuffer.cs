@@ -1,9 +1,9 @@
 ﻿using System.Collections;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using Challenge.Collections.DebugViews;
 using Challenge.Utils.Extensions.Arrays;
 using Challenge.Utils.Extensions.Numbers;
-using Challenge.Collections.DebugViews;
 using JetBrains.Annotations;
 
 namespace Challenge.Collections;
