@@ -78,7 +78,7 @@ public sealed partial class SolveCommand(ILoggerFactory loggerFactory, ISolverRe
     {
         // Fetch input
         LogFetchingInput(this.Logger, this.Resolver.ChallengeName, this.Year, this.Day, this.PartString, this.ModuleString);
-        Result<string> fetchResult = await this.Resolver.FetchInput(this.Year, this.Day, this.Module, cliContext.CancellationToken).ConfigureAwait(false);
+        Result<string, Exception> fetchResult = await this.Resolver.FetchInput(this.Year, this.Day, this.Module, cliContext.CancellationToken).ConfigureAwait(false);
 
         // Get input data
         if (!fetchResult.TryGetValue(out string? input))
