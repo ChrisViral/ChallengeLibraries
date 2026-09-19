@@ -8,11 +8,12 @@ using ZLinq.Linq;
 namespace Challenge.Utils.Extensions.Collections;
 
 /// <summary>
-/// Collection extension methods
+/// <see cref="ICollection{T}"/> and other collection types extensions
 /// </summary>
 [PublicAPI]
 public static class CollectionExtensions
 {
+    /// <param name="collection">Collection instance</param>
     /// <typeparam name="T">Type of element in the collection</typeparam>
     extension<T>(ICollection<T> collection)
     {
@@ -35,6 +36,7 @@ public static class CollectionExtensions
         }
     }
 
+    /// <param name="list">List instance</param>
     /// <typeparam name="T">Type of element in the list</typeparam>
     extension<T>(IList<T> list)
     {
@@ -112,6 +114,7 @@ public static class CollectionExtensions
         }
     }
 
+    /// <param name="dictionary">Dictionary instance</param>
     /// <typeparam name="TKey">Key type</typeparam>
     /// <typeparam name="TValue">Value type</typeparam>
     extension<TKey, TValue>(IDictionary<TKey, TValue> dictionary)
@@ -158,6 +161,7 @@ public static class CollectionExtensions
         }
     }
 
+    /// <param name="stack">Stack instance</param>
     /// <typeparam name="T">Type of element in the stack</typeparam>
     extension<T>(Stack<T> stack)
     {
@@ -179,16 +183,18 @@ public static class CollectionExtensions
         }
     }
 
+    /// <param name="queue">Queue instance</param>
     /// <typeparam name="T">Type of element in the queue</typeparam>
-    extension<T>(Queue<T> stack)
+    extension<T>(Queue<T> queue)
     {
         /// <summary>
         /// Checks if a queue is empty
         /// </summary>
         /// <value>True if the queue is empty, false otherwise</value>
-        public bool IsEmpty => stack.Count is 0;
+        public bool IsEmpty => queue.Count is 0;
     }
 
+    /// <param name="node">LinkedList node instance</param>
     /// <typeparam name="T">Type of element in the list node</typeparam>
     extension<T>(LinkedListNode<T> node)
     {
@@ -205,6 +211,7 @@ public static class CollectionExtensions
         public LinkedListNode<T> PreviousCircular() => node.Previous ?? node.List!.Last!;
     }
 
+    /// <param name="list">LinkedList instance</param>
     /// <typeparam name="T">Type of element in the LinkedList</typeparam>
     extension<T>(LinkedList<T> list)
     {

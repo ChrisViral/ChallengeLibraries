@@ -16,11 +16,11 @@ public partial class SolveCommand
     [LoggerMessage(LogLevel.Error, "Running solver for {Challenge} {Year} {Day}{Module}")]
     static partial void LogRunSolver(ILogger logger, string challenge, int year, int day, string module);
 
-    [LoggerMessage(LogLevel.Error, "Encountered exception while creating solver {Name} for {Challenge} {Year} {Day}{Module}")]
-    static partial void LogExceptionWhileCreatingSolver(ILogger logger, string name, string challenge, int year, int day, string module, Exception exception);
+    [LoggerMessage(LogLevel.Error, "Encountered exception while creating solver for {Challenge} {Year} {Day}{Module}")]
+    static partial void LogExceptionWhileCreatingSolver(ILogger logger, string challenge, int year, int day, string module, Exception exception);
 
-    [LoggerMessage(LogLevel.Error, "Encountered exception while running solver {Name} for {Challenge} {Year} {Day}{Module}")]
-    static partial void LogExceptionWhileRunningSolver(ILogger logger, string name, string challenge, int year, int day, string module, Exception exception);
+    [LoggerMessage(LogLevel.Error, "Encountered exception while running solver for {Challenge} {Year} {Day}{Module}")]
+    static partial void LogExceptionWhileRunningSolver(ILogger logger, string challenge, int year, int day, string module, Exception exception);
 
     [LoggerMessage(LogLevel.Information, "Problem input parsed in: {Elapsed}\n")]
     static partial void LogInputParsed(ILogger logger, string elapsed);

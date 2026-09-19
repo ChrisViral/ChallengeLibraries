@@ -10,7 +10,7 @@ using JetBrains.Annotations;
 namespace Challenge.Utils.Extensions.Enums;
 
 /// <summary>
-/// Enum extensions
+/// <see cref="Enum"/> extensions
 /// </summary>
 [PublicAPI]
 public static class EnumExtensions

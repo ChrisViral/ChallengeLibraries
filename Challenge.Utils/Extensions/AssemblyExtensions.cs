@@ -6,11 +6,12 @@ using JetBrains.Annotations;
 namespace Challenge.Utils.Extensions.Assemblies;
 
 /// <summary>
-/// Assembly extensions
+/// <see cref="Assembly"/> extensions
 /// </summary>
 [PublicAPI]
 public static class AssemblyExtensions
 {
+    /// <param name="assembly">Assembly instance</param>
     extension(Assembly assembly)
     {
         /// <summary>

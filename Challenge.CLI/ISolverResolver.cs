@@ -16,15 +16,6 @@ public interface ISolverResolver
     string ChallengeName { get; }
 
     /// <summary>
-    /// Gets the fully qualified name for the requested <see cref="Solver"/>
-    /// </summary>
-    /// <param name="year">Challenge year</param>
-    /// <param name="day">Challenge day</param>
-    /// <param name="module">Challenge module</param>
-    /// <returns>The <see cref="Solver"/>'s fully qualified name</returns>
-    string GetSolverFullName(int year, int day, string module);
-
-    /// <summary>
     /// Fetch the challenge input for a given problem
     /// </summary>
     /// <param name="year">Challenge year</param>

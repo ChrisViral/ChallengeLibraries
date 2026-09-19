@@ -7,14 +7,11 @@ using JetBrains.Annotations;
 namespace Challenge.Utils.Extensions.Strings;
 
 /// <summary>
-/// StringBuilder extension methods
+/// <see cref="string"/> and other related classes extensions
 /// </summary>
 [PublicAPI]
 public static class StringExtensions
 {
-    /// <summary>
-    /// Character extensions
-    /// </summary>
     /// <param name="value">Character value</param>
     extension(char value)
     {
@@ -93,9 +90,6 @@ public static class StringExtensions
         }
     }
 
-    /// <summary>
-    /// ASCII conversion integer extensions
-    /// </summary>
     /// <param name="value">Numerical value</param>
     /// <typeparam name="T">Integer type</typeparam>
     extension<T>(T value) where T : IBinaryInteger<T>
@@ -143,9 +137,6 @@ public static class StringExtensions
         }
     }
 
-    /// <summary>
-    /// String extensions
-    /// </summary>
     /// <param name="value">String value</param>
     extension(string value)
     {
@@ -164,9 +155,6 @@ public static class StringExtensions
         }
     }
 
-    /// <summary>
-    /// StringBuilder extensions
-    /// </summary>
     /// <param name="stringBuilder">StringBuilder value</param>
     extension(StringBuilder stringBuilder)
     {

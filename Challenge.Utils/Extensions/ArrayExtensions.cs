@@ -6,11 +6,12 @@ using JetBrains.Annotations;
 namespace Challenge.Utils.Extensions.Arrays;
 
 /// <summary>
-/// Array extension methods
+/// <see cref="Array"/> extensions
 /// </summary>
 [PublicAPI]
 public static class ArrayExtensions
 {
+    /// <param name="array">Array instance</param>
     /// <typeparam name="T">Array element type</typeparam>
     extension<T>(T[] array)
     {
@@ -193,6 +194,7 @@ public static class ArrayExtensions
 
     }
 
+    /// <param name="array">Array segment instance</param>
     /// <typeparam name="T">Array element type</typeparam>
     extension<T>(ArraySegment<T> array)
     {

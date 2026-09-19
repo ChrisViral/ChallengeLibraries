@@ -2,6 +2,7 @@ using System.Collections;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Challenge.Utils;
+using Challenge.Utils.Extensions.TimeSpans;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using TextCopy;
@@ -93,7 +94,7 @@ public abstract partial class Solver : IDisposable
 
         // Log answer
         LogPartAnswer(this.Logger, this.part++, answerText);
-        LogPartTime(this.Logger, ChallengeUtils.GetElapsedString(this.partWatch.Elapsed));
+        LogPartTime(this.Logger, this.partWatch.Elapsed.GetElapsedString());
 
         // Collect GC and then restart watches
         GC.Collect();
@@ -111,10 +112,39 @@ public abstract partial class Solver : IDisposable
     /// Logs the total elapsed time of the solver
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void LogElapsed() => LogElapsed(this.Logger, ChallengeUtils.GetElapsedString(this.solveTime));
+    public void LogElapsed() => LogElapsed(this.Logger, this.solveTime.GetElapsedString());
 
     /// <inheritdoc />
     public virtual void Dispose() => GC.SuppressFinalize(this);
+
+    /// <summary>
+    /// Combines input lines into sequences, separated by empty lines
+    /// </summary>
+    /// <param name="input">Input lines</param>
+    /// <returns>An enumerable of the packed input</returns>
+    protected static IEnumerable<List<string>> CombineLines([InstantHandle] IEnumerable<string> input)
+    {
+        List<string> pack = [];
+        foreach (string line in input)
+        {
+            if (string.IsNullOrWhiteSpace(line))
+            {
+                if (pack.Count is 0) continue;
+
+                yield return pack;
+                pack = [];
+            }
+            else
+            {
+                pack.Add(line);
+            }
+        }
+
+        if (pack.Count is not 0)
+        {
+            yield return pack;
+        }
+    }
 }
 
 /// <summary>

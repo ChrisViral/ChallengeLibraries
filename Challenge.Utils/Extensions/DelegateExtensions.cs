@@ -4,11 +4,12 @@
 namespace Challenge.Utils.Extensions.Delegates;
 
 /// <summary>
-/// Delegate function extensions
+/// <see cref="Delegate"/> extensions
 /// </summary>
 [PublicAPI]
 public static class DelegateExtensions
 {
+    /// <param name="predicate">Predicate instance</param>
     /// <typeparam name="T">Predicate parameter type</typeparam>
     extension<T>([InstantHandle] Func<T, bool> predicate)
     {
@@ -19,6 +20,7 @@ public static class DelegateExtensions
         public Func<T, bool> Inverted => x => !predicate(x);
     }
 
+    /// <param name="predicate">Predicate instance</param>
     /// <typeparam name="T">Predicate parameter type</typeparam>
     extension<T>([InstantHandle] Func<T, int, bool> predicate)
     {
@@ -29,6 +31,7 @@ public static class DelegateExtensions
         public Func<T, int, bool> Inverted => (x, i) => !predicate(x, i);
     }
 
+    /// <param name="predicate">Predicate instance</param>
     /// <typeparam name="T">Predicate parameter type</typeparam>
     extension<T>([InstantHandle] Predicate<T> predicate)
     {

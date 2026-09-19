@@ -4,11 +4,12 @@
 namespace Challenge.Utils.Extensions.Tasks;
 
 /// <summary>
-/// <see cref="Task"/> Extensions
+/// <see cref="Task"/> extensions
 /// </summary>
 [PublicAPI]
 public static class TaskExtensions
 {
+    /// <param name="task">Task instance</param>
     extension(Task task)
     {
         /// <summary>

@@ -8,7 +8,7 @@ using ZLinq;
 namespace Challenge.Utils.Extensions.Regexes;
 
 /// <summary>
-/// Regex extension methods
+/// <see cref="Regex"/> extensions
 /// </summary>
 [PublicAPI]
 public static class RegexExtensions

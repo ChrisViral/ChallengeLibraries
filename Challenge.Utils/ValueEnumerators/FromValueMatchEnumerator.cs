@@ -25,7 +25,7 @@ public ref struct FromValueMatchEnumerator(Regex.ValueMatchEnumerator enumerator
     {
         if (this.enumerator.MoveNext())
         {
-            System.Text.RegularExpressions.ValueMatch match = this.enumerator.Current;
+            ValueMatch match = this.enumerator.Current;
             current = new MatchData(match.Index, match.Length);
             return true;
         }

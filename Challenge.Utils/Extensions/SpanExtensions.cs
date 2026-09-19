@@ -9,7 +9,7 @@ using ZLinq;
 namespace Challenge.Utils.Extensions.Spans;
 
 /// <summary>
-/// Span extensions
+/// <see cref="Span{T}"/> and <see cref="Span2D{T}"/> extensions
 /// </summary>
 [PublicAPI]
 public static class SpanExtensions

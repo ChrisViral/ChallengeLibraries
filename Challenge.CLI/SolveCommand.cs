@@ -1,7 +1,9 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using Challenge.Solvers;
 using Challenge.Utils;
+using Challenge.Utils.Extensions.TimeSpans;
 using CSharpFunctionalExtensions;
 using DotMake.CommandLine;
 using Microsoft.Extensions.Logging;
@@ -65,15 +67,14 @@ public sealed partial class SolveCommand(ILoggerFactory loggerFactory, ISolverRe
         }
 
         // Create solver instance
-        string solverFullName = this.Resolver.GetSolverFullName(this.Year, this.Day, this.Module);
-        if (!TryCreateSolver(input, solverFullName, out Solver? solver, out Stopwatch? parseWatch))
+        if (!TryCreateSolver(input, out Solver? solver, out TimeSpan parseTime))
         {
             LogFailedCreateSolver(this.Logger, this.Resolver.ChallengeName, this.Year, this.Day, this.ModuleString);
             return 1;
         }
 
         // Log input parse time
-        LogInputParsed(this.Logger, ChallengeUtils.GetElapsedString(parseWatch.Elapsed));
+        LogInputParsed(this.Logger, parseTime.GetElapsedString());
 
 #if !DEBUG
         // In debug mode we want to break at the exception location
@@ -91,7 +92,7 @@ public sealed partial class SolveCommand(ILoggerFactory loggerFactory, ISolverRe
         catch (Exception e)
         {
             //Log any exceptions that occur
-            LogExceptionWhileRunningSolver(this.Logger, solverFullName, this.Resolver.ChallengeName, this.Year, this.Day, this.ModuleString, e);
+            LogExceptionWhileRunningSolver(this.Logger, this.Resolver.ChallengeName, this.Year, this.Day, this.ModuleString, e);
             return 1;
         }
         finally
@@ -103,7 +104,7 @@ public sealed partial class SolveCommand(ILoggerFactory loggerFactory, ISolverRe
         return 0;
     }
 
-    private bool TryCreateSolver(string input, string solverFullName, [NotNullWhen(true)] out Solver? solver, [NotNullWhen(true)] out Stopwatch? parseWatch)
+    private bool TryCreateSolver(string input, [NotNullWhen(true)] out Solver? solver, out TimeSpan parseTime)
     {
         try
         {
@@ -119,22 +120,23 @@ public sealed partial class SolveCommand(ILoggerFactory loggerFactory, ISolverRe
             if (solverType is null)
             {
                 solver = null;
-                parseWatch = null;
+                parseTime = TimeSpan.Zero;
                 return false;
             }
 
             // Insantiate solver
-            parseWatch = Stopwatch.StartNew();
+            Stopwatch parseWatch = Stopwatch.StartNew();
             solver = Activator.CreateInstance(solverType, input, this.loggerFactory.CreateLogger(solverType)) as Solver;
             parseWatch.Stop();
+            parseTime = parseWatch.Elapsed;
             return solver is not null;
         }
         catch (Exception e)
         {
             // Log exceptions
-            LogExceptionWhileCreatingSolver(this.Logger, solverFullName, this.Resolver.ChallengeName, this.Year, this.Day, this.ModuleString, e);
+            LogExceptionWhileCreatingSolver(this.Logger, this.Resolver.ChallengeName, this.Year, this.Day, this.ModuleString, e);
             solver = null;
-            parseWatch = null;
+            parseTime = TimeSpan.Zero;
             return false;
         }
     }

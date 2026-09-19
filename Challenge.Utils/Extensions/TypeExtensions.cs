@@ -5,11 +5,12 @@ using JetBrains.Annotations;
 namespace Challenge.Utils.Extensions.Types;
 
 /// <summary>
-/// Type extensions
+/// <see cref="Type"/> extensions
 /// </summary>
 [PublicAPI]
 public static class TypeExtensions
 {
+    /// <param name="type">Type instance</param>
     extension(Type type)
     {
         /// <summary>

@@ -7,9 +7,8 @@ using ZLinq;
 namespace Challenge.Utils.Extensions.Ranges;
 
 /// <summary>
-/// Range extension methods
+/// <see cref="Range"/> extensions
 /// </summary>
-/// ReSharper disable once UnusedMember.Global
 [PublicAPI]
 public static class RangeExtensions
 {
@@ -44,6 +43,7 @@ public static class RangeExtensions
         }
     }
 
+    /// <param name="range">Range instance</param>
     extension(Range range)
     {
         /// <summary>
@@ -87,10 +87,10 @@ public static class RangeExtensions
         /// </summary>
         /// <param name="start">Start value output</param>
         /// <param name="end">End value output</param>
-        public void Deconstruct(out int start, out int end)
+        public void Deconstruct(out Index start, out Index end)
         {
-            start = range.Start.Value;
-            end   = range.End.Value;
+            start = range.Start;
+            end   = range.End;
         }
     }
 }
