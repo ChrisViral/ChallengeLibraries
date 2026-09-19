@@ -59,3 +59,8 @@ nunit-*.xml
 # User files
 *.cmdlineargs.json
 *.DotSettings.user
+.claude/
+
+# Puzzle files files
+[Ii]nput/
+[Oo]utput/
