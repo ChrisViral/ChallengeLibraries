@@ -16,7 +16,9 @@ namespace Challenge.CLI;
 [CliCommand(Description = "Solve a specific challenge instance", Name = "solve", Parent = typeof(ChallengeCommand))]
 public sealed partial class SolveCommand(ILoggerFactory loggerFactory, ISolverResolver resolver) : ICliRunAsyncWithContextAndReturn
 {
+    /// <summary> Solver type </summary>
     private static readonly Type BaseSolverType = typeof(Solver);
+    /// <summary> Solver constructor parameter types </summary>
     private static readonly Type[] ConstructorParamTypes = [typeof(string), typeof(ILogger)];
 
     private readonly ILoggerFactory loggerFactory = loggerFactory;
@@ -46,6 +48,12 @@ public sealed partial class SolveCommand(ILoggerFactory loggerFactory, ISolverRe
     public string Module { get; set; } = string.Empty;
 
     /// <summary>
+    /// If the answer should be submitted or not
+    /// </summary>
+    [CliOption(Description = "If the answer should be submitted or not")]
+    public bool SubmitAnswer { get; set; }
+
+    /// <summary>
     /// Challenge part string representation
     /// </summary>
     private string PartString => this.Part.HasValue ? $" Part {this.Part.Value}" : string.Empty;
@@ -70,12 +78,12 @@ public sealed partial class SolveCommand(ILoggerFactory loggerFactory, ISolverRe
     {
         // Fetch input
         LogFetchingInput(this.Logger, this.Resolver.ChallengeName, this.Year, this.Day, this.PartString, this.ModuleString);
-        Result<string> result = await this.Resolver.FetchInput(this.Year, this.Day, this.Module, cliContext.CancellationToken).ConfigureAwait(false);
+        Result<string> fetchResult = await this.Resolver.FetchInput(this.Year, this.Day, this.Module, cliContext.CancellationToken).ConfigureAwait(false);
 
         // Get input data
-        if (!result.TryGetValue(out string? input))
+        if (!fetchResult.TryGetValue(out string? input))
         {
-            LogInputFetchFailed(this.Logger, this.Resolver.ChallengeName, this.Year, this.Day, this.PartString, this.ModuleString, result.Error);
+            LogInputFetchFailed(this.Logger, this.Resolver.ChallengeName, this.Year, this.Day, this.PartString, this.ModuleString, fetchResult.Error);
             return 1;
         }
 
@@ -93,15 +101,12 @@ public sealed partial class SolveCommand(ILoggerFactory loggerFactory, ISolverRe
         // In debug mode we want to break at the exception location
         using (solver)
         {
-            solver.RunAndStartStopwatch();
-            solver.LogElapsed();
+            await RunSolver(solver, cliContext.CancellationToken).ConfigureAwait(false);
         }
 #else
         try
         {
-            //Run solver
-            solver.RunAndStartStopwatch();
-            solver.LogElapsed();
+            await RunSolver(solver, cliContext.CancellationToken).ConfigureAwait(false);
         }
         catch (Exception e)
         {
@@ -166,4 +171,22 @@ public sealed partial class SolveCommand(ILoggerFactory loggerFactory, ISolverRe
                                                               && this.Day == attribute.Day
                                                               && this.Part.HasValue && this.Part == attribute.Part
                                                               && !string.IsNullOrEmpty(this.Module) && this.Module == attribute.Module;
+
+    /// <summary>
+    /// Runs the solver
+    /// </summary>
+    /// <param name="solver">Solver to run</param>
+    /// <param name="token">Cancellation token</param>
+    private async Task RunSolver(Solver solver, CancellationToken token)
+    {
+        solver.RunAndStartStopwatch();
+        solver.LogElapsed();
+        if (!this.SubmitAnswer) return;
+
+        Result submitResult = await this.Resolver.SubmitAnswer(solver.LastAnswer, token).ConfigureAwait(false);
+        if (submitResult.TryGetError(out string? error))
+        {
+            LogIncorrectAnswer(this.Logger, error);
+        }
+    }
 }

@@ -24,4 +24,7 @@ public partial class SolveCommand
 
     [LoggerMessage(LogLevel.Information, "Problem input parsed in: {Elapsed}\n")]
     static partial void LogInputParsed(ILogger logger, string elapsed);
+
+    [LoggerMessage(LogLevel.Error, "Submitted answer is incorrect: {ErrorMessage}")]
+    static partial void LogIncorrectAnswer(ILogger logger, string errorMessage);
 }

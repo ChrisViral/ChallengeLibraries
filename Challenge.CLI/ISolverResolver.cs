@@ -23,4 +23,12 @@ public interface ISolverResolver
     /// <param name="token">Cancellation token</param>
     /// <returns>A <see cref="Result{T}"/> object containing the fetched input, or an error if failed</returns>
     Task<Result<string>> FetchInput(uint year, uint day, string module, CancellationToken token = default);
+
+    /// <summary>
+    /// Submits the answer for verification
+    /// </summary>
+    /// <param name="answer">Answer to submit</param>
+    /// <param name="token">Cancellation token</param>
+    /// <returns>A <see cref="Result"/> object indicating if the answer was correct or not</returns>
+    Task<Result> SubmitAnswer(string answer, CancellationToken token = default);
 }
