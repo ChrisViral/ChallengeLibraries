@@ -27,4 +27,7 @@ public partial class SolveCommand
 
     [LoggerMessage(LogLevel.Error, "Submitted answer is incorrect: {ErrorMessage}")]
     static partial void LogIncorrectAnswer(ILogger logger, string errorMessage);
+
+    [LoggerMessage(LogLevel.Information, "Instantiating solver {Type}")]
+    static partial void LogInstantiatingSolver(ILogger logger, string type);
 }

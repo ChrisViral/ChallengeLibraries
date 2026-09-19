@@ -78,7 +78,8 @@ public sealed partial class SolveCommand(ILoggerFactory loggerFactory, ISolverRe
     {
         // Fetch input
         LogFetchingInput(this.Logger, this.Resolver.ChallengeName, this.Year, this.Day, this.PartString, this.ModuleString);
-        Result<string, Exception> fetchResult = await this.Resolver.FetchInput(this.Year, this.Day, this.Module, cliContext.CancellationToken).ConfigureAwait(false);
+        SolverData data = new(this.Year, this.Day, this.Part, this.Module);
+        Result<string, Exception> fetchResult = await this.Resolver.FetchInput(data, cliContext.CancellationToken).ConfigureAwait(false);
 
         // Get input data
         if (!fetchResult.TryGetValue(out string? input))
@@ -88,7 +89,7 @@ public sealed partial class SolveCommand(ILoggerFactory loggerFactory, ISolverRe
         }
 
         // Create solver instance
-        if (!TryCreateSolver(input, out Solver? solver, out TimeSpan parseTime))
+        if (!TryCreateSolver(input, data, out Solver? solver, out TimeSpan parseTime))
         {
             LogFailedCreateSolver(this.Logger, this.Resolver.ChallengeName, this.Year, this.Day, this.PartString, this.ModuleString);
             return 1;
@@ -122,7 +123,7 @@ public sealed partial class SolveCommand(ILoggerFactory loggerFactory, ISolverRe
         return 0;
     }
 
-    private bool TryCreateSolver(string input, [NotNullWhen(true)] out Solver? solver, out TimeSpan parseTime)
+    private bool TryCreateSolver(string input, SolverData data, [NotNullWhen(true)] out Solver? solver, out TimeSpan parseTime)
     {
         try
         {
@@ -134,7 +135,8 @@ public sealed partial class SolveCommand(ILoggerFactory loggerFactory, ISolverRe
                                                  && t.IsAssignableTo(BaseSolverType)
                                                  && t.GetConstructor(ConstructorParamTypes) is not null)
                                         .Select(t => (type: t, attribute: t.GetCustomAttribute<SolverAttribute>()))
-                                        .SingleOrDefault(t => AttributeMatches(t.attribute))
+                                        .SingleOrDefault(t => t.attribute is not null
+                                                           && data == new SolverData(t.attribute))
                                         .type;
             // Check type
             if (solverType is null)
@@ -144,7 +146,8 @@ public sealed partial class SolveCommand(ILoggerFactory loggerFactory, ISolverRe
                 return false;
             }
 
-            // Insantiate solver
+            // Instantiate solver
+            LogInstantiatingSolver(this.Logger, solverType.FullName ?? string.Empty);
             Stopwatch parseWatch = Stopwatch.StartNew();
             solver = Activator.CreateInstance(solverType, input, this.loggerFactory.CreateLogger(solverType)) as Solver;
             parseWatch.Stop();
@@ -160,17 +163,6 @@ public sealed partial class SolveCommand(ILoggerFactory loggerFactory, ISolverRe
             return false;
         }
     }
-
-    /// <summary>
-    /// Checks if the given <see cref="SolverAttribute"/> matches the data of this command
-    /// </summary>
-    /// <param name="attribute">Attribute to check</param>
-    /// <returns><see langword="true"/> if the attribute matches the data of this command, otherwise <see langword="false"/></returns>
-    private bool AttributeMatches(SolverAttribute? attribute) => attribute is not null
-                                                              && this.Year == attribute.Year
-                                                              && this.Day == attribute.Day
-                                                              && this.Part.HasValue && this.Part == attribute.Part
-                                                              && !string.IsNullOrEmpty(this.Module) && this.Module == attribute.Module;
 
     /// <summary>
     /// Runs the solver
