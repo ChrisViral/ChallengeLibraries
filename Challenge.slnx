@@ -6,9 +6,19 @@
     <File Path=".editorconfig" />
     <File Path="README.md" />
   </Folder>
-  <Project Path="Challenge.CLI/Challenge.CLI.csproj" />
-  <Project Path="Challenge.Collections/Challenge.Collections.csproj" />
-  <Project Path="Challenge.Maths/Challenge.Maths.csproj" />
-  <Project Path="Challenge.Solvers/Challenge.Solvers.csproj" />
-  <Project Path="Challenge.Utils/Challenge.Utils.csproj" />
+  <Project Path="Challenge.CLI/Challenge.CLI.csproj">
+    <Platform Project="x64" />
+  </Project>
+  <Project Path="Challenge.Collections/Challenge.Collections.csproj">
+    <Platform Project="x64" />
+  </Project>
+  <Project Path="Challenge.Maths/Challenge.Maths.csproj">
+    <Platform Project="x64" />
+  </Project>
+  <Project Path="Challenge.Solvers/Challenge.Solvers.csproj">
+    <Platform Project="x64" />
+  </Project>
+  <Project Path="Challenge.Utils/Challenge.Utils.csproj">
+    <Platform Project="x64" />
+  </Project>
 </Solution>

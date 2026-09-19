@@ -8,18 +8,17 @@
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>Properties\Challenge.CLI.snk</AssemblyOriginatorKeyFile>
     <IsPackable>false</IsPackable>
+    <Configurations>Release;Debug</Configurations>
+    <Platforms>x64</Platforms>
+    <DocumentationFile>bin\x64\Debug\Challenge.CLI.xml</DocumentationFile>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <PlatformTarget>x64</PlatformTarget>
-    <DocumentationFile>bin\Debug\Challenge.CLI.xml</DocumentationFile>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
     <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-    <PlatformTarget>x64</PlatformTarget>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
     <DebugSymbols>true</DebugSymbols>
-    <DocumentationFile>bin\Release\Challenge.CLI.xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
