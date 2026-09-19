@@ -17,7 +17,7 @@ public abstract partial class SolverResolverBase(ILogger logger, ResolverSetting
     /// <summary>
     /// Input folder name
     /// </summary>
-    protected const string INPUT_FOLDER = "Input";
+    public const string INPUT_FOLDER = "Input";
 
     /// <summary>
     /// Session cookie file

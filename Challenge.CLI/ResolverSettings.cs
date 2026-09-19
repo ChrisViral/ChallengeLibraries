@@ -10,7 +10,7 @@ namespace Challenge.CLI;
 public sealed partial class ResolverSettingsJsonContext : JsonSerializerContext;
 
 /// <summary>
-/// Input fetcher settings struct
+/// Resolver settings
 /// </summary>
 /// <param name="Cookie">Request cookie</param>
 /// <param name="LastRequestTimestamp">Last request timestamp</param>
