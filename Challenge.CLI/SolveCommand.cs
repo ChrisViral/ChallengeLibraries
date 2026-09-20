@@ -160,7 +160,10 @@ public sealed partial class SolveCommand(ILoggerFactory loggerFactory, ISolverRe
                                                  && t.GetConstructor(ConstructorParamTypes) is not null)
                                         .Select(t => (type: t, attribute: t.GetCustomAttribute<SolverAttribute>()))
                                         .SingleOrDefault(t => t.attribute is not null
-                                                           && data == new SolverData(t.attribute))
+                                                           && data.Year == t.attribute.Year
+                                                           && data.Day == t.attribute.Day
+                                                           && (!data.Part.HasValue || data.Part.Value == t.attribute.Part)
+                                                           && (string.IsNullOrEmpty(data.Module) || data.Module == t.attribute.Module))
                                         .type;
             // Check type
             if (solverType is null)
