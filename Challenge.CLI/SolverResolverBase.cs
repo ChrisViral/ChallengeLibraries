@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using Challenge.Solvers;
 using CSharpFunctionalExtensions;
 using JetBrains.Annotations;
@@ -10,9 +11,8 @@ namespace Challenge.CLI;
 /// SolverResolver base implementation
 /// </summary>
 /// <param name="logger">Logger instance</param>
-/// <param name="settings">Resolver settings</param>
 [PublicAPI]
-public abstract partial class SolverResolverBase(ILogger logger, ResolverSettings settings) : ISolverResolver
+public abstract class SolverResolverBase(ILogger logger) : ISolverResolver
 {
     /// <summary>
     /// Input folder name
@@ -24,26 +24,47 @@ public abstract partial class SolverResolverBase(ILogger logger, ResolverSetting
     /// </summary>
     public static string SettingsPath { get; } = Path.Combine(INPUT_FOLDER, "settings.json");
 
+    /// <summary>
+    /// Logger instance
+    /// </summary>
+    protected ILogger Logger { get; } = logger;
+
     /// <inheritdoc />
     public abstract string ChallengeName { get; }
 
+    /// <inheritdoc />
+    public abstract Task<Result<string, Exception>> FetchInput(SolverData data, CancellationToken token = default);
+
+    /// <inheritdoc />
+    public abstract Task<Result> SubmitAnswer(string answer, CancellationToken token = default);
+}
+
+/// <summary>
+/// SolverResolver base implementation
+/// </summary>
+/// <param name="logger">Logger instance</param>
+/// <param name="settings">Resolver settings</param>
+[PublicAPI]
+public abstract partial class SolverResolverBase<T>(ILogger logger, T settings) : SolverResolverBase(logger)
+    where T : ResolverSettings
+{
     /// <summary>
     /// Minimum time between API requests
     /// </summary>
     protected abstract TimeSpan RateLimit { get; }
 
     /// <summary>
-    /// Logger instance
+    /// Settings Json type info
     /// </summary>
-    protected ILogger Logger { get; } = logger;
+    protected abstract JsonTypeInfo<T> SettingsTypeInfo { get; }
 
     /// <summary>
     /// Resolver settings
     /// </summary>
-    protected ResolverSettings Settings { get; } = settings;
+    protected T Settings { get; } = settings;
 
     /// <inheritdoc />
-    public async Task<Result<string, Exception>> FetchInput(SolverData data, CancellationToken token = default)
+    public sealed override async Task<Result<string, Exception>> FetchInput(SolverData data, CancellationToken token = default)
     {
         // Check for the input file
         FileInfo inputFile = new(GetInputFileName(data));
@@ -83,10 +104,8 @@ public abstract partial class SolverResolverBase(ILogger logger, ResolverSetting
         }
 
         // Write back settings with new timestamp
-        FileInfo settingsFile = new(SettingsPath);
-        await using FileStream settingsWriteFileStream = settingsFile.OpenWrite();
         this.Settings.LastRequestTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-        await JsonSerializer.SerializeAsync(settingsWriteFileStream, this.Settings, ResolverSettingsJsonContext.Default.ResolverSettings, token).ConfigureAwait(false);
+        await SaveSettings(token).ConfigureAwait(false);
 
         // Write input to file and return
         await using StreamWriter writer = inputFile.CreateText();
@@ -94,8 +113,17 @@ public abstract partial class SolverResolverBase(ILogger logger, ResolverSetting
         return fetchedInput;
     }
 
-    /// <inheritdoc />
-    public abstract Task<Result> SubmitAnswer(string answer, CancellationToken token = default);
+    /// <summary>
+    /// Saves the given settings object to the settings file
+    /// </summary>
+    /// <param name="token">Cancellation token</param>
+    protected async Task SaveSettings(CancellationToken token)
+    {
+        // Write back settings with new timestamp
+        FileInfo settingsFile = new(SettingsPath);
+        await using FileStream settingsWriteFileStream = settingsFile.OpenWrite();
+        await JsonSerializer.SerializeAsync(settingsWriteFileStream, this.Settings, this.SettingsTypeInfo, token).ConfigureAwait(false);
+    }
 
     /// <summary>
     /// Gets the input file name for the given solver data

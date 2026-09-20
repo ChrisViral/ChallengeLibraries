@@ -34,6 +34,18 @@ public static class CollectionExtensions
                 collection.Add(value);
             }
         }
+
+        /// <summary>
+        /// Adds a set of values to the collection
+        /// </summary>
+        /// <param name="values">Values to add</param>
+        public void AddRange(params ReadOnlySpan<T> values)
+        {
+            foreach (T value in values)
+            {
+                collection.Add(value);
+            }
+        }
     }
 
     /// <param name="list">List instance</param>
