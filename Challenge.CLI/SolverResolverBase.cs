@@ -95,7 +95,7 @@ public abstract partial class SolverResolverBase<T>(ILogger logger, T settings) 
         try
         {
             // Fetch input and write to file
-            fetchedInput = await GetInputFromWebsite(data, token).ConfigureAwait(false);
+            fetchedInput = await GetInputFromAPI(data, token).ConfigureAwait(false);
         }
         catch (Exception e)
         {
@@ -138,5 +138,17 @@ public abstract partial class SolverResolverBase<T>(ILogger logger, T settings) 
     /// <param name="data">Solver data</param>
     /// <param name="token">Cancellation token</param>
     /// <returns>The input for the problem</returns>
-    protected abstract Task<string> GetInputFromWebsite(SolverData data, CancellationToken token);
+    protected abstract Task<string> GetInputFromAPI(SolverData data, CancellationToken token);
+}
+
+/// <summary>
+/// SolverResolver with default settings
+/// </summary>
+/// <param name="logger">Logger instance</param>
+/// <param name="settings">Resolver settings</param>
+[PublicAPI]
+public abstract class DefaultSolverResolverBase(ILogger logger, ResolverSettings settings) : SolverResolverBase<ResolverSettings>(logger, settings)
+{
+    /// <inheritdoc />
+    protected sealed override JsonTypeInfo<ResolverSettings> SettingsTypeInfo => ResolverSettingsJsonContext.Default.ResolverSettings;
 }
