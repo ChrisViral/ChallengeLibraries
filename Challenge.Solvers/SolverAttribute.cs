@@ -23,7 +23,7 @@ public sealed class SolverAttribute(uint year, uint day) : Attribute
     /// <summary>
     /// Challenge part
     /// </summary>
-    public uint? Part { get; init; }
+    public uint Part { get; init; }
 
     /// <summary>
     /// Solver module

@@ -56,7 +56,7 @@ public abstract partial class Solver : IDisposable
         // Setup data
         this.Logger = logger;
         SolverAttribute? attribute = GetType().GetCustomAttribute<SolverAttribute>();
-        this.part = attribute?.Part.GetValueOrDefault() ?? 1;
+        this.part = Math.Max(attribute?.Part ?? 1, 1);
 
         splitters ??= DefaultSplitters;
         if (splitters.Length is 0)
