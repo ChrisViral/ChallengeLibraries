@@ -36,7 +36,7 @@ public abstract class SolverResolverBase(ILogger logger) : ISolverResolver
     public abstract Task<Result<string, Exception>> FetchInput(SolverData data, CancellationToken token = default);
 
     /// <inheritdoc />
-    public abstract Task<Result> SubmitAnswer(string answer, CancellationToken token = default);
+    public abstract Task<Result> SubmitAnswer(string answer, SolverData data, CancellationToken token = default);
 }
 
 /// <summary>

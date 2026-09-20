@@ -27,7 +27,8 @@ public interface ISolverResolver
     /// Submits the answer for verification
     /// </summary>
     /// <param name="answer">Answer to submit</param>
+    /// <param name="data">Solver data</param>
     /// <param name="token">Cancellation token</param>
     /// <returns>A <see cref="Result"/> object indicating if the answer was correct or not</returns>
-    Task<Result> SubmitAnswer(string answer, CancellationToken token = default);
+    Task<Result> SubmitAnswer(string answer, SolverData data, CancellationToken token = default);
 }

@@ -102,12 +102,12 @@ public sealed partial class SolveCommand(ILoggerFactory loggerFactory, ISolverRe
         // In debug mode we want to break at the exception location
         using (solver)
         {
-            await RunSolver(solver, cliContext.CancellationToken).ConfigureAwait(false);
+            await RunSolver(solver, data, cliContext.CancellationToken).ConfigureAwait(false);
         }
 #else
         try
         {
-            await RunSolver(solver, cliContext.CancellationToken).ConfigureAwait(false);
+            await RunSolver(solver, data, cliContext.CancellationToken).ConfigureAwait(false);
         }
         catch (Exception e)
         {
@@ -168,15 +168,20 @@ public sealed partial class SolveCommand(ILoggerFactory loggerFactory, ISolverRe
     /// Runs the solver
     /// </summary>
     /// <param name="solver">Solver to run</param>
+    /// <param name="data">Solver data</param>
     /// <param name="token">Cancellation token</param>
-    private async Task RunSolver(Solver solver, CancellationToken token)
+    private async Task RunSolver(Solver solver, SolverData data, CancellationToken token)
     {
         solver.RunAndStartStopwatch();
         solver.LogElapsed();
         if (!this.SubmitAnswer) return;
 
-        Result submitResult = await this.Resolver.SubmitAnswer(solver.LastAnswer, token).ConfigureAwait(false);
-        if (submitResult.TryGetError(out string? error))
+        Result submitResult = await this.Resolver.SubmitAnswer(solver.LastAnswer, data, token).ConfigureAwait(false);
+        if (!submitResult.TryGetError(out string? error))
+        {
+            LogCorrectAnswer(this.Logger);
+        }
+        else
         {
             LogIncorrectAnswer(this.Logger, error);
         }
