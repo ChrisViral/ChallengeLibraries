@@ -12,6 +12,9 @@
   <Project Path="Challenge.Collections/Challenge.Collections.csproj">
     <Platform Project="x64" />
   </Project>
+  <Project Path="Challenge.Generator.Test/Challenge.Generator.Test.csproj">
+    <Platform Project="x64" />
+  </Project>
   <Project Path="Challenge.Generator/Challenge.Generator.csproj">
     <Platform Project="x64" />
   </Project>
