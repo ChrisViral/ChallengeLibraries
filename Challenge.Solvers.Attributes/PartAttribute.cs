@@ -1,13 +1,13 @@
 ﻿using System;
 using JetBrains.Annotations;
 
-namespace Challenge.Generator.Attributes;
+namespace Challenge.Solvers;
 
 /// <summary>
 /// Solver part attribute
 /// </summary>
 /// <param name="part">Part for this method</param>
-[PublicAPI, AttributeUsage(AttributeTargets.Method)]
+[PublicAPI, AttributeUsage(AttributeTargets.Method, Inherited = false)]
 public sealed class PartAttribute(uint part) : Attribute
 {
     /// <summary>

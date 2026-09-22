@@ -5,11 +5,12 @@
     <LangVersion>14</LangVersion>
     <Nullable>enable</Nullable>
     <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>Properties\Challenge.Assemblies.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>Properties\Challenge.Solvers.Attributes.snk</AssemblyOriginatorKeyFile>
     <Configurations>Release;Debug</Configurations>
     <Platforms>x64</Platforms>
     <IsPackable>false</IsPackable>
     <DocumentationFile>bin\x64\Debug\Challenge.Attributes.xml</DocumentationFile>
+    <RootNamespace>Challenge.Solvers</RootNamespace>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
@@ -25,7 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="Challenge.Attributes.csproj.DotSettings" />
+    <None Remove="Challenge.Solvers.Attributes.csproj.DotSettings" />
   </ItemGroup>
 
 </Project>
