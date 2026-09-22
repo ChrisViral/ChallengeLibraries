@@ -10,6 +10,7 @@ namespace {{ file_namespace }}
         [global::System.CodeDom.Compiler.GeneratedCode("{{ tool_name }}", "{{ version }}")]
         public {{ class_name }}(global::System.String input, global::Microsoft.Extensions.Logging.ILogger logger) : base(input, logger) { }
 {{ end }}
+{{ if has_parts }}
         /// <inheritdoc />
         /// <exception cref="System.InvalidOperationException">If the <paramref name="part" /> is not defined for this Solver</exception>
         [global::System.CodeDom.Compiler.GeneratedCode("{{ tool_name }}", "{{ version }}")]
@@ -18,13 +19,14 @@ namespace {{ file_namespace }}
             switch (part)
             {
 {{ for method in methods }}
-                case {{ method.Part }}:
+                case {{ method.Part }}U:
                     {{ method.Name }}();
-                    break;
+                    return;
 {{ end }}
                 default:
                     throw new global::System.InvalidOperationException($"Part {part} is not defined for this Solver");
             }
         }
+{{ end }}
      }
 }

@@ -30,6 +30,10 @@
     <ProjectReference Include="..\Challenge.Solvers\Challenge.Solvers.csproj" />
   </ItemGroup>
 
+  <Target Name="CleanSourceGeneratedFiles" BeforeTargets="BeforeBuild" DependsOnTargets="$(BeforeBuildDependsOn)">
+    <RemoveDir Directories="Generated" />
+  </Target>
+
   <ItemGroup>
     <None Remove="Challenge.Generator.Test.csproj.DotSettings" />
     <Compile Remove="Generated\**" />

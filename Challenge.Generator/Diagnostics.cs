@@ -11,7 +11,7 @@ internal static class Diagnostics
     /// <summary>
     /// Missing Solver base class
     /// </summary>
-    public static DiagnosticDescriptor MissingBaseClassDescriptor { get; } =
+    public static readonly DiagnosticDescriptor MissingBaseClassDescriptor =
         new("CG001",
             "Missing Solver base class",
             $"Class {{0}} is marked with {typeof(SolverAttribute).FullName}, but does not inherit from {typeof(Solver).FullName}",
@@ -22,7 +22,7 @@ internal static class Diagnostics
     /// <summary>
     /// Invalid Solver part method signature
     /// </summary>
-    public static DiagnosticDescriptor InvalidPartMethodSignatureDescriptor { get; } =
+    public static readonly DiagnosticDescriptor InvalidPartMethodSignatureDescriptor =
         new("CG002",
             "Invalid Solver part method signature",
             $"Method {{0}} tagged with {typeof(PartAttribute).FullName} should be parameterless",
@@ -33,7 +33,7 @@ internal static class Diagnostics
     /// <summary>
     /// Duplicated Solver part value
     /// </summary>
-    public static DiagnosticDescriptor DuplicatedPartValueDescriptor { get; } =
+    public static readonly DiagnosticDescriptor DuplicatedPartValueDescriptor =
         new("CG003",
             "Duplicated Solver part value",
             "A solver part with the same part value has already been defined in this class",
@@ -44,10 +44,10 @@ internal static class Diagnostics
     /// <summary>
     /// Solver class is not partial
     /// </summary>
-    public static DiagnosticDescriptor SolverClassNotPartial { get; } =
+    public static readonly DiagnosticDescriptor SolverClassNotPartial =
         new("CG004",
             "Solver class is not partial",
-            "The solver class {0} must be partial to allow for source generation when using parts",
+            "The solver class {0} must be partial to allow for source generation",
             "SourceGenerator",
             DiagnosticSeverity.Error,
             true);
@@ -55,7 +55,7 @@ internal static class Diagnostics
     /// <summary>
     /// Solver class is abstract
     /// </summary>
-    public static DiagnosticDescriptor SolverClassIsAbstract { get; } =
+    public static readonly DiagnosticDescriptor SolverClassIsAbstract =
         new("CG005",
             "Solver class is abstract",
             "The solver class {0} must not be abstract to allow instantiation by system",

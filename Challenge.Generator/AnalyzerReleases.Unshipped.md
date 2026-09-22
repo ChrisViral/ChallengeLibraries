@@ -3,10 +3,10 @@
 
 ### New Rules
 
-Rule ID | Category | Severity | Notes
---------|----------|----------|-------
-CG001 | SourceGenerator | Error | SolverRunPartsGenerator
-CG002 | SourceGenerator | Error | SolverRunPartsGenerator
-CG003 | SourceGenerator | Error | SolverRunPartsGenerator
-CG004 | SourceGenerator | Error | SolverRunPartsGenerator
-CG005 | SourceGenerator | Error | SolverRunPartsGenerator
+| Rule ID | Category        | Severity | Notes                   |
+|---------|-----------------|----------|-------------------------|
+| CG001   | SourceGenerator | Error    | SolverRunPartsGenerator |
+| CG002   | SourceGenerator | Error    | SolverRunPartsGenerator |
+| CG003   | SourceGenerator | Error    | SolverRunPartsGenerator |
+| CG004   | SourceGenerator | Error    | SolverRunPartsGenerator |
+| CG005   | SourceGenerator | Error    | SolverRunPartsGenerator |

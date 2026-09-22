@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Challenge.Solvers;
-using Microsoft.Extensions.Logging;
 
 namespace Challenge.Generator.Test;
 
