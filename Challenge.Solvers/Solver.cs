@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Diagnostics;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using Challenge.Utils.Extensions.Enums;
 using Challenge.Utils.Extensions.TimeSpans;
@@ -25,7 +24,7 @@ public abstract partial class Solver : IDisposable
     /// </summary>
     private static readonly char[] DefaultSplitters = ['\n'];
 
-    private uint part;
+    private uint currentPart = 1;
     private readonly Stopwatch partWatch = new();
 
     /// <summary>
@@ -59,8 +58,6 @@ public abstract partial class Solver : IDisposable
     {
         // Setup data
         this.Logger = logger;
-        SolverAttribute? attribute = GetType().GetCustomAttribute<SolverAttribute>();
-        this.part = Math.Max(attribute?.Part ?? 1, 1);
 
         splitters ??= DefaultSplitters;
         if (splitters.Length is 0)
@@ -76,7 +73,7 @@ public abstract partial class Solver : IDisposable
     }
 
     /// <summary>
-    /// Runs the solver and starts the Part 1 stopwatch
+    /// Runs the solver and starts the stopwatch
     /// </summary>
     public void RunAndStartStopwatch()
     {
@@ -86,9 +83,27 @@ public abstract partial class Solver : IDisposable
     }
 
     /// <summary>
+    /// Runs the solver for the given part and starts the stopwatch
+    /// </summary>
+    /// <param name="part">Part to run</param>
+    public void RunAndStartStopwatch(uint part)
+    {
+        this.currentPart = part;
+        this.partWatch.Restart();
+        Run(part);
+        this.partWatch.Stop();
+    }
+
+    /// <summary>
     /// Runs the solver on the problem input
     /// </summary>
-    public abstract void Run();
+    public virtual void Run() => throw new NotSupportedException("This solver does not support no-part solves");
+
+    /// <summary>
+    /// Runs the solver on the problem input for the given part
+    /// </summary>
+    /// <param name="part">Part to run</param>
+    public virtual void Run(uint part) => throw new NotSupportedException("This solver does not support per-part solves");
 
     /// <summary>
     /// Logs the answer to Part 1 to the console and results file.<br/>
@@ -110,7 +125,7 @@ public abstract partial class Solver : IDisposable
         }
 
         // Log answer
-        LogPartAnswer(this.Logger, this.part++, answerText);
+        LogPartAnswer(this.Logger, this.currentPart++, answerText);
         LogPartTime(this.Logger, this.partWatch.Elapsed.GetElapsedString());
 
         // Collect GC and then restart watches

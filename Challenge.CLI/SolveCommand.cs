@@ -162,7 +162,6 @@ public sealed partial class SolveCommand(ILoggerFactory loggerFactory, ISolverRe
                                         .SingleOrDefault(t => t.attribute is not null
                                                            && data.Year == t.attribute.Year
                                                            && data.Day == t.attribute.Day
-                                                           && (!data.Part.HasValue || data.Part.Value == t.attribute.Part)
                                                            && (string.IsNullOrEmpty(data.Module) || data.Module == t.attribute.Module))
                                         .type;
             // Check type
@@ -200,24 +199,43 @@ public sealed partial class SolveCommand(ILoggerFactory loggerFactory, ISolverRe
     private async Task<int> RunAllSolvers(IReadOnlyList<(SolverData data, Solver solver)> solvers, CancellationToken token)
     {
 #if DEBUG
-        foreach ((SolverData _, Solver solver) in solvers)
+        if (solvers.Count is 1)
         {
             // In debug mode we want to break at the exception location
-            solver.RunAndStartStopwatch();
+            solvers[0].solver.RunAndStartStopwatch();
+        }
+        else
+        {
+            foreach ((SolverData data, Solver solver) in solvers)
+            {
+                // In debug mode we want to break at the exception location
+                solver.RunAndStartStopwatch(data.Part!.Value);
+            }
         }
 #else
-        foreach ((SolverData data, Solver solver) in solvers)
+        uint? currentPart = null;
+        try
         {
-            try
+            if (solvers.Count is 1)
             {
-                solver.RunAndStartStopwatch();
+                // In debug mode we want to break at the exception location
+                solvers[0].solver.RunAndStartStopwatch();
             }
-            catch (Exception e)
+            else
             {
-                //Log any exceptions that occur
-                LogExceptionWhileRunningSolver(this.Logger, this.Resolver.ChallengeName, this.Year, this.Day, GetPartString(data.Part), this.ModuleString, e);
-                return 1;
+                foreach ((SolverData data, Solver solver) in solvers)
+                {
+                    // In debug mode we want to break at the exception location
+                    currentPart = data.Part;
+                    solver.RunAndStartStopwatch(currentPart!.Value);
+                }
             }
+        }
+        catch (Exception e)
+        {
+            //Log any exceptions that occur
+            LogExceptionWhileRunningSolver(this.Logger, this.Resolver.ChallengeName, this.Year, this.Day, GetPartString(currentPart), this.ModuleString, e);
+            return 1;
         }
 #endif
 

@@ -7,7 +7,7 @@ namespace Challenge.Solvers;
 /// </summary>
 /// <param name="year">Solver year</param>
 /// <param name="day">Solver day</param>
-[PublicAPI, AttributeUsage(AttributeTargets.Class)]
+[PublicAPI, AttributeUsage(AttributeTargets.Class, Inherited = false)]
 public sealed class SolverAttribute(uint year, uint day) : Attribute
 {
     /// <summary>
@@ -19,11 +19,6 @@ public sealed class SolverAttribute(uint year, uint day) : Attribute
     /// Solver day
     /// </summary>
     public uint Day { get; } = day;
-
-    /// <summary>
-    /// Challenge part
-    /// </summary>
-    public uint Part { get; init; }
 
     /// <summary>
     /// Solver module
