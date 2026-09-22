@@ -1,6 +1,7 @@
-﻿using JetBrains.Annotations;
+﻿using System;
+using JetBrains.Annotations;
 
-namespace Challenge.Solvers;
+namespace Challenge.Generator.Attributes;
 
 /// <summary>
 /// Solver data

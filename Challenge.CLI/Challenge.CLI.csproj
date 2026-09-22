@@ -39,6 +39,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Challenge.Generator.Attributes\Challenge.Generator.Attributes.csproj" />
     <ProjectReference Include="..\Challenge.Solvers\Challenge.Solvers.csproj" />
   </ItemGroup>
 
