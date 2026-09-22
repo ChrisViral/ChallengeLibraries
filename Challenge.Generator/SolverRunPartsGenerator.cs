@@ -61,46 +61,6 @@ public sealed class SolverRunPartsGenerator : IIncrementalGenerator
 {
     private const string LOGGER_TYPE_FULL_NAME = "Microsoft.Extensions.Logging.ILogger";
 
-    private static readonly DiagnosticDescriptor MissingBaseClassDescriptor =
-        new("CG001",
-            "Missing Solver base class",
-            $"Class {{0}} is marked with {typeof(SolverAttribute).FullName}, but does not inherit from {typeof(Solver).FullName}",
-            "SourceGenerator",
-            DiagnosticSeverity.Error,
-            true);
-
-    private static readonly DiagnosticDescriptor InvalidPartMethodSignatureDescriptor =
-        new("CG002",
-            "Invalid Solver part method signature",
-            $"Method {{0}} tagged with {typeof(PartAttribute).FullName} should be parameterless",
-            "SourceGenerator",
-            DiagnosticSeverity.Error,
-            true);
-
-    private static readonly DiagnosticDescriptor DuplicatedPartValueDescriptor =
-        new("CG003",
-            "Duplicated Solver part value",
-            "A solver part with the same part value has already been defined in this class",
-            "SourceGenerator",
-            DiagnosticSeverity.Error,
-            true);
-
-    private static readonly DiagnosticDescriptor SolverClassNotPartial =
-        new("CG004",
-            "Solver class is not partial",
-            "The solver class {0} must be partial to allow for source generation when using parts",
-            "SourceGenerator",
-            DiagnosticSeverity.Error,
-            true);
-
-    private static readonly DiagnosticDescriptor SolverClassIsAbstract =
-        new("CG005",
-            "Solver class is abstract",
-            "The solver class {0} must not be abstract to allow instantiation by system",
-            "SourceGenerator",
-            DiagnosticSeverity.Error,
-            true);
-
     /// <inheritdoc/>
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
@@ -154,7 +114,7 @@ public sealed class SolverRunPartsGenerator : IIncrementalGenerator
     {
         if (solver.IsMissingBaseClass)
         {
-            Diagnostic diagnostic = Diagnostic.Create(MissingBaseClassDescriptor,
+            Diagnostic diagnostic = Diagnostic.Create(Diagnostics.MissingBaseClassDescriptor,
                                                       solver.ClassNode.Identifier.GetLocation(),
                                                       solver.ClassSymbol.Name);
             context.ReportDiagnostic(diagnostic);
@@ -163,7 +123,7 @@ public sealed class SolverRunPartsGenerator : IIncrementalGenerator
 
         if (solver.IsMarkedAbstract)
         {
-            Diagnostic diagnostic = Diagnostic.Create(SolverClassIsAbstract,
+            Diagnostic diagnostic = Diagnostic.Create(Diagnostics.SolverClassIsAbstract,
                                                       solver.ClassNode.Identifier.GetLocation(),
                                                       solver.ClassSymbol.Name);
             context.ReportDiagnostic(diagnostic);
@@ -175,7 +135,7 @@ public sealed class SolverRunPartsGenerator : IIncrementalGenerator
 
         if (solver.IsNotMarkedPartial)
         {
-            Diagnostic diagnostic = Diagnostic.Create(SolverClassNotPartial,
+            Diagnostic diagnostic = Diagnostic.Create(Diagnostics.SolverClassNotPartial,
                                                       solver.ClassNode.Identifier.GetLocation(),
                                                       solver.ClassSymbol.Name);
             context.ReportDiagnostic(diagnostic);
@@ -188,7 +148,7 @@ public sealed class SolverRunPartsGenerator : IIncrementalGenerator
         {
             if (partMethodInfo.IsInvalidPartDeclaration)
             {
-                Diagnostic diagnostic = Diagnostic.Create(InvalidPartMethodSignatureDescriptor,
+                Diagnostic diagnostic = Diagnostic.Create(Diagnostics.InvalidPartMethodSignatureDescriptor,
                                                           partMethodInfo.MethodNode.Identifier.GetLocation(),
                                                           partMethodInfo.MethodSymbol.Name);
                 context.ReportDiagnostic(diagnostic);
@@ -197,7 +157,7 @@ public sealed class SolverRunPartsGenerator : IIncrementalGenerator
 
             if (!parts.Add(partMethodInfo.Part))
             {
-                Diagnostic diagnostic = Diagnostic.Create(DuplicatedPartValueDescriptor,
+                Diagnostic diagnostic = Diagnostic.Create(Diagnostics.DuplicatedPartValueDescriptor,
                                                           partMethodInfo.MethodNode.Identifier.GetLocation(),
                                                           partMethodInfo.MethodSymbol.Name);
                 context.ReportDiagnostic(diagnostic);
