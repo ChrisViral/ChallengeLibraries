@@ -9,7 +9,6 @@
     <IsRoslynComponent>true</IsRoslynComponent>
     <RootNamespace>Challenge.Generator</RootNamespace>
     <PackageId>Challenge.Generator</PackageId>
-    <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>Properties\Challenge.Generator.snk</AssemblyOriginatorKeyFile>
     <PlatformTarget>x64</PlatformTarget>
     <DocumentationFile>bin\Debug\Challenge.Generator.xml</DocumentationFile>
@@ -25,6 +24,11 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <PackageScribanIncludeSource>true</PackageScribanIncludeSource>
+    <PolySharpIncludeRuntimeSupportedAttributes>true</PolySharpIncludeRuntimeSupportedAttributes>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="JetBrains.Annotations" Version="2026.2.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="5.9.0">
@@ -32,15 +36,18 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.9.0" />
-    <PackageReference Include="Scriban.Signed" Version="7.5.0" />
+    <PackageReference Include="Scriban" Version="7.5.0" IncludeAssets="Build" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.6.3" />
+    <PackageReference Include="PolySharp" Version="1.15.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
     <None Remove="Challenge.Generator.csproj.DotSettings" />
     <EmbeddedResource Include="Templates\**\*.sbn" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Compile Include="..\Challenge.Solvers\NameExport.cs">
       <Link>Imported\NameExport.cs</Link>
     </Compile>

@@ -185,7 +185,7 @@ public sealed class SolverRunPartsGenerator : IIncrementalGenerator
             Accessibility.Public               => "public",
             _                                  => string.Empty
         };
-        string className = solver.ClassSymbol.ToDisplayString();
+        string className = solver.ClassSymbol.Name;
         context.AddSource($"{className}.generated.cs", SourceText.From(GenerateSource(fileNamespace, classAccess, className, methodsToGenerate)));
     }
 

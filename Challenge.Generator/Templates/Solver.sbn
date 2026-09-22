@@ -3,11 +3,11 @@
 
 namespace {{ namespace }}
 {
-    {{ access }} partial class {{ className }}
+    {{ access }} partial class {{ class_name }}
     {
         /// <inheritdoc />
         /// <exception cref="System.InvalidOperationException">If the <paramref name="part" /> is not defined for this Solver</exception>
-        [System.CodeDom.Compiler.GeneratedCode("{{ toolName }}", "{{ version }}")]
+        [System.CodeDom.Compiler.GeneratedCode("{{ tool_name }}", "{{ version }}")]
         public override void Run(uint part)
         {
             switch (part)
