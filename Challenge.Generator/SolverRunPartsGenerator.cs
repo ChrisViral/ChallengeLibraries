@@ -105,14 +105,13 @@ public sealed class SolverRunPartsGenerator : IIncrementalGenerator
         INamedTypeSymbol? solverSymbol = context.SemanticModel.GetDeclaredSymbol(solverNode, token);
         if (solverSymbol is null) return null;
 
-        if (!solverNode.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword))) return new SolverInfo(solverNode, solverSymbol, [], IsNotMarkedPartial: true);
-
         INamedTypeSymbol solverAttributeSymbol = context.SemanticModel.Compilation.GetTypeByMetadataName(typeof(SolverAttribute).FullName!)!;
         if (!HasAttributeOfType(solverSymbol, solverAttributeSymbol)) return null;
 
         INamedTypeSymbol solverBaseSymbol = context.SemanticModel.Compilation.GetTypeByMetadataName(typeof(Solver).FullName!)!;
         if (!InheritsType(solverSymbol, solverBaseSymbol)) return new SolverInfo(solverNode, solverSymbol, [], IsMissingBaseClass: true);
 
+        bool isNotMarkedPartial = !solverNode.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword));
         INamedTypeSymbol partAttributeSymbol = context.SemanticModel.Compilation.GetTypeByMetadataName(typeof(PartAttribute).FullName!)!;
         PartMethodInfo[] methods =
         [
@@ -125,23 +124,26 @@ public sealed class SolverRunPartsGenerator : IIncrementalGenerator
                         .Select(m => new PartMethodInfo(m.node, m.symbol, (uint)m.attribute.ConstructorArguments[0].Value!, HasValidPartMethodSignature(m.symbol)))!
         ];
 
-        return methods.Length is not 0 ? new SolverInfo(solverNode, solverSymbol, methods) : null;
+        return methods.Length is not 0 ? new SolverInfo(solverNode, solverSymbol, methods, IsNotMarkedPartial: isNotMarkedPartial) : null;
     }
 
     private static void RegisterSolverSource(SourceProductionContext context, SolverInfo solver)
     {
-        if (solver.IsNotMarkedPartial)
+        if (solver.IsMissingBaseClass)
         {
-            Diagnostic diagnostic = Diagnostic.Create(SolverClassNotPartial,
+            Diagnostic diagnostic = Diagnostic.Create(MissingBaseClassDescriptor,
                                                       solver.ClassNode.Identifier.GetLocation(),
                                                       solver.ClassSymbol.Name);
             context.ReportDiagnostic(diagnostic);
             return;
         }
 
-        if (solver.IsMissingBaseClass)
+        // Ignore if no methods to generate
+        if (solver.PartMethods.Count is 0) return;
+
+        if (solver.IsNotMarkedPartial)
         {
-            Diagnostic diagnostic = Diagnostic.Create(MissingBaseClassDescriptor,
+            Diagnostic diagnostic = Diagnostic.Create(SolverClassNotPartial,
                                                       solver.ClassNode.Identifier.GetLocation(),
                                                       solver.ClassSymbol.Name);
             context.ReportDiagnostic(diagnostic);
