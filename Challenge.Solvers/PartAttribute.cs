@@ -6,7 +6,7 @@ namespace Challenge.Solvers;
 /// Solver part attribute
 /// </summary>
 /// <param name="part">Part for this method</param>
-[PublicAPI, AttributeUsage(AttributeTargets.Method, Inherited = false)]
+[PublicAPI, AttributeUsage(AttributeTargets.Method, Inherited = false), MeansImplicitUse(ImplicitUseTargetFlags.Itself)]
 public sealed partial class PartAttribute(uint part) : Attribute
 {
     /// <summary>

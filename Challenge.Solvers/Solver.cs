@@ -12,7 +12,7 @@ namespace Challenge.Solvers;
 /// <summary>
 /// Solver base class
 /// </summary>
-[PublicAPI, UsedImplicitly(ImplicitUseKindFlags.InstantiatedWithFixedConstructorSignature, ImplicitUseTargetFlags.WithInheritors)]
+[PublicAPI]
 public abstract partial class Solver : IDisposable
 {
     /// <summary>

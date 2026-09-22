@@ -33,12 +33,16 @@ internal sealed record PartMethodInfo(MethodDeclarationSyntax MethodNode,
 /// <param name="ClassSymbol">Solver class symbol</param>
 /// <param name="PartMethods">Solver part methods</param>
 /// <param name="IsNotMarkedPartial">If the class isn't marked as partial</param>
+/// <param name="IsMarkedAbstract">If the class is marked as abstract</param>
+/// <param name="IsMissingConstructor">If the class is missing it's required constructor</param>
 /// <param name="IsMissingBaseClass">If the Solver base class is missing</param>
 internal sealed record SolverInfo(ClassDeclarationSyntax ClassNode,
                                   INamedTypeSymbol ClassSymbol,
                                   IReadOnlyList<PartMethodInfo> PartMethods,
-                                  bool IsNotMarkedPartial = false,
-                                  bool IsMissingBaseClass = false);
+                                  bool IsNotMarkedPartial   = false,
+                                  bool IsMarkedAbstract     = false,
+                                  bool IsMissingConstructor = false,
+                                  bool IsMissingBaseClass   = false);
 
 /// <summary>
 /// Solver part method data
@@ -55,6 +59,8 @@ internal readonly record struct PartMethod(string Name, uint Part);
 [Generator]
 public sealed class SolverRunPartsGenerator : IIncrementalGenerator
 {
+    private const string LOGGER_TYPE_FULL_NAME = "Microsoft.Extensions.Logging.ILogger";
+
     private static readonly DiagnosticDescriptor MissingBaseClassDescriptor =
         new("CG001",
             "Missing Solver base class",
@@ -66,7 +72,7 @@ public sealed class SolverRunPartsGenerator : IIncrementalGenerator
     private static readonly DiagnosticDescriptor InvalidPartMethodSignatureDescriptor =
         new("CG002",
             "Invalid Solver part method signature",
-            $"Method {{0}} tagged with {typeof(PartAttribute).FullName} should have a single uint parameter as signature",
+            $"Method {{0}} tagged with {typeof(PartAttribute).FullName} should be parameterless",
             "SourceGenerator",
             DiagnosticSeverity.Error,
             true);
@@ -74,7 +80,7 @@ public sealed class SolverRunPartsGenerator : IIncrementalGenerator
     private static readonly DiagnosticDescriptor DuplicatedPartValueDescriptor =
         new("CG003",
             "Duplicated Solver part value",
-            "A solver part with the same value has already been defined in this class",
+            "A solver part with the same part value has already been defined in this class",
             "SourceGenerator",
             DiagnosticSeverity.Error,
             true);
@@ -83,6 +89,14 @@ public sealed class SolverRunPartsGenerator : IIncrementalGenerator
         new("CG004",
             "Solver class is not partial",
             "The solver class {0} must be partial to allow for source generation when using parts",
+            "SourceGenerator",
+            DiagnosticSeverity.Error,
+            true);
+
+    private static readonly DiagnosticDescriptor SolverClassIsAbstract =
+        new("CG005",
+            "Solver class is abstract",
+            "The solver class {0} must not be abstract to allow instantiation by system",
             "SourceGenerator",
             DiagnosticSeverity.Error,
             true);
@@ -113,6 +127,12 @@ public sealed class SolverRunPartsGenerator : IIncrementalGenerator
         INamedTypeSymbol solverBaseSymbol = context.SemanticModel.Compilation.GetTypeByMetadataName(typeof(Solver).FullName!)!;
         if (!InheritsType(solverSymbol, solverBaseSymbol)) return new SolverInfo(solverNode, solverSymbol, [], IsMissingBaseClass: true);
 
+        bool isMarkedAbstract = solverNode.Modifiers.Any(m => m.IsKind(SyntaxKind.AbstractKeyword));
+        if (isMarkedAbstract) return new SolverInfo(solverNode, solverSymbol, [], IsMarkedAbstract: true);
+
+        INamedTypeSymbol loggerSymbol = context.SemanticModel.Compilation.GetTypeByMetadataName(LOGGER_TYPE_FULL_NAME)!;
+        bool isMissingConstructor = !solverSymbol.Constructors.Any(m => HasValidConstructorSignature(m, loggerSymbol));
+
         bool isNotMarkedPartial = !solverNode.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword));
         INamedTypeSymbol partAttributeSymbol = context.SemanticModel.Compilation.GetTypeByMetadataName(typeof(PartAttribute).FullName!)!;
         PartMethodInfo[] methods =
@@ -123,17 +143,27 @@ public sealed class SolverRunPartsGenerator : IIncrementalGenerator
                         .Where(m => m.symbol is not null)
                         .Select(m => (m.node, m.symbol, attribute: GetAttributeOfType(m.symbol, partAttributeSymbol)))
                         .Where(m => m.attribute is not null)
-                        .Select(m => new PartMethodInfo(m.node, m.symbol, (uint)m.attribute.ConstructorArguments[0].Value!, HasValidPartMethodSignature(m.symbol)))!
+                        .Select(m => new PartMethodInfo(m.node, m.symbol, (uint)m.attribute.ConstructorArguments[0].Value!, !HasValidPartMethodSignature(m.symbol)))!
         ];
 
-        return methods.Length is not 0 ? new SolverInfo(solverNode, solverSymbol, methods, IsNotMarkedPartial: isNotMarkedPartial) : null;
+        return methods.Length is not 0 ? new SolverInfo(solverNode, solverSymbol, methods, IsNotMarkedPartial: isNotMarkedPartial, IsMissingConstructor: isMissingConstructor) : null;
     }
 
+    // ReSharper disable once CognitiveComplexity
     private static void RegisterSolverSource(SourceProductionContext context, SolverInfo solver)
     {
         if (solver.IsMissingBaseClass)
         {
             Diagnostic diagnostic = Diagnostic.Create(MissingBaseClassDescriptor,
+                                                      solver.ClassNode.Identifier.GetLocation(),
+                                                      solver.ClassSymbol.Name);
+            context.ReportDiagnostic(diagnostic);
+            return;
+        }
+
+        if (solver.IsMarkedAbstract)
+        {
+            Diagnostic diagnostic = Diagnostic.Create(SolverClassIsAbstract,
                                                       solver.ClassNode.Identifier.GetLocation(),
                                                       solver.ClassSymbol.Name);
             context.ReportDiagnostic(diagnostic);
@@ -180,17 +210,8 @@ public sealed class SolverRunPartsGenerator : IIncrementalGenerator
         if (methodsToGenerate.Count is 0) return;
 
         methodsToGenerate.Sort((a, b) => a.Part.CompareTo(b.Part));
-        string fileNamespace = solver.ClassSymbol.ContainingNamespace?.ToDisplayString() ?? string.Empty;
-        string classAccess = solver.ClassSymbol.DeclaredAccessibility switch
-        {
-            Accessibility.ProtectedAndInternal => "protected internal",
-            Accessibility.Protected            => "protected",
-            Accessibility.Internal             => "internal",
-            Accessibility.Public               => "public",
-            _                                  => string.Empty
-        };
         string className = solver.ClassSymbol.Name;
-        context.AddSource($"{className}.generated.cs", SourceText.From(GenerateSource(fileNamespace, classAccess, className, methodsToGenerate), Encoding.UTF8));
+        context.AddSource($"{className}.generated.cs", SourceText.From(GenerateSource(className, solver, methodsToGenerate), Encoding.UTF8));
     }
 
     private static bool InheritsType(INamedTypeSymbol? type, INamedTypeSymbol parentType)
@@ -218,12 +239,28 @@ public sealed class SolverRunPartsGenerator : IIncrementalGenerator
 
     private static bool HasValidPartMethodSignature(IMethodSymbol method)
     {
-        return method.Parameters.Length is 1
-            && method.Parameters[0] is { Type.SpecialType: SpecialType.System_UInt32 };
+        return method.Parameters.Length is 0;
     }
 
-    private static string GenerateSource(string fileNamespace, string classAccess, string className, IReadOnlyList<PartMethod> methods)
+    private static bool HasValidConstructorSignature(IMethodSymbol constructor, INamedTypeSymbol loggerSymbol)
     {
+        return constructor.Parameters.Length is 2
+            && constructor.Parameters[0].Type.SpecialType is SpecialType.System_String
+            && SymbolEqualityComparer.Default.Equals(constructor.Parameters[1].Type.OriginalDefinition, loggerSymbol);
+    }
+
+    private static string GenerateSource(string className, SolverInfo solver, IReadOnlyList<PartMethod> methods)
+    {
+        string fileNamespace = solver.ClassSymbol.ContainingNamespace?.ToDisplayString() ?? string.Empty;
+        string classAccess = solver.ClassSymbol.DeclaredAccessibility switch
+        {
+            Accessibility.ProtectedAndInternal => "protected internal",
+            Accessibility.Protected            => "protected",
+            Accessibility.Internal             => "internal",
+            Accessibility.Public               => "public",
+            _                                  => string.Empty
+        };
+
         using Stream? resource = typeof(SolverRunPartsGenerator).Assembly.GetManifestResourceStream("Challenge.Generator.Templates.Solver.sbn");
         if (resource is null) return string.Empty;
 
@@ -241,9 +278,10 @@ public sealed class SolverRunPartsGenerator : IIncrementalGenerator
         }
         return template.Render(new
         {
-            Namespace = fileNamespace,
-            Access = classAccess,
-            ClassName = className,
+            fileNamespace,
+            classAccess,
+            className,
+            solver.IsMissingConstructor,
             ToolName = typeof(SolverRunPartsGenerator).FullName,
             Version = typeof(SolverRunPartsGenerator).Assembly.GetName().Version.ToString(),
             Methods = methodsContainer

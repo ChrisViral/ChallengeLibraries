@@ -7,7 +7,7 @@ namespace Challenge.Solvers;
 /// </summary>
 /// <param name="year">Solver year</param>
 /// <param name="day">Solver day</param>
-[PublicAPI, AttributeUsage(AttributeTargets.Class, Inherited = false)]
+[PublicAPI, AttributeUsage(AttributeTargets.Class, Inherited = false), MeansImplicitUse(ImplicitUseKindFlags.InstantiatedWithFixedConstructorSignature)]
 public sealed partial class SolverAttribute(uint year, uint day) : Attribute
 {
     /// <summary>

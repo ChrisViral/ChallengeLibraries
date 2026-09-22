@@ -1,16 +1,15 @@
-﻿using Challenge.Solvers;
-using JetBrains.Annotations;
+﻿using System.Diagnostics.CodeAnalysis;
+using Challenge.Solvers;
 using Microsoft.Extensions.Logging;
 
 namespace Challenge.Generator.Test;
 
-#pragma warning disable CA1882
-
-[Solver(2000, 1), UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
+[Solver(2000, 1)]
+[SuppressMessage("Performance", "CA1822:Mark members as static")]
 internal sealed partial class GeneratorTest : Solver
 {
     /// <inheritdoc />
-    public GeneratorTest(string input, ILogger logger) : base(input, logger) { }
+    public GeneratorTest() : base(null!, null!) { }
 
     [Part(1)]
     private void RunPart1() { }
