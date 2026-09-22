@@ -33,7 +33,7 @@ public abstract class SolverResolverBase(ILogger logger) : ISolverResolver
     public abstract string ChallengeName { get; }
 
     /// <inheritdoc />
-    public abstract Task<Result<string, Exception>> FetchInput(SolverData data, CancellationToken token = default);
+    public abstract Task<Result<string>> FetchInput(SolverData data, CancellationToken token = default);
 
     /// <inheritdoc />
     public abstract Task<Result> SubmitAnswer(string answer, SolverData data, CancellationToken token = default);
@@ -64,7 +64,7 @@ public abstract partial class SolverResolverBase<T>(ILogger logger, T settings) 
     protected T Settings { get; } = settings;
 
     /// <inheritdoc />
-    public sealed override async Task<Result<string, Exception>> FetchInput(SolverData data, CancellationToken token = default)
+    public sealed override async Task<Result<string>> FetchInput(SolverData data, CancellationToken token = default)
     {
         // Check for the input file
         FileInfo inputFile = new(GetInputFileName(data));
@@ -88,7 +88,7 @@ public abstract partial class SolverResolverBase<T>(ILogger logger, T settings) 
         if (timeSinceLastRequest.TotalSeconds < this.RateLimit.TotalSeconds)
         {
             LogRateLimited(this.Logger, timeSinceLastRequest.TotalSeconds, this.RateLimit.TotalSeconds);
-            return new InvalidOperationException("Request rate limited");
+            return Result.Failure<string>("Request rate limited");
         }
 
         string fetchedInput;
@@ -100,7 +100,7 @@ public abstract partial class SolverResolverBase<T>(ILogger logger, T settings) 
         catch (Exception e)
         {
             // Return exception description in case of failure
-            return Result.Failure<string, Exception>(e);
+            return Result.Failure<string>(e.Message);
         }
 
         // Write back settings with new timestamp

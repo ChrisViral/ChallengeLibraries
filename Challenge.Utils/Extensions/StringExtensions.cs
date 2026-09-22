@@ -1,6 +1,7 @@
 ﻿using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Text;
+using Challenge.Utils.Extensions.Spans;
 using JetBrains.Annotations;
 
 // ReSharper disable once CheckNamespace
@@ -140,19 +141,21 @@ public static class StringExtensions
     /// <param name="value">String value</param>
     extension(string value)
     {
-        /// <inheritdoc cref="string.IsNullOrEmpty" />
-        public bool IsNullEmpty
+        /// <summary>
+        /// If this string is empty
+        /// </summary>
+        public bool IsEmpty
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => string.IsNullOrEmpty(value);
+            get => value.Length is 0;
         }
 
-        /// <inheritdoc cref="string.IsNullOrWhiteSpace" />
-        public bool IsNullWhiteSpace
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => string.IsNullOrWhiteSpace(value);
-        }
+        /// <summary>
+        /// If this string is a palindrome or not (same values when read in either direction)
+        /// </summary>
+        /// <returns><see langword="true"/> if this string contains a palindrome, otherwise <see langword="false"/></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool IsPalindrome() => value.AsSpan().IsPalindrome();
     }
 
     /// <param name="stringBuilder">StringBuilder value</param>

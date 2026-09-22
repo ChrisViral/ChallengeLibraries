@@ -118,7 +118,7 @@ public sealed partial class SolveCommand(ILoggerFactory loggerFactory, ISolverRe
     {
         // Get input data
         SolverData data = new(this.Year, this.Day, part, this.Module);
-        Result<string, Exception> fetchResult = await this.Resolver.FetchInput(data, token).ConfigureAwait(false);
+        Result<string> fetchResult = await this.Resolver.FetchInput(data, token).ConfigureAwait(false);
 
         // Get input data
         if (!fetchResult.TryGetValue(out string? input))
@@ -204,7 +204,6 @@ public sealed partial class SolveCommand(ILoggerFactory loggerFactory, ISolverRe
         {
             // In debug mode we want to break at the exception location
             solver.RunAndStartStopwatch();
-            solver.LogElapsed();
         }
 #else
         foreach ((SolverData data, Solver solver) in solvers)
@@ -212,7 +211,6 @@ public sealed partial class SolveCommand(ILoggerFactory loggerFactory, ISolverRe
             try
             {
                 solver.RunAndStartStopwatch();
-                solver.LogElapsed();
             }
             catch (Exception e)
             {
@@ -222,6 +220,10 @@ public sealed partial class SolveCommand(ILoggerFactory loggerFactory, ISolverRe
             }
         }
 #endif
+
+        TimeSpan totalSolveTime = TimeSpan.Zero;
+        solvers.ForEach(d => totalSolveTime += d.solver.SolveTime);
+        LogElapsed(this.Logger, totalSolveTime.GetElapsedString());
 
         if (this.SubmitAnswer)
         {

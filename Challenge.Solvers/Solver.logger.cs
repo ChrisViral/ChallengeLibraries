@@ -12,7 +12,4 @@ public partial class Solver
 
     [LoggerMessage(LogLevel.Information, "{Message}")]
     static partial void LogMessage(ILogger logger, object message);
-
-    [LoggerMessage(LogLevel.Information, "Total elapsed time: {Elapsed}")]
-    static partial void LogElapsed(ILogger logger, string elapsed);
 }

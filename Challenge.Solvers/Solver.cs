@@ -26,13 +26,17 @@ public abstract partial class Solver : IDisposable
     private static readonly char[] DefaultSplitters = ['\n'];
 
     private uint part;
-    private TimeSpan solveTime;
     private readonly Stopwatch partWatch = new();
 
     /// <summary>
     /// Last answer logged by this solver
     /// </summary>
     public string LastAnswer { get; private set; } = string.Empty;
+
+    /// <summary>
+    /// Total solve time
+    /// </summary>
+    public TimeSpan SolveTime { get; private set; }
 
     /// <summary>
     /// Input data
@@ -95,7 +99,7 @@ public abstract partial class Solver : IDisposable
     {
         // Stop watches
         this.partWatch.Stop();
-        this.solveTime += this.partWatch.Elapsed;
+        this.SolveTime += this.partWatch.Elapsed;
 
         // Get answer and put into clipboard
         string answerText = answer.ToString() ?? string.Empty;
@@ -120,12 +124,6 @@ public abstract partial class Solver : IDisposable
     /// <param name="message">Message to log</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Log<T>(T message) where T : notnull => LogMessage(this.Logger, message);
-
-    /// <summary>
-    /// Logs the total elapsed time of the solver
-    /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void LogElapsed() => LogElapsed(this.Logger, this.solveTime.GetElapsedString());
 
     /// <inheritdoc />
     public virtual void Dispose() => GC.SuppressFinalize(this);

@@ -1,9 +1,12 @@
-﻿using Challenge.Utils.Extensions.Ranges;
+﻿using System.Runtime.CompilerServices;
+using Challenge.Utils.Extensions.Ranges;
 using Challenge.Utils.ValueEnumerators;
 using CommunityToolkit.HighPerformance;
 using CommunityToolkit.HighPerformance.Enumerables;
 using JetBrains.Annotations;
 using ZLinq;
+using ZLinq.Linq;
+using MemoryExtensions = System.MemoryExtensions;
 
 // ReSharper disable once CheckNamespace
 namespace Challenge.Utils.Extensions.Spans;
@@ -49,6 +52,89 @@ public static class SpanExtensions
             span[..^steps].Reverse();
             span[^steps..].Reverse();
             span.Reverse();
+        }
+
+        /// <summary>
+        /// Gets a reversed copy of this span
+        /// </summary>
+        /// <param name="reversed">Reversed span output</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Reversed(out ReadOnlySpan<T> reversed) => span.AsValueEnumerable().Reverse().Enumerator.TryGetSpan(out reversed);
+    }
+
+    /// <param name="span">Span instance</param>
+    /// <typeparam name="T">Value contained in the span</typeparam>
+    extension<T>(Span<T> span) where T : IEquatable<T>
+    {
+        /// <summary>
+        /// If this span is a palindrome or not (same values when read in either direction)
+        /// </summary>
+        /// <returns><see langword="true"/> if this span contains a palindrome, otherwise <see langword="false"/></returns>
+        public bool IsPalindrome()
+        {
+            if (span.Length <= 1) return true;
+
+            int middle = span.Length / 2;
+            for (int i = 0; i < middle; i++)
+            {
+                if (!span[i].Equals(span[^(i + 1)]))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+    }
+
+    /// <param name="span">Span instance</param>
+    /// <typeparam name="T">Value contained in the span</typeparam>
+    extension<T>(ReadOnlySpan<T> span)
+    {
+        /// <summary>
+        /// Gets a reversed copy of this span
+        /// </summary>
+        /// <param name="reversed">Reversed span output</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Reversed(out ReadOnlySpan<T> reversed) => span.AsValueEnumerable().Reverse().Enumerator.TryGetSpan(out reversed);
+    }
+
+    /// <param name="span">Span instance</param>
+    /// <typeparam name="T">Value contained in the span</typeparam>
+    extension<T>(ReadOnlySpan<T> span) where T : IEquatable<T>
+    {
+        /// <summary>
+        /// If this span is a palindrome or not (same values when read in either direction)
+        /// </summary>
+        /// <returns><see langword="true"/> if this span contains a palindrome, otherwise <see langword="false"/></returns>
+        public bool IsPalindrome()
+        {
+            if (span.Length <= 1) return true;
+
+            int middle = span.Length / 2;
+            for (int i = 0; i < middle; i++)
+            {
+                if (!span[i].Equals(span[^(i + 1)]))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+    }
+
+    /// <param name="enumerator">Enumerator instance</param>
+    /// <typeparam name="T">Span element type</typeparam>
+    extension<T>(MemoryExtensions.SpanSplitEnumerator<T> enumerator) where T : IEquatable<T>
+    {
+        /// <summary>
+        /// Gets a ValueEnumerable over this SpanSplitEnumerator
+        /// </summary>
+        /// <value>Enumerable of the splits</value>
+        public ValueEnumerable<FromSpanSplitEnumerator<T>, Range> AsValueEnumerable()
+        {
+            return new ValueEnumerable<FromSpanSplitEnumerator<T>, Range>(new FromSpanSplitEnumerator<T>(enumerator));
         }
     }
 

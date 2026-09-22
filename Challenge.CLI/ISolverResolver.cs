@@ -21,7 +21,7 @@ public interface ISolverResolver
     /// <param name="data">Solver data</param>
     /// <param name="token">Cancellation token</param>
     /// <returns>A <see cref="Result{T}"/> object containing the fetched input, or an error if failed</returns>
-    Task<Result<string, Exception>> FetchInput(SolverData data, CancellationToken token = default);
+    Task<Result<string>> FetchInput(SolverData data, CancellationToken token = default);
 
     /// <summary>
     /// Submits the answer for verification

@@ -7,8 +7,8 @@ public partial class SolveCommand
     [LoggerMessage(LogLevel.Information, "Fetching input for for {Challenge} {Year} {Day}{Part}{Module}")]
     static partial void LogFetchingInput(ILogger logger, string challenge, uint year, uint day, string part, string module);
 
-    [LoggerMessage(LogLevel.Error, "Could not fetch input for {Challenge} {Year} {Day}{Part}{Module}")]
-    static partial void LogInputFetchFailed(ILogger logger, string challenge, uint year, uint day, string part, string module, Exception exception);
+    [LoggerMessage(LogLevel.Error, "Could not fetch input for {Challenge} {Year} {Day}{Part}{Module}: {Message}\n")]
+    static partial void LogInputFetchFailed(ILogger logger, string challenge, uint year, uint day, string part, string module, string message);
 
     [LoggerMessage(LogLevel.Error, "Failed to create the solver for {Challenge} {Year} {Day}{Part}{Module}")]
     static partial void LogFailedCreateSolver(ILogger logger, string challenge, uint year, uint day, string part, string module);
@@ -28,9 +28,12 @@ public partial class SolveCommand
     [LoggerMessage(LogLevel.Information, "Correct answer!")]
     static partial void LogCorrectAnswer(ILogger logger);
 
-    [LoggerMessage(LogLevel.Error, "Submitted answer is incorrect:\n{ErrorMessage}")]
+    [LoggerMessage(LogLevel.Error, "Submitted answer is incorrect:{ErrorMessage}")]
     static partial void LogIncorrectAnswer(ILogger logger, string errorMessage);
 
     [LoggerMessage(LogLevel.Information, "Instantiating solver {Type}")]
     static partial void LogInstantiatingSolver(ILogger logger, string type);
+
+    [LoggerMessage(LogLevel.Information, "Total elapsed time: {Elapsed}")]
+    static partial void LogElapsed(ILogger logger, string elapsed);
 }
