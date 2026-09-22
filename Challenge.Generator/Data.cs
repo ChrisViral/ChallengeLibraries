@@ -12,6 +12,13 @@ namespace Challenge.Generator;
 internal readonly record struct PartMethod(string Name, uint Part);
 
 /// <summary>
+/// Method data
+/// </summary>
+/// <param name="Node">Method syntax node</param>
+/// <param name="Symbol">Method symbol</param>
+internal sealed record MethodData(MethodDeclarationSyntax Node, IMethodSymbol Symbol);
+
+/// <summary>
 /// Part method info
 /// </summary>
 /// <param name="MethodNode">Method node</param>
@@ -21,7 +28,7 @@ internal readonly record struct PartMethod(string Name, uint Part);
 internal sealed record PartMethodInfo(MethodDeclarationSyntax MethodNode,
                                       IMethodSymbol MethodSymbol,
                                       uint Part,
-                                      bool IsInvalidPartDeclaration);
+                                      bool IsInvalidPartDeclaration = false);
 
 /// <summary>
 /// Solver info
@@ -33,10 +40,69 @@ internal sealed record PartMethodInfo(MethodDeclarationSyntax MethodNode,
 /// <param name="IsMarkedAbstract">If the class is marked as abstract</param>
 /// <param name="IsMissingConstructor">If the class is missing it's required constructor</param>
 /// <param name="IsMissingBaseClass">If the Solver base class is missing</param>
+/// <param name="PartRunMethod">The Part Run method override, if found</param>
 internal sealed record SolverInfo(ClassDeclarationSyntax ClassNode,
                                   INamedTypeSymbol ClassSymbol,
                                   IReadOnlyList<PartMethodInfo> PartMethods,
-                                  bool IsNotMarkedPartial   = false,
-                                  bool IsMarkedAbstract     = false,
+                                  bool IsNotMarkedPartial = false,
+                                  bool IsMarkedAbstract = false,
                                   bool IsMissingConstructor = false,
-                                  bool IsMissingBaseClass   = false);
+                                  bool IsMissingBaseClass = false,
+                                  MethodData? PartRunMethod = null)
+{
+    /// <summary>
+    /// Handles all class-level diagnostics
+    /// </summary>
+    /// <param name="context">Source generation context</param>
+    /// <returns><see langword="true"/> if a diagnostic has been emitted or generation is not needed, otherwise <see langword="false"/></returns>
+    public bool HandleClassDiagnostics(SourceProductionContext context)
+    {
+        // Diagnostic if base class is missing
+        if (this.IsMissingBaseClass)
+        {
+            PostDiagnostic(context, Diagnostics.MissingBaseClassDescriptor);
+            return true;
+        }
+
+        // Diagnostic if class is marked abstract
+        if (this.IsMarkedAbstract)
+        {
+            PostDiagnostic(context, Diagnostics.SolverClassIsAbstract);
+            return true;
+        }
+
+        // Ignore if no methods or constructor to generate
+        if (this.PartMethods.Count is 0 && !this.IsMissingConstructor) return true;
+
+        // Diagnostic if not marked as partial
+        if (this.IsNotMarkedPartial)
+        {
+            PostDiagnostic(context, Diagnostics.SolverClassNotPartial);
+            return true;
+        }
+
+        if (this.PartMethods.Count is not 0 && this.PartRunMethod is not null)
+        {
+            Diagnostic diagnostic = Diagnostic.Create(Diagnostics.SolverDefinesPartRunMethod,
+                                                      this.PartRunMethod.Node.Identifier.GetLocation(),
+                                                      this.PartRunMethod.Symbol.Name);
+            context.ReportDiagnostic(diagnostic);
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Posts the given diagnostic
+    /// </summary>
+    /// <param name="context">Source generation context</param>
+    /// <param name="descriptor">Diagnostic descriptor</param>
+    public void PostDiagnostic(SourceProductionContext context, DiagnosticDescriptor descriptor)
+    {
+        Diagnostic diagnostic = Diagnostic.Create(descriptor,
+                                                  this.ClassNode.Identifier.GetLocation(),
+                                                  this.ClassSymbol.Name);
+        context.ReportDiagnostic(diagnostic);
+    }
+}

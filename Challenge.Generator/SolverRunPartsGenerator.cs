@@ -84,22 +84,34 @@ public sealed class SolverRunPartsGenerator : IIncrementalGenerator
         // Check if the type is marked as partial
         bool isNotMarkedPartial = !solverNode.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword));
 
-        // Check if the type contains any methods tagged with the Part attribute
-        INamedTypeSymbol partAttributeSymbol = context.SemanticModel.Compilation.GetTypeByMetadataName(typeof(PartAttribute).FullName!)!;
-        PartMethodInfo[] methods =
+        // Get all methods of the class
+        MethodData[] methods =
         [
             ..solverNode.Members
                         .OfType<MethodDeclarationSyntax>()
-                        .Select(m => (node: m, symbol: context.SemanticModel.GetDeclaredSymbol(m, token)!))
-                        .Where(m => m.symbol is not null)
-                        .Select(m => (m.node, m.symbol, attribute: GetAttributeOfType(m.symbol, partAttributeSymbol)!))
-                        .Where(m => m.attribute is not null)
-                        .Select(m => new PartMethodInfo(m.node, m.symbol, (uint)m.attribute.ConstructorArguments[0].Value!, !HasValidPartMethodSignature(m.symbol)))!
+                        .Select(m => new MethodData(m, context.SemanticModel.GetDeclaredSymbol(m, token)!))
+                         // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+                        .Where(m => m.Symbol is not null)
+        ];
+
+        // Get potential extra Run method
+        MethodData? partRunMethod = methods.FirstOrDefault(IsPartRunMethod);
+
+        // Check if the type contains any methods tagged with the Part attribute
+        INamedTypeSymbol partAttributeSymbol = context.SemanticModel.Compilation.GetTypeByMetadataName(typeof(PartAttribute).FullName!)!;
+        PartMethodInfo[] partMethods =
+        [
+            ..methods.Select(m => (m.Node, m.Symbol, attribute: GetAttributeOfType(m.Symbol, partAttributeSymbol)!))
+                     .Where(m => m.attribute is not null)
+                     .Select(m => new PartMethodInfo(m.Node, m.Symbol, (uint)m.attribute.ConstructorArguments[0].Value!, !HasValidPartMethodSignature(m.Symbol)))!
         ];
 
         // Return a solver info if we have methods to generate or a constructor to generate
-        return methods.Length is not 0 || isMissingConstructor
-                   ? new SolverInfo(solverNode, solverSymbol, methods, IsNotMarkedPartial: isNotMarkedPartial, IsMissingConstructor: isMissingConstructor)
+        return partMethods.Length is not 0 || isMissingConstructor
+                   ? new SolverInfo(solverNode, solverSymbol, partMethods,
+                                    IsNotMarkedPartial: isNotMarkedPartial,
+                                    IsMissingConstructor: isMissingConstructor,
+                                    PartRunMethod: partRunMethod)
                    : null;
     }
 
@@ -108,80 +120,60 @@ public sealed class SolverRunPartsGenerator : IIncrementalGenerator
     /// </summary>
     /// <param name="context">Source generation context</param>
     /// <param name="solver">Solver instance</param>
-    /// ReSharper disable once CognitiveComplexity
     private static void RegisterSolverSource(SourceProductionContext context, SolverInfo solver)
     {
-        // Diagnostic if base class is missing
-        if (solver.IsMissingBaseClass)
-        {
-            Diagnostic diagnostic = Diagnostic.Create(Diagnostics.MissingBaseClassDescriptor,
-                                                      solver.ClassNode.Identifier.GetLocation(),
-                                                      solver.ClassSymbol.Name);
-            context.ReportDiagnostic(diagnostic);
-            return;
-        }
+        // Handle class diagnostics
+        if (solver.HandleClassDiagnostics(context)) return;
 
-        // Diagnostic if class is marked abstract
-        if (solver.IsMarkedAbstract)
-        {
-            Diagnostic diagnostic = Diagnostic.Create(Diagnostics.SolverClassIsAbstract,
-                                                      solver.ClassNode.Identifier.GetLocation(),
-                                                      solver.ClassSymbol.Name);
-            context.ReportDiagnostic(diagnostic);
-            return;
-        }
+        // Generate source code
+        IReadOnlyList<PartMethod> methodsToGenerate = GetMethodsToGenerate(context, solver);
+        string className = solver.ClassSymbol.Name;
+        context.AddSource($"{className}.generated.cs", SourceText.From(GenerateSource(className, solver, methodsToGenerate), Encoding.UTF8));
+    }
 
-        // Ignore if no methods or constructor to generate
-        if (solver.PartMethods.Count is 0 && !solver.IsMissingConstructor) return;
-
-        // Diagnostic if not marked as partial
-        if (solver.IsNotMarkedPartial)
-        {
-            Diagnostic diagnostic = Diagnostic.Create(Diagnostics.SolverClassNotPartial,
-                                                      solver.ClassNode.Identifier.GetLocation(),
-                                                      solver.ClassSymbol.Name);
-            context.ReportDiagnostic(diagnostic);
-            return;
-        }
+    /// <summary>
+    /// Gets a list of methods to generate
+    /// </summary>
+    /// <param name="context">Source generation context</param>
+    /// <param name="solver">Solver info</param>
+    /// <returns>A list of all method data to generate</returns>
+    private static IReadOnlyList<PartMethod> GetMethodsToGenerate(SourceProductionContext context, SolverInfo solver)
+    {
+        // Exit early if no methods found
+        if (solver.PartMethods.Count is 0) return [];
 
         // List methods to generate
         List<PartMethod> methodsToGenerate = new(solver.PartMethods.Count);
-        if (solver.PartMethods.Count is not 0)
+        HashSet<uint> parts = [];
+        foreach (PartMethodInfo partMethodInfo in solver.PartMethods)
         {
-            HashSet<uint> parts = [];
-            foreach (PartMethodInfo partMethodInfo in solver.PartMethods)
+            // Diagnostic if the method has an invalid declaration
+            if (partMethodInfo.IsInvalidPartDeclaration)
             {
-                // Diagnostic if the method has an invalid declaration
-                if (partMethodInfo.IsInvalidPartDeclaration)
-                {
-                    Diagnostic diagnostic = Diagnostic.Create(Diagnostics.InvalidPartMethodSignatureDescriptor,
-                                                              partMethodInfo.MethodNode.Identifier.GetLocation(),
-                                                              partMethodInfo.MethodSymbol.Name);
-                    context.ReportDiagnostic(diagnostic);
-                    continue;
-                }
-
-                // Diagnostic if the part number has been seen before
-                if (!parts.Add(partMethodInfo.Part))
-                {
-                    Diagnostic diagnostic = Diagnostic.Create(Diagnostics.DuplicatedPartValueDescriptor,
-                                                              partMethodInfo.MethodNode.Identifier.GetLocation(),
-                                                              partMethodInfo.MethodSymbol.Name);
-                    context.ReportDiagnostic(diagnostic);
-                    continue;
-                }
-
-                // Add the part method
-                methodsToGenerate.Add(new PartMethod(partMethodInfo.MethodSymbol.Name, partMethodInfo.Part));
+                Diagnostic diagnostic = Diagnostic.Create(Diagnostics.InvalidPartMethodSignatureDescriptor,
+                                                          partMethodInfo.MethodNode.Identifier.GetLocation(),
+                                                          partMethodInfo.MethodSymbol.Name);
+                context.ReportDiagnostic(diagnostic);
+                continue;
             }
 
-            // Sort by part number
-            methodsToGenerate.Sort((a, b) => a.Part.CompareTo(b.Part));
+            // Diagnostic if the part number has been seen before
+            if (!parts.Add(partMethodInfo.Part))
+            {
+                Diagnostic diagnostic = Diagnostic.Create(Diagnostics.DuplicatedPartValueDescriptor,
+                                                          partMethodInfo.MethodNode.Identifier.GetLocation(),
+                                                          partMethodInfo.MethodSymbol.Name);
+                context.ReportDiagnostic(diagnostic);
+                continue;
+            }
+
+            // Add the part method
+            methodsToGenerate.Add(new PartMethod(partMethodInfo.MethodSymbol.Name, partMethodInfo.Part));
         }
 
-        // Generate source code
-        string className = solver.ClassSymbol.Name;
-        context.AddSource($"{className}.generated.cs", SourceText.From(GenerateSource(className, solver, methodsToGenerate), Encoding.UTF8));
+        // Sort by part number
+        methodsToGenerate.Sort((a, b) => a.Part.CompareTo(b.Part));
+        return methodsToGenerate;
     }
 
     /// <summary>
@@ -234,6 +226,17 @@ public sealed class SolverRunPartsGenerator : IIncrementalGenerator
         return constructor.Parameters.Length is 2
             && constructor.Parameters[0].Type.SpecialType is SpecialType.System_String
             && SymbolEqualityComparer.Default.Equals(constructor.Parameters[1].Type.OriginalDefinition, loggerSymbol);
+    }
+
+    /// <summary>
+    /// Checks if the given method is an override of the base Part Run method
+    /// </summary>
+    /// <param name="data">Method data</param>
+    /// <returns><see langword="true"/> if <paramref name="data"/> is a Part Run method override, otherwise <see langword="false"/></returns>
+    private static bool IsPartRunMethod(MethodData data)
+    {
+        return data.Symbol is { Name: nameof(Solver.Run), Parameters.Length: 1 }
+            && data.Symbol.Parameters[0].Type.SpecialType is SpecialType.System_UInt32;
     }
 
     /// <summary>

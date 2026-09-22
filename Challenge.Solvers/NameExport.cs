@@ -8,7 +8,10 @@
 
 namespace Challenge.Solvers
 {
-    public partial class Solver;
+    public partial class Solver
+    {
+        public virtual partial void Run(uint part);
+    }
 
     public partial class SolverAttribute;
 

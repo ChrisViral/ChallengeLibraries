@@ -62,4 +62,15 @@ internal static class Diagnostics
             "SourceGenerator",
             DiagnosticSeverity.Error,
             true);
+
+    /// <summary>
+    /// Solver class is abstract
+    /// </summary>
+    public static readonly DiagnosticDescriptor SolverDefinesPartRunMethod =
+        new("CG006",
+            "Solver defines it's own Part Run method",
+            "The method {0} cannot be defined as it will be generated",
+            "SourceGenerator",
+            DiagnosticSeverity.Error,
+            true);
 }

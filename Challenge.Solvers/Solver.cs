@@ -103,7 +103,7 @@ public abstract partial class Solver : IDisposable
     /// Runs the solver on the problem input for the given part
     /// </summary>
     /// <param name="part">Part to run</param>
-    public virtual void Run(uint part) => throw new NotSupportedException("This solver does not support per-part solves");
+    public virtual partial void Run(uint part) => throw new NotSupportedException("This solver does not support per-part solves");
 
     /// <summary>
     /// Logs the answer to Part 1 to the console and results file.<br/>

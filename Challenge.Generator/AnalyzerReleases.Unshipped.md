@@ -5,6 +5,7 @@
 
 | Rule ID | Category        | Severity | Notes                   |
 |---------|-----------------|----------|-------------------------|
+CG006 | SourceGenerator | Error | Diagnostics
 | CG001   | SourceGenerator | Error    | SolverRunPartsGenerator |
 | CG002   | SourceGenerator | Error    | SolverRunPartsGenerator |
 | CG003   | SourceGenerator | Error    | SolverRunPartsGenerator |
