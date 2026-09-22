@@ -39,7 +39,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Challenge.Solvers.Attributes\Challenge.Solvers.Attributes.csproj" />
     <ProjectReference Include="..\Challenge.Solvers\Challenge.Solvers.csproj" />
   </ItemGroup>
 

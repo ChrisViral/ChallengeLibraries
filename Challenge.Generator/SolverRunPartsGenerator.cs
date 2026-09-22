@@ -53,35 +53,37 @@ internal readonly record struct PartMethod(string Name, uint Part);
 [Generator]
 public sealed class SolverRunPartsGenerator : IIncrementalGenerator
 {
-    private const string SOLVER_BASE_TYPE_NAME = "Challenge.Solvers.Solver";
+    private static readonly DiagnosticDescriptor MissingBaseClassDescriptor =
+        new("CG001",
+            "Missing Solver base class",
+            $"Class {{0}} is marked with {typeof(SolverAttribute).FullName}, but does not inherit from {typeof(Solver).FullName}",
+            "SourceGenerator",
+            DiagnosticSeverity.Error,
+            true);
 
-    private static readonly DiagnosticDescriptor MissingBaseClassDescriptor = new("CG001",
-                                                                                  "Missing Solver base class",
-                                                                                  $"Class {{0}} is marked with {typeof(SolverAttribute).FullName}, but does not inherit from {SOLVER_BASE_TYPE_NAME}",
-                                                                                  "SourceGenerator",
-                                                                                  DiagnosticSeverity.Error,
-                                                                                  true);
+    private static readonly DiagnosticDescriptor InvalidPartMethodSignatureDescriptor =
+        new("CG002",
+            "Invalid Solver part method signature",
+            $"Method {{0}} tagged with {typeof(PartAttribute).FullName} should have a single uint parameter as signature",
+            "SourceGenerator",
+            DiagnosticSeverity.Error,
+            true);
 
-    private static readonly DiagnosticDescriptor InvalidPartMethodSignatureDescriptor = new("CG002",
-                                                                                            "Invalid Solver part method signature",
-                                                                                            $"Methods tagged with {typeof(PartAttribute).FullName} should have a single uint parameter as signature",
-                                                                                            "SourceGenerator",
-                                                                                            DiagnosticSeverity.Error,
-                                                                                            true);
+    private static readonly DiagnosticDescriptor DuplicatedPartValueDescriptor =
+        new("CG003",
+            "Duplicated Solver part value",
+            "A solver part with the same value has already been defined in this class",
+            "SourceGenerator",
+            DiagnosticSeverity.Error,
+            true);
 
-    private static readonly DiagnosticDescriptor DuplicatedPartValueDescriptor = new("CG003",
-                                                                                     "Duplicated Solver part value",
-                                                                                     "A solver part with the same value has already been defined in this class",
-                                                                                     "SourceGenerator",
-                                                                                     DiagnosticSeverity.Error,
-                                                                                     true);
-
-    private static readonly DiagnosticDescriptor SolverClassNotPartial = new("CG004",
-                                                                             "Solver class is not partial",
-                                                                             "The solver class must be partial to allow for source generation",
-                                                                             "SourceGenerator",
-                                                                             DiagnosticSeverity.Error,
-                                                                             true);
+    private static readonly DiagnosticDescriptor SolverClassNotPartial =
+        new("CG004",
+            "Solver class is not partial",
+            "The solver class {0} must be partial to allow for source generation when using parts",
+            "SourceGenerator",
+            DiagnosticSeverity.Error,
+            true);
 
     /// <inheritdoc/>
     public void Initialize(IncrementalGeneratorInitializationContext context)
@@ -105,11 +107,10 @@ public sealed class SolverRunPartsGenerator : IIncrementalGenerator
 
         if (!solverNode.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword))) return new SolverInfo(solverNode, solverSymbol, [], IsNotMarkedPartial: true);
 
-        bool hasSolverAttribute = solverSymbol.GetAttributes()
-                                        .Any(a => a.AttributeClass?.ToDisplayString() == typeof(SolverAttribute).FullName);
-        if (!hasSolverAttribute) return null;
+        INamedTypeSymbol solverAttributeSymbol = context.SemanticModel.Compilation.GetTypeByMetadataName(typeof(SolverAttribute).FullName!)!;
+        if (!HasAttributeOfType(solverSymbol, solverAttributeSymbol)) return null;
 
-        INamedTypeSymbol solverBaseSymbol = context.SemanticModel.Compilation.GetTypeByMetadataName(SOLVER_BASE_TYPE_NAME)!;
+        INamedTypeSymbol solverBaseSymbol = context.SemanticModel.Compilation.GetTypeByMetadataName(typeof(Solver).FullName!)!;
         if (!InheritsType(solverSymbol, solverBaseSymbol)) return new SolverInfo(solverNode, solverSymbol, [], IsMissingBaseClass: true);
 
         INamedTypeSymbol partAttributeSymbol = context.SemanticModel.Compilation.GetTypeByMetadataName(typeof(PartAttribute).FullName!)!;
@@ -123,7 +124,6 @@ public sealed class SolverRunPartsGenerator : IIncrementalGenerator
                         .Where(m => m.attribute is not null)
                         .Select(m => new PartMethodInfo(m.node, m.symbol, (uint)m.attribute.ConstructorArguments[0].Value!, HasValidPartMethodSignature(m.symbol)))!
         ];
-
 
         return methods.Length is not 0 ? new SolverInfo(solverNode, solverSymbol, methods) : null;
     }
@@ -186,7 +186,7 @@ public sealed class SolverRunPartsGenerator : IIncrementalGenerator
             _                                  => string.Empty
         };
         string className = solver.ClassSymbol.ToDisplayString();
-        context.AddSource($"{solver.ClassSymbol.ToDisplayString()}.g.cs", SourceText.From(GenerateSource(fileNamespace, classAccess, className, methodsToGenerate)));
+        context.AddSource($"{className}.generated.cs", SourceText.From(GenerateSource(fileNamespace, classAccess, className, methodsToGenerate)));
     }
 
     private static bool InheritsType(INamedTypeSymbol? type, INamedTypeSymbol parentType)
@@ -198,6 +198,12 @@ public sealed class SolverRunPartsGenerator : IIncrementalGenerator
         }
 
         return false;
+    }
+
+    private static bool HasAttributeOfType(INamedTypeSymbol classSymbol, INamedTypeSymbol attributeSymbol)
+    {
+        return classSymbol.GetAttributes()
+                          .Any(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass?.OriginalDefinition, attributeSymbol));
     }
 
     private static AttributeData GetAttributeOfType(IMethodSymbol methodSymbol, INamedTypeSymbol attributeSymbol)

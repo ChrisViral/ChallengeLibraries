@@ -41,7 +41,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Challenge.Solvers.Attributes\Challenge.Solvers.Attributes.csproj" />
+    <Compile Include="..\Challenge.Solvers\NameExport.cs">
+      <Link>Imported\NameExport.cs</Link>
+    </Compile>
   </ItemGroup>
 
 </Project>

@@ -1,5 +1,4 @@
-﻿using System;
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
 
 namespace Challenge.Solvers;
 
@@ -9,7 +8,7 @@ namespace Challenge.Solvers;
 /// <param name="year">Solver year</param>
 /// <param name="day">Solver day</param>
 [PublicAPI, AttributeUsage(AttributeTargets.Class, Inherited = false)]
-public sealed class SolverAttribute(uint year, uint day) : Attribute
+public sealed partial class SolverAttribute(uint year, uint day) : Attribute
 {
     /// <summary>
     /// Solver year

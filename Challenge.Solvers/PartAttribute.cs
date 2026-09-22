@@ -1,5 +1,4 @@
-﻿using System;
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
 
 namespace Challenge.Solvers;
 
@@ -8,7 +7,7 @@ namespace Challenge.Solvers;
 /// </summary>
 /// <param name="part">Part for this method</param>
 [PublicAPI, AttributeUsage(AttributeTargets.Method, Inherited = false)]
-public sealed class PartAttribute(uint part) : Attribute
+public sealed partial class PartAttribute(uint part) : Attribute
 {
     /// <summary>
     /// Part for this method
