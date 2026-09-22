@@ -11,6 +11,8 @@
     <Configurations>Release;Debug</Configurations>
     <Platforms>x64</Platforms>
     <DocumentationFile>bin\x64\Release\Challenge.Generator.Test.xml</DocumentationFile>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>Generated</CompilerGeneratedFilesOutputPath>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
@@ -30,6 +32,12 @@
 
   <ItemGroup>
     <None Remove="Challenge.Generator.Test.csproj.DotSettings" />
+    <Compile Remove="Generated\**" />
+    <Content Include="Generated\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="JetBrains.ExternalAnnotations" Version="10.2.170" />
   </ItemGroup>
 
 </Project>

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using Challenge.Solvers;
 using JetBrains.Annotations;
@@ -9,6 +10,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 using Scriban;
+using Scriban.Runtime;
 
 namespace Challenge.Generator;
 
@@ -188,7 +190,7 @@ public sealed class SolverRunPartsGenerator : IIncrementalGenerator
             _                                  => string.Empty
         };
         string className = solver.ClassSymbol.Name;
-        context.AddSource($"{className}.generated.cs", SourceText.From(GenerateSource(fileNamespace, classAccess, className, methodsToGenerate)));
+        context.AddSource($"{className}.generated.cs", SourceText.From(GenerateSource(fileNamespace, classAccess, className, methodsToGenerate), Encoding.UTF8));
     }
 
     private static bool InheritsType(INamedTypeSymbol? type, INamedTypeSymbol parentType)
@@ -220,13 +222,23 @@ public sealed class SolverRunPartsGenerator : IIncrementalGenerator
             && method.Parameters[0] is { Type.SpecialType: SpecialType.System_UInt32 };
     }
 
-    private static string GenerateSource(string fileNamespace, string classAccess, string className, IReadOnlyCollection<PartMethod> methods)
+    private static string GenerateSource(string fileNamespace, string classAccess, string className, IReadOnlyList<PartMethod> methods)
     {
         using Stream? resource = typeof(SolverRunPartsGenerator).Assembly.GetManifestResourceStream("Challenge.Generator.Templates.Solver.sbn");
         if (resource is null) return string.Empty;
 
         using StreamReader reader = new(resource);
         Template template = Template.Parse(reader.ReadToEnd());
+        ScriptObject[] methodsContainer = new ScriptObject[methods.Count];
+        for (int i = 0; i < methods.Count; i++)
+        {
+            PartMethod method = methods[i];
+            methodsContainer[i] = new ScriptObject
+            {
+                [nameof(PartMethod.Name)] = method.Name,
+                [nameof(PartMethod.Part)] = method.Part
+            };
+        }
         return template.Render(new
         {
             Namespace = fileNamespace,
@@ -234,7 +246,7 @@ public sealed class SolverRunPartsGenerator : IIncrementalGenerator
             ClassName = className,
             ToolName = typeof(SolverRunPartsGenerator).FullName,
             Version = typeof(SolverRunPartsGenerator).Assembly.GetName().Version.ToString(),
-            Methods = methods
+            Methods = methodsContainer
         });
     }
 }

@@ -4,6 +4,8 @@ using Microsoft.Extensions.Logging;
 
 namespace Challenge.Generator.Test;
 
+#pragma warning disable CA1882
+
 [Solver(2000, 1), UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
 internal sealed partial class GeneratorTest : Solver
 {
@@ -11,11 +13,11 @@ internal sealed partial class GeneratorTest : Solver
     public GeneratorTest(string input, ILogger logger) : base(input, logger) { }
 
     [Part(1)]
-    private static void RunPart1() { }
+    private void RunPart1() { }
 
     [Part(2)]
-    private static void RunPart2() { }
+    private void RunPart2() { }
 
     [Part(3)]
-    private static void RunPart3() { }
+    private void RunPart3() { }
 }

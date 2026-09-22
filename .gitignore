@@ -60,6 +60,7 @@ nunit-*.xml
 *.cmdlineargs.json
 *.DotSettings.user
 .claude/
+Generated/
 
 # Puzzle files files
 [Ii]nput/

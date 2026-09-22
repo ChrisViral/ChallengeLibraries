@@ -7,19 +7,18 @@ namespace {{ namespace }}
     {
         /// <inheritdoc />
         /// <exception cref="System.InvalidOperationException">If the <paramref name="part" /> is not defined for this Solver</exception>
-        [System.CodeDom.Compiler.GeneratedCode("{{ tool_name }}", "{{ version }}")]
+        [global::System.CodeDom.Compiler.GeneratedCode("{{ tool_name }}", "{{ version }}")]
         public override void Run(uint part)
         {
             switch (part)
             {
-                {{ for method in methods }}
-                    case {{ method.part }}:
-                        {{ method.name }}();
-                        break;
-
-                {{ end }}
+{{ for method in methods }}
+                case {{ method.Part }}:
+                    {{ method.Name }}();
+                    break;
+{{ end }}
                 default:
-                    throw new System.InvalidOperationException($"Part {part} is not defined for this Solver");
+                    throw new global::System.InvalidOperationException($"Part {part} is not defined for this Solver");
             }
         }
      }
