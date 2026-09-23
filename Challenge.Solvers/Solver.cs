@@ -198,7 +198,7 @@ public abstract class Solver<T> : Solver
     /// <summary>
     /// Parsed input data
     /// </summary>
-    protected new T Data { get; private set; }
+    protected new T Data { get; private set; } = default!;
 
     /// <summary>
     /// If the Solver has been disposed or not
@@ -212,24 +212,7 @@ public abstract class Solver<T> : Solver
     /// <param name="splitters">Splitting characters, defaults to newline only</param>
     /// <param name="options">Input parsing options, defaults to removing empty entries and trimming entries</param>
     /// <exception cref="InvalidOperationException">Thrown if the conversion to <typeparamref name="T"/> fails</exception>
-    protected Solver(ILogger logger, char[]? splitters = null, StringSplitOptions options = DEFAULT_OPTIONS) : base(logger, splitters, options)
-    {
-#if !DEBUG
-        //Convert is intended to be a Pure function, therefore it should be safe to call in the constructor
-        //ReSharper disable once VirtualMemberCallInConstructor
-        this.Data = Convert(base.Data);
-#else
-        try
-        {
-            //ReSharper disable once VirtualMemberCallInConstructor
-            this.Data = Convert(base.Data);
-        }
-        catch (Exception e)
-        {
-            throw new InvalidOperationException($"Could not convert the string array input to the {typeof(T)} type using the {nameof(Convert)} method.", e);
-        }
-#endif
-    }
+    protected Solver(ILogger logger, char[]? splitters = null, StringSplitOptions options = DEFAULT_OPTIONS) : base(logger, splitters, options) { }
 
     /// <inheritdoc />
     public override void ParseInput(string input)

@@ -112,6 +112,7 @@ public sealed partial class SolveCommand(ILoggerFactory loggerFactory, ISolverRe
                 if (inputs.IsEmpty) return 1;
             }
 
+            LogRunningSolvers(this.Logger);
             return await RunAllSolvers(solver, inputs, cliContext.CancellationToken).ConfigureAwait(false);
         }
     }
@@ -193,9 +194,9 @@ public sealed partial class SolveCommand(ILoggerFactory loggerFactory, ISolverRe
         if (inputs.Count is 1)
         {
             // In debug mode we want to break at the exception location
+            LogRunSolver(this.Logger, this.Resolver.ChallengeName, this.Year, this.Day, string.Empty, this.Module);
             solver.ParseInput(inputs[0].input);
             LogInputParsed(this.Logger, solver.ParseTime.GetElapsedString());
-
             solver.RunAndStartStopwatch();
         }
         else
@@ -203,9 +204,9 @@ public sealed partial class SolveCommand(ILoggerFactory loggerFactory, ISolverRe
             foreach ((SolverData data, string input) in inputs)
             {
                 // In debug mode we want to break at the exception location
+                LogRunSolver(this.Logger, this.Resolver.ChallengeName, this.Year, this.Day, GetPartString(data.Part), this.Module);
                 solver.ParseInput(input);
                 LogInputParsed(this.Logger, solver.ParseTime.GetElapsedString());
-
                 solver.RunAndStartStopwatch(data.Part!.Value);
             }
         }
@@ -216,9 +217,9 @@ public sealed partial class SolveCommand(ILoggerFactory loggerFactory, ISolverRe
             if (inputs.Count is 1)
             {
                 // In debug mode we want to break at the exception location
+                LogRunSolver(this.Logger, this.Resolver.ChallengeName, this.Year, this.Day, string.Empty, this.Module);
                 solver.ParseInput(inputs[0].input);
                 LogInputParsed(this.Logger, solver.ParseTime.GetElapsedString());
-
                 solver.RunAndStartStopwatch();
             }
             else
@@ -226,9 +227,9 @@ public sealed partial class SolveCommand(ILoggerFactory loggerFactory, ISolverRe
                 foreach ((SolverData data, string input) in inputs)
                 {
                     // In debug mode we want to break at the exception location
+                    LogRunSolver(this.Logger, this.Resolver.ChallengeName, this.Year, this.Day, GetPartString(data.Part), this.Module);
                     solver.ParseInput(input);
                     LogInputParsed(this.Logger, solver.ParseTime.GetElapsedString());
-
                     solver.RunAndStartStopwatch(data.Part!.Value);
                 }
             }

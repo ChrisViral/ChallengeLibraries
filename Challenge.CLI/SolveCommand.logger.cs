@@ -13,7 +13,7 @@ public partial class SolveCommand
     [LoggerMessage(LogLevel.Error, "Failed to create the solver for {Challenge} {Year} {Day}{Module}")]
     static partial void LogFailedCreateSolver(ILogger logger, string challenge, uint year, uint day, string module);
 
-    [LoggerMessage(LogLevel.Error, "Running solver for {Challenge} {Year} {Day}{Part}{Module}")]
+    [LoggerMessage(LogLevel.Information, "Running solver for {Challenge} {Year} {Day}{Part}{Module}")]
     static partial void LogRunSolver(ILogger logger, string challenge, uint year, uint day, string part, string module);
 
     [LoggerMessage(LogLevel.Error, "Encountered exception while creating solver for {Challenge} {Year} {Day}{Module}")]
@@ -22,7 +22,7 @@ public partial class SolveCommand
     [LoggerMessage(LogLevel.Error, "Encountered exception while running solver for {Challenge} {Year} {Day}{Part}{Module}")]
     static partial void LogExceptionWhileRunningSolver(ILogger logger, string challenge, uint year, uint day, string part, string module, Exception exception);
 
-    [LoggerMessage(LogLevel.Information, "Problem input parsed in: {Elapsed}\n")]
+    [LoggerMessage(LogLevel.Information, "Problem input parsed in: {Elapsed}")]
     static partial void LogInputParsed(ILogger logger, string elapsed);
 
     [LoggerMessage(LogLevel.Information, "Correct answer!")]
@@ -36,4 +36,7 @@ public partial class SolveCommand
 
     [LoggerMessage(LogLevel.Information, "Total elapsed time: {Elapsed}")]
     static partial void LogElapsed(ILogger logger, string elapsed);
+
+    [LoggerMessage(LogLevel.Information, "All inputs fetched, running solvers...\n")]
+    static partial void LogRunningSolvers(ILogger logger);
 }
