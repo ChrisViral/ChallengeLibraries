@@ -24,13 +24,20 @@ public abstract partial class Solver : IDisposable
     /// </summary>
     private static readonly char[] DefaultSplitters = ['\n'];
 
-    private uint currentPart = 1;
+    private readonly StringSplitOptions splitOptions;
+    private readonly char[] splitters;
     private readonly Stopwatch partWatch = new();
+    private uint currentPart = 1;
 
     /// <summary>
     /// Last answer logged by this solver
     /// </summary>
     public string LastAnswer { get; private set; } = string.Empty;
+
+    /// <summary>
+    /// Total parse time
+    /// </summary>
+    public TimeSpan ParseTime { get; protected set; }
 
     /// <summary>
     /// Total solve time
@@ -40,7 +47,7 @@ public abstract partial class Solver : IDisposable
     /// <summary>
     /// Input data
     /// </summary>
-    protected string[] Data { get; }
+    protected string[] Data { get; private set; } = [];
 
     /// <summary>
     /// Logger instance
@@ -50,26 +57,36 @@ public abstract partial class Solver : IDisposable
     /// <summary>
     /// Creates a new <see cref="Solver"/> from the specified file
     /// </summary>
-    /// <param name="input">Puzzle input</param>
     /// <param name="logger">Logger instance</param>
     /// <param name="splitters">Splitting characters, defaults to newline only</param>
     /// <param name="options">Input parsing options, defaults to removing empty entries and trimming entries</param>
-    protected Solver(string input, ILogger logger, char[]? splitters = null, StringSplitOptions options = DEFAULT_OPTIONS)
+    protected Solver(ILogger logger, char[]? splitters = null, StringSplitOptions options = DEFAULT_OPTIONS)
     {
         // Setup data
         this.Logger = logger;
+        this.splitters = splitters ?? DefaultSplitters;
+        this.splitOptions = options;
+    }
 
-        splitters ??= DefaultSplitters;
-        if (splitters.Length is 0)
+    /// <summary>
+    /// Sets the challenge input
+    /// </summary>
+    /// <param name="input">Challenge input</param>
+    public virtual void ParseInput(string input)
+    {
+        Stopwatch parseWatch = Stopwatch.StartNew();
+        if (this.splitters.Length is 0)
         {
             // If no spliter, set data as is
-            this.Data = options.HasFlags(StringSplitOptions.TrimEntries)? [input] : [input.Trim()];
+            this.Data = this.splitOptions.HasFlags(StringSplitOptions.TrimEntries)? [input] : [input.Trim()];
         }
         else
         {
             // Else split data
-            this.Data = input.Split(splitters, options);
+            this.Data = input.Split(this.splitters, this.splitOptions);
         }
+        parseWatch.Stop();
+        this.ParseTime = parseWatch.Elapsed;
     }
 
     /// <summary>
@@ -79,7 +96,6 @@ public abstract partial class Solver : IDisposable
     {
         this.partWatch.Restart();
         Run();
-        this.partWatch.Stop();
     }
 
     /// <summary>
@@ -91,7 +107,6 @@ public abstract partial class Solver : IDisposable
         this.currentPart = part;
         this.partWatch.Restart();
         Run(part);
-        this.partWatch.Stop();
     }
 
     /// <summary>
@@ -183,7 +198,7 @@ public abstract class Solver<T> : Solver
     /// <summary>
     /// Parsed input data
     /// </summary>
-    protected new T Data { get; }
+    protected new T Data { get; private set; }
 
     /// <summary>
     /// If the Solver has been disposed or not
@@ -191,14 +206,13 @@ public abstract class Solver<T> : Solver
     private bool IsDisposed { get; set; }
 
     /// <summary>
-    /// Creates a new generic <see cref="Solver{T}"/> with the input data properly parsed
+    /// Creates a new generic <see cref="Solver{T}"/>
     /// </summary>
-    /// <param name="input">Puzzle input</param>
     /// <param name="logger">Logger instance</param>
     /// <param name="splitters">Splitting characters, defaults to newline only</param>
     /// <param name="options">Input parsing options, defaults to removing empty entries and trimming entries</param>
     /// <exception cref="InvalidOperationException">Thrown if the conversion to <typeparamref name="T"/> fails</exception>
-    protected Solver(string input, ILogger logger, char[]? splitters = null, StringSplitOptions options = DEFAULT_OPTIONS) : base(input, logger, splitters, options)
+    protected Solver(ILogger logger, char[]? splitters = null, StringSplitOptions options = DEFAULT_OPTIONS) : base(logger, splitters, options)
     {
 #if !DEBUG
         //Convert is intended to be a Pure function, therefore it should be safe to call in the constructor
@@ -215,6 +229,27 @@ public abstract class Solver<T> : Solver
             throw new InvalidOperationException($"Could not convert the string array input to the {typeof(T)} type using the {nameof(Convert)} method.", e);
         }
 #endif
+    }
+
+    /// <inheritdoc />
+    public override void ParseInput(string input)
+    {
+        base.ParseInput(input);
+        Stopwatch parseWatch = Stopwatch.StartNew();
+#if DEBUG
+        this.Data = Convert(base.Data);
+#else
+        try
+        {
+            this.Data = Convert(base.Data);
+        }
+        catch (Exception e)
+        {
+            throw new InvalidOperationException($"Could not convert the string array input to the {typeof(T)} type using the {nameof(Convert)} method.", e);
+        }
+#endif
+        parseWatch.Stop();
+        this.ParseTime += parseWatch.Elapsed;
     }
 
     /// <inheritdoc cref="IDisposable.Dispose"/>
@@ -247,6 +282,5 @@ public abstract class Solver<T> : Solver
     /// </summary>
     /// <param name="rawInput">Input value</param>
     /// <returns>Target converted value</returns>
-    [Pure]
     protected abstract T Convert(string[] rawInput);
 }

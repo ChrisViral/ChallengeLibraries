@@ -8,7 +8,7 @@ namespace {{ file_namespace }}
 {{ if is_missing_constructor }}
         /// <inheritdoc />
         [global::System.CodeDom.Compiler.GeneratedCode("{{ tool_name }}", "{{ version }}")]
-        public {{ class_name }}(global::System.String input, global::Microsoft.Extensions.Logging.ILogger logger) : base(input, logger) { }
+        public {{ class_name }}(global::Microsoft.Extensions.Logging.ILogger logger) : base(logger) { }
 {{ end }}
 {{ if has_parts }}
         /// <inheritdoc />

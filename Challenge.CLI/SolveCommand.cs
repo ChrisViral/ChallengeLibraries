@@ -1,9 +1,7 @@
-﻿using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Challenge.Solvers;
 using Challenge.Utils.Extensions.Collections;
-using Challenge.Utils.Extensions.Enumerables;
 using Challenge.Utils.Extensions.TimeSpans;
 using CSharpFunctionalExtensions;
 using DotMake.CommandLine;
@@ -21,7 +19,7 @@ public sealed partial class SolveCommand(ILoggerFactory loggerFactory, ISolverRe
     /// <summary> Solver type </summary>
     private static readonly Type BaseSolverType = typeof(Solver);
     /// <summary> Solver constructor parameter types </summary>
-    private static readonly Type[] ConstructorParamTypes = [typeof(string), typeof(ILogger)];
+    private static readonly Type[] ConstructorParamTypes = [typeof(ILogger)];
 
     private readonly ILoggerFactory loggerFactory = loggerFactory;
 
@@ -79,42 +77,52 @@ public sealed partial class SolveCommand(ILoggerFactory loggerFactory, ISolverRe
     /// ReSharper disable once CognitiveComplexity
     public async Task<int> RunAsync(CliContext cliContext)
     {
-        // Fetch input
-        LogFetchingInput(this.Logger, this.Resolver.ChallengeName, this.Year, this.Day, this.PartsString, this.ModuleString);
-
-        List<(SolverData data, Solver solver)> solvers;
-        if (this.Parts.IsEmpty)
+        // Load solver
+        if (!TryLoadSolver(out Solver? solver))
         {
-            solvers = new List<(SolverData, Solver)>(1);
-            (SolverData data, Solver? solver) fetched = await GetSolver(null, cliContext.CancellationToken).ConfigureAwait(false);
-            if (fetched.solver is null) return 1;
-
-            solvers.Add(fetched!);
+            LogFailedCreateSolver(this.Logger, this.Resolver.ChallengeName, this.Year, this.Day, this.ModuleString);
+            return 1;
         }
-        else
-        {
-            solvers = new List<(SolverData, Solver)>(this.Parts.Length);
-            foreach (uint part in this.Parts)
-            {
-                (SolverData data, Solver? solver) fetched = await GetSolver(part, cliContext.CancellationToken).ConfigureAwait(false);
-                if (fetched.solver is null) break;
 
-                solvers.Add(fetched!);
+        using (solver)
+        {
+            // Fetch input
+            LogFetchingInput(this.Logger, this.Resolver.ChallengeName, this.Year, this.Day, this.PartsString, this.ModuleString);
+
+            List<(SolverData, string)> inputs;
+            if (this.Parts.IsEmpty)
+            {
+                inputs = new List<(SolverData, string)>(1);
+                (SolverData, string input) input = await GetInput(null, cliContext.CancellationToken).ConfigureAwait(false);
+                if (string.IsNullOrEmpty(input.input)) return 1;
+
+                inputs.Add(input);
+            }
+            else
+            {
+                inputs = new List<(SolverData, string)>(this.Parts.Length);
+                foreach (uint part in this.Parts)
+                {
+                    (SolverData, string input) input = await GetInput(part, cliContext.CancellationToken).ConfigureAwait(false);
+                    if (string.IsNullOrEmpty(input.input)) break;
+
+                    inputs.Add(input);
+                }
+
+                if (inputs.IsEmpty) return 1;
             }
 
-            if (solvers.IsEmpty) return 1;
+            return await RunAllSolvers(solver, inputs, cliContext.CancellationToken).ConfigureAwait(false);
         }
-
-        return await RunAllSolvers(solvers, cliContext.CancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
-    /// Get the solver for the given part
+    /// Get the input for a given part
     /// </summary>
     /// <param name="part">Solver part</param>
     /// <param name="token">Cancellation token</param>
     /// <returns>A tuple containing the solver data and loaded solver</returns>
-    private async Task<(SolverData, Solver?)> GetSolver(uint? part, CancellationToken token)
+    private async Task<(SolverData, string)> GetInput(uint? part, CancellationToken token)
     {
         // Get input data
         SolverData data = new(this.Year, this.Day, part, this.Module);
@@ -124,30 +132,17 @@ public sealed partial class SolveCommand(ILoggerFactory loggerFactory, ISolverRe
         if (!fetchResult.TryGetValue(out string? input))
         {
             LogInputFetchFailed(this.Logger, this.Resolver.ChallengeName, this.Year, this.Day, GetPartString(data.Part), this.ModuleString, fetchResult.Error);
-            return (default, null);
+            return (default, string.Empty);
         }
-
-        // Create solver instance
-        if (!TryCreateSolver(input, data, out Solver? solver, out TimeSpan parseTime))
-        {
-            LogFailedCreateSolver(this.Logger, this.Resolver.ChallengeName, this.Year, this.Day, GetPartString(data.Part), this.ModuleString);
-            return (default, null);
-        }
-
-        // Log input parse time
-        LogInputParsed(this.Logger, parseTime.GetElapsedString());
-        return (data, solver);
+        return (data, input);
     }
 
     /// <summary>
-    /// Tries to create
+    /// Tries to load the solver for the current year/day
     /// </summary>
-    /// <param name="input"></param>
-    /// <param name="data"></param>
-    /// <param name="solver"></param>
-    /// <param name="parseTime"></param>
-    /// <returns></returns>
-    private bool TryCreateSolver(string input, SolverData data, [NotNullWhen(true)] out Solver? solver, out TimeSpan parseTime)
+    /// <param name="solver">Loaded solver</param>
+    /// <returns><see langword="true"/> if the solver was loaded, otherwise <see langword="false"/></returns>
+    private bool TryLoadSolver([NotNullWhen(true)] out Solver? solver)
     {
         try
         {
@@ -160,32 +155,27 @@ public sealed partial class SolveCommand(ILoggerFactory loggerFactory, ISolverRe
                                                  && t.GetConstructor(ConstructorParamTypes) is not null)
                                         .Select(t => (type: t, attribute: t.GetCustomAttribute<SolverAttribute>()))
                                         .SingleOrDefault(t => t.attribute is not null
-                                                           && data.Year == t.attribute.Year
-                                                           && data.Day == t.attribute.Day
-                                                           && (string.IsNullOrEmpty(data.Module) || data.Module == t.attribute.Module))
+                                                           && this.Year == t.attribute.Year
+                                                           && this.Day == t.attribute.Day
+                                                           && (string.IsNullOrEmpty(this.Module) || this.Module == t.attribute.Module))
                                         .type;
             // Check type
             if (solverType is null)
             {
                 solver = null;
-                parseTime = TimeSpan.Zero;
                 return false;
             }
 
             // Instantiate solver
             LogInstantiatingSolver(this.Logger, solverType.FullName ?? string.Empty);
-            Stopwatch parseWatch = Stopwatch.StartNew();
-            solver = Activator.CreateInstance(solverType, input, this.loggerFactory.CreateLogger(solverType)) as Solver;
-            parseWatch.Stop();
-            parseTime = parseWatch.Elapsed;
+            solver = Activator.CreateInstance(solverType, this.loggerFactory.CreateLogger(solverType)) as Solver;
             return solver is not null;
         }
         catch (Exception e)
         {
             // Log exceptions
-            LogExceptionWhileCreatingSolver(this.Logger, this.Resolver.ChallengeName, this.Year, this.Day, GetPartString(data.Part), this.ModuleString, e);
+            LogExceptionWhileCreatingSolver(this.Logger, this.Resolver.ChallengeName, this.Year, this.Day, this.ModuleString, e);
             solver = null;
-            parseTime = TimeSpan.Zero;
             return false;
         }
     }
@@ -193,22 +183,29 @@ public sealed partial class SolveCommand(ILoggerFactory loggerFactory, ISolverRe
     /// <summary>
     /// Runs all solvers
     /// </summary>
-    /// <param name="solvers">Solvers to run</param>
+    /// <param name="solver">Solver to run</param>
+    /// <param name="inputs">Solver inputs</param>
     /// <param name="token">Cancellation token</param>
     /// <returns>Program return code</returns>
-    private async Task<int> RunAllSolvers(IReadOnlyList<(SolverData data, Solver solver)> solvers, CancellationToken token)
+    private async Task<int> RunAllSolvers(Solver solver, List<(SolverData data, string input)> inputs, CancellationToken token)
     {
 #if DEBUG
-        if (solvers.Count is 1)
+        if (inputs.Count is 1)
         {
             // In debug mode we want to break at the exception location
-            solvers[0].solver.RunAndStartStopwatch();
+            solver.ParseInput(inputs[0].input);
+            LogInputParsed(this.Logger, solver.ParseTime.GetElapsedString());
+
+            solver.RunAndStartStopwatch();
         }
         else
         {
-            foreach ((SolverData data, Solver solver) in solvers)
+            foreach ((SolverData data, string input) in inputs)
             {
                 // In debug mode we want to break at the exception location
+                solver.ParseInput(input);
+                LogInputParsed(this.Logger, solver.ParseTime.GetElapsedString());
+
                 solver.RunAndStartStopwatch(data.Part!.Value);
             }
         }
@@ -216,18 +213,23 @@ public sealed partial class SolveCommand(ILoggerFactory loggerFactory, ISolverRe
         uint? currentPart = null;
         try
         {
-            if (solvers.Count is 1)
+            if (inputs.Count is 1)
             {
                 // In debug mode we want to break at the exception location
-                solvers[0].solver.RunAndStartStopwatch();
+                solver.ParseInput(inputs[0].input);
+                LogInputParsed(this.Logger, solver.ParseTime.GetElapsedString());
+
+                solver.RunAndStartStopwatch();
             }
             else
             {
-                foreach ((SolverData data, Solver solver) in solvers)
+                foreach ((SolverData data, string input) in inputs)
                 {
                     // In debug mode we want to break at the exception location
-                    currentPart = data.Part;
-                    solver.RunAndStartStopwatch(currentPart!.Value);
+                    solver.ParseInput(input);
+                    LogInputParsed(this.Logger, solver.ParseTime.GetElapsedString());
+
+                    solver.RunAndStartStopwatch(data.Part!.Value);
                 }
             }
         }
@@ -239,13 +241,11 @@ public sealed partial class SolveCommand(ILoggerFactory loggerFactory, ISolverRe
         }
 #endif
 
-        TimeSpan totalSolveTime = TimeSpan.Zero;
-        solvers.ForEach(d => totalSolveTime += d.solver.SolveTime);
-        LogElapsed(this.Logger, totalSolveTime.GetElapsedString());
+        LogElapsed(this.Logger, solver.SolveTime.GetElapsedString());
 
         if (this.SubmitAnswer)
         {
-            (SolverData data, Solver solver) = solvers[^1];
+            (SolverData data, _) = inputs[^1];
             Result submitResult = await this.Resolver.SubmitAnswer(solver.LastAnswer, data, token).ConfigureAwait(false);
             if (!submitResult.TryGetError(out string? error))
             {
@@ -257,7 +257,6 @@ public sealed partial class SolveCommand(ILoggerFactory loggerFactory, ISolverRe
             }
         }
 
-        solvers.ForEach(d => d.solver.Dispose());
         return 0;
     }
 

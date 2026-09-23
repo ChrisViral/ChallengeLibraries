@@ -16,6 +16,17 @@
     <Platforms>x64</Platforms>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <BuildYear>$([System.DateTime]::UtcNow.ToString("yyyy"))</BuildYear>
+    <BuildMonth>$([System.DateTime]::UtcNow.ToString("MM"))</BuildMonth>
+    <MonthStart>$([System.DateTime]::Parse($([System.DateTime]::UtcNow.ToString("yyyy-MM-01"))))</MonthStart>
+    <MonthMinutes>$([System.Math]::Floor($([System.DateTime]::UtcNow.Subtract($(MonthStart)).TotalMinutes)))</MonthMinutes>
+    <DaySeconds>$([System.Math]::Floor($([System.DateTime]::UtcNow.Subtract($([System.DateTime]::Today)).TotalMinutes)))</DaySeconds>
+    <Version>$(BuildYear).$(BuildMonth).$(MonthMinutes).$(DaySeconds)</Version>
+    <AssemblyVersion>$(Version)</AssemblyVersion>
+    <FileVersion>$(Version)</FileVersion>
+  </PropertyGroup>
+
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>

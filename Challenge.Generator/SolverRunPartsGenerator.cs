@@ -223,9 +223,8 @@ public sealed class SolverRunPartsGenerator : IIncrementalGenerator
     /// <returns><see langword="true"/> if <paramref name="constructor"/> is a valid Solver constructor, otherwise <see langword="false"/></returns>
     private static bool IsValidConstructorSignature(IMethodSymbol constructor, INamedTypeSymbol loggerSymbol)
     {
-        return constructor.Parameters.Length is 2
-            && constructor.Parameters[0].Type.SpecialType is SpecialType.System_String
-            && SymbolEqualityComparer.Default.Equals(constructor.Parameters[1].Type.OriginalDefinition, loggerSymbol);
+        return constructor.Parameters.Length is 1
+            && SymbolEqualityComparer.Default.Equals(constructor.Parameters[0].Type.OriginalDefinition, loggerSymbol);
     }
 
     /// <summary>
