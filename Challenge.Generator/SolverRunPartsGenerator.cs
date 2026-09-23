@@ -127,8 +127,7 @@ public sealed class SolverRunPartsGenerator : IIncrementalGenerator
 
         // Generate source code
         IReadOnlyList<PartMethod> methodsToGenerate = GetMethodsToGenerate(context, solver);
-        string className = solver.ClassSymbol.Name;
-        context.AddSource($"{className}.generated.cs", SourceText.From(GenerateSource(className, solver, methodsToGenerate), Encoding.UTF8));
+        context.AddSource($"{solver.ClassSymbol.ToDisplayString()}.generated.cs", SourceText.From(GenerateSource(solver, methodsToGenerate), Encoding.UTF8));
     }
 
     /// <summary>
@@ -241,12 +240,12 @@ public sealed class SolverRunPartsGenerator : IIncrementalGenerator
     /// <summary>
     /// Generates the source code for a given solver
     /// </summary>
-    /// <param name="className">Solver class name</param>
     /// <param name="solver">Solver data</param>
     /// <param name="methods">Part methods</param>
     /// <returns>The generated source code for this <paramref name="solver"/></returns>
-    private static string GenerateSource(string className, SolverInfo solver, IReadOnlyList<PartMethod> methods)
+    private static string GenerateSource(SolverInfo solver, IReadOnlyList<PartMethod> methods)
     {
+        string className = solver.ClassSymbol.Name;
         string fileNamespace = solver.ClassSymbol.ContainingNamespace?.ToDisplayString() ?? string.Empty;
         string classAccess = solver.ClassSymbol.DeclaredAccessibility switch
         {

@@ -23,6 +23,10 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(CI)' == 'true' ">
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\Challenge.Generator\Challenge.Generator.csproj"
                       OutputItemType="Analyzer"

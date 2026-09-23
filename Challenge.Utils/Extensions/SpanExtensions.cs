@@ -5,7 +5,6 @@ using CommunityToolkit.HighPerformance;
 using CommunityToolkit.HighPerformance.Enumerables;
 using JetBrains.Annotations;
 using ZLinq;
-using ZLinq.Linq;
 using MemoryExtensions = System.MemoryExtensions;
 
 // ReSharper disable once CheckNamespace

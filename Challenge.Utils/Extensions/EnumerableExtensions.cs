@@ -4,7 +4,6 @@ using Challenge.Utils.ValueEnumerators;
 using CommunityToolkit.HighPerformance.Enumerables;
 using JetBrains.Annotations;
 using ZLinq;
-using ZLinq.Linq;
 
 // ReSharper disable once CheckNamespace
 namespace Challenge.Utils.Extensions.Enumerables;

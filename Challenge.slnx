@@ -6,6 +6,9 @@
     <File Path=".editorconfig" />
     <File Path="README.md" />
   </Folder>
+  <Folder Name="/Workflows/">
+    <File Path=".github/workflows/dotnet-build.yml" />
+  </Folder>
   <Project Path="Challenge.CLI/Challenge.CLI.csproj">
     <Platform Project="x64" />
   </Project>
