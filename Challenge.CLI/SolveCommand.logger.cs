@@ -31,12 +31,15 @@ public partial class SolveCommand
     [LoggerMessage(LogLevel.Error, "Submitted answer is incorrect:{ErrorMessage}")]
     static partial void LogIncorrectAnswer(ILogger logger, string errorMessage);
 
-    [LoggerMessage(LogLevel.Information, "Instantiating solver {Type}")]
-    static partial void LogInstantiatingSolver(ILogger logger, string type);
+    [LoggerMessage(LogLevel.Information, "Instantiating solver for {Year} {Day}")]
+    static partial void LogInstantiatingSolver(ILogger logger, uint year, uint day);
 
     [LoggerMessage(LogLevel.Information, "Total elapsed time: {Elapsed}")]
     static partial void LogElapsed(ILogger logger, string elapsed);
 
     [LoggerMessage(LogLevel.Information, "All inputs fetched, running solvers...\n")]
     static partial void LogRunningSolvers(ILogger logger);
+
+    [LoggerMessage(LogLevel.Information, "Solver of type {Type} has been loaded")]
+    static partial void LogSolverLoaded(ILogger logger, string type);
 }

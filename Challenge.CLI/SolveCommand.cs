@@ -1,13 +1,10 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
 using Challenge.Solvers;
 using Challenge.Utils.Extensions.Collections;
 using Challenge.Utils.Extensions.TimeSpans;
 using CSharpFunctionalExtensions;
 using DotMake.CommandLine;
 using Microsoft.Extensions.Logging;
-using ZLinq;
-using SolverAttribute = Challenge.Solvers.Attributes.SolverAttribute;
 
 namespace Challenge.CLI;
 
@@ -17,11 +14,6 @@ namespace Challenge.CLI;
 [CliCommand(Description = "Solve a specific challenge instance", Name = "solve", Parent = typeof(ChallengeCommand))]
 public sealed partial class SolveCommand(ILoggerFactory loggerFactory, ISolverResolver resolver) : ICliRunAsyncWithContextAndReturn
 {
-    /// <summary> Solver type </summary>
-    private static readonly Type BaseSolverType = typeof(Solver);
-    /// <summary> Solver constructor parameter types </summary>
-    private static readonly Type[] ConstructorParamTypes = [typeof(ILogger)];
-
     private readonly ILoggerFactory loggerFactory = loggerFactory;
 
     /// <summary>
@@ -148,30 +140,9 @@ public sealed partial class SolveCommand(ILoggerFactory loggerFactory, ISolverRe
     {
         try
         {
-            // Get solver type
-            Type? solverType = AppDomain.CurrentDomain
-                                        .GetAssemblies()
-                                        .SelectMany(a => a.GetTypes())
-                                        .Where(t => t is { IsClass: true, IsAbstract: false, IsGenericType: false }
-                                                 && t.IsAssignableTo(BaseSolverType)
-                                                 && t.GetConstructor(ConstructorParamTypes) is not null)
-                                        .Select(t => (type: t, attribute: t.GetCustomAttribute<SolverAttribute>()))
-                                        .SingleOrDefault(t => t.attribute is not null
-                                                           && this.Year == t.attribute.Year
-                                                           && this.Day == t.attribute.Day
-                                                           && (string.IsNullOrEmpty(this.Module) || this.Module == t.attribute.Module))
-                                        .type;
-            // Check type
-            if (solverType is null)
-            {
-                solver = null;
-                return false;
-            }
-
             // Instantiate solver
-            LogInstantiatingSolver(this.Logger, solverType.FullName ?? string.Empty);
-            solver = Activator.CreateInstance(solverType, this.loggerFactory.CreateLogger(solverType)) as Solver;
-            return solver is not null;
+            LogInstantiatingSolver(this.Logger, this.Year, this.Day);
+            solver = this.Resolver.GetSolver(this.Year, this.Day, this.loggerFactory.CreateLogger<Solver>());
         }
         catch (Exception e)
         {
@@ -180,6 +151,12 @@ public sealed partial class SolveCommand(ILoggerFactory loggerFactory, ISolverRe
             solver = null;
             return false;
         }
+
+        if (solver is null) return false;
+
+        LogSolverLoaded(this.Logger, solver.GetType().FullName!);
+        return true;
+
     }
 
     /// <summary>
