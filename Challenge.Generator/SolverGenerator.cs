@@ -108,7 +108,8 @@ public sealed class SolverGenerator : IIncrementalGenerator
         if (isMarkedAbstract) return new SolverInfo(solverNode, solverSymbol, [], year, day, IsMarkedAbstract: true);
 
         // Check if the type has the required constructor
-        bool isMissingConstructor = !solverSymbol.Constructors.Any(IsValidConstructorSignature);
+        ImmutableArray<IMethodSymbol> nonDefaultConstructors = [..solverSymbol.Constructors.Where(IsNonDefaultConstructor)];
+        if (nonDefaultConstructors.Length is not 0) return new SolverInfo(solverNode, solverBaseSymbol, [], year, day, NonDefaultConstructors: nonDefaultConstructors);
 
         // Check if the type is marked as partial
         bool isNotMarkedPartial = !solverNode.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword));
@@ -138,7 +139,6 @@ public sealed class SolverGenerator : IIncrementalGenerator
         // Return a solver info if we have methods to generate or a constructor to generate
         return new SolverInfo(solverNode, solverSymbol, partMethods, year, day,
                               IsNotMarkedPartial: isNotMarkedPartial,
-                              IsMissingConstructor: isMissingConstructor,
                               PartRunMethod: partRunMethod);
     }
 
@@ -182,7 +182,7 @@ public sealed class SolverGenerator : IIncrementalGenerator
         // Handle class diagnostics
         if (solver.HandleClassDiagnostics(context)) return;
 
-        if (solver.PartMethods.Count is not 0 && !solver.IsMissingConstructor) return;
+        if (solver.PartMethods.Count is 0) return;
 
         // Generate source code
         IReadOnlyList<PartMethod> methodsToGenerate = GetMethodsToGenerate(context, solver);
@@ -233,7 +233,6 @@ public sealed class SolverGenerator : IIncrementalGenerator
             fileNamespace,
             classAccess,
             className,
-            solver.IsMissingConstructor,
             toolName,
             Version,
             methods
@@ -370,11 +369,11 @@ public sealed class SolverGenerator : IIncrementalGenerator
     }
 
     /// <summary>
-    /// Checks if the given constructor is a valid Solver constructor
+    /// Checks if the given constructor is non-default or not
     /// </summary>
     /// <param name="constructor">Constructor to check</param>
-    /// <returns><see langword="true"/> if <paramref name="constructor"/> is a valid Solver constructor, otherwise <see langword="false"/></returns>
-    private static bool IsValidConstructorSignature(IMethodSymbol constructor) => constructor.Parameters.Length is 0;
+    /// <returns><see langword="true"/> if <paramref name="constructor"/> is non-default, otherwise <see langword="false"/></returns>
+    private static bool IsNonDefaultConstructor(IMethodSymbol constructor) => constructor.Parameters.Length is not 0;
 
     /// <summary>
     /// Checks if the given method is a Part Run method

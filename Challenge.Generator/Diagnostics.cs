@@ -95,4 +95,15 @@ internal static class Diagnostics
             "SourceGenerator",
             DiagnosticSeverity.Error,
             true);
+
+    /// <summary>
+    /// Solver class defines non-default constructors
+    /// </summary>
+    public static readonly DiagnosticDescriptor NonDefaultConstructorDefined =
+        new("CG009",
+            "Solver class defines non-default constructors",
+            "The class {0} can only define default constructors",
+            "SourceGenerator",
+            DiagnosticSeverity.Error,
+            true);
 }

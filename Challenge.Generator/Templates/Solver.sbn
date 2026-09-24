@@ -7,12 +7,6 @@ namespace {{ file_namespace }};
 {{~ end ~}}
 {{ class_access }} partial class {{ class_name }}
 {
-    {{~ if is_missing_constructor ~}}
-    /// <inheritdoc />
-    [global::System.CodeDom.Compiler.GeneratedCode("{{ tool_name }}", "{{ version }}")]
-    public {{ class_name }}() { }
-
-    {{~ end ~}}
     {{~ if !methods.empty? ~}}
     /// <inheritdoc />
     /// <exception cref="global::System.InvalidOperationException">If the <paramref name="part" /> is not defined for this Solver</exception>

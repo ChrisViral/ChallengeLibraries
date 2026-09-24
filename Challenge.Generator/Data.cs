@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -42,8 +43,8 @@ internal sealed record PartMethodInfo(MethodDeclarationSyntax MethodNode,
 /// <param name="IsNestedType">If the class is a nested type</param>
 /// <param name="IsNotMarkedPartial">If the class isn't marked as partial</param>
 /// <param name="IsMarkedAbstract">If the class is marked as abstract</param>
-/// <param name="IsMissingConstructor">If the class is missing it's required constructor</param>
 /// <param name="IsMissingBaseClass">If the Solver base class is missing</param>
+/// <param name="NonDefaultConstructors">Non-default constructors defined on the class</param>
 /// <param name="PartRunMethod">The Part Run method override, if found</param>
 internal sealed record SolverInfo(ClassDeclarationSyntax ClassNode,
                                   INamedTypeSymbol ClassSymbol,
@@ -52,8 +53,8 @@ internal sealed record SolverInfo(ClassDeclarationSyntax ClassNode,
                                   bool IsNestedType = false,
                                   bool IsNotMarkedPartial = false,
                                   bool IsMarkedAbstract = false,
-                                  bool IsMissingConstructor = false,
                                   bool IsMissingBaseClass = false,
+                                  ImmutableArray<IMethodSymbol>? NonDefaultConstructors = null,
                                   MethodData? PartRunMethod = null)
 {
     /// <summary>
@@ -84,8 +85,22 @@ internal sealed record SolverInfo(ClassDeclarationSyntax ClassNode,
             return true;
         }
 
+        if (this.NonDefaultConstructors is { Length: > 0 })
+        {
+            foreach (IMethodSymbol constructor in this.NonDefaultConstructors)
+            {
+                ConstructorDeclarationSyntax constructorSyntaxNode = (ConstructorDeclarationSyntax)constructor.DeclaringSyntaxReferences.First().GetSyntax();
+                Diagnostic diagnostic = Diagnostic.Create(Diagnostics.NonDefaultConstructorDefined,
+                                                          constructorSyntaxNode.Identifier.GetLocation(),
+                                                          this.ClassSymbol.Name);
+                context.ReportDiagnostic(diagnostic);
+            }
+
+            return true;
+        }
+
         // Ignore if no methods or constructor to generate
-        if (this.PartMethods.Count is 0 && !this.IsMissingConstructor) return true;
+        if (this.PartMethods.Count is 0) return true;
 
         // Diagnostic if not marked as partial
         if (this.IsNotMarkedPartial)
@@ -94,7 +109,7 @@ internal sealed record SolverInfo(ClassDeclarationSyntax ClassNode,
             return true;
         }
 
-        if (this.PartMethods.Count is not 0 && this.PartRunMethod is not null)
+        if (this.PartRunMethod is not null)
         {
             Diagnostic diagnostic = Diagnostic.Create(Diagnostics.MethodCannotBeDefined,
                                                       this.PartRunMethod.Node.Identifier.GetLocation(),

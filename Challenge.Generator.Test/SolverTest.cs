@@ -8,10 +8,13 @@ namespace Challenge.Generator.Test;
 [SuppressMessage("Performance", "CA1822:Mark members as static")]
 internal sealed partial class SolverTest : Solver
 {
+    [Part(1)]
     private void RunPart1() { }
 
+    [Part(2)]
     private void RunPart2() { }
 
+    [Part(3)]
     private void RunPart3() { }
 }
 
@@ -19,10 +22,13 @@ internal sealed partial class SolverTest : Solver
 [SuppressMessage("Performance", "CA1822:Mark members as static")]
 internal sealed partial class SolverTest2 : Solver
 {
+    [Part(1)]
     private void RunPart1() { }
 
+    [Part(2)]
     private void RunPart2() { }
 
+    [Part(3)]
     private void RunPart3() { }
 }
 
@@ -30,17 +36,17 @@ internal sealed partial class SolverTest2 : Solver
 internal partial class SolverTableTest : ISolverResolver
 {
     /// <inheritdoc />
-    public string ChallengeName { get; } = "";
+    public string ChallengeName { get; } = "Test";
 
     /// <inheritdoc />
-    public async Task<Result<string>> FetchInput(SolverData data, CancellationToken token = default)
+    public Task<Result<string>> FetchInput(SolverData data, CancellationToken token = default)
     {
-        return default;
+        return null!;
     }
 
     /// <inheritdoc />
-    public async Task<Result> SubmitAnswer(string answer, SolverData data, CancellationToken token = default)
+    public Task<Result> SubmitAnswer(string answer, SolverData data, CancellationToken token = default)
     {
-        return default;
+        return null!;
     }
 }
