@@ -36,6 +36,8 @@ internal sealed record PartMethodInfo(MethodDeclarationSyntax MethodNode,
 /// <param name="ClassNode">Solver class node</param>
 /// <param name="ClassSymbol">Solver class symbol</param>
 /// <param name="PartMethods">Solver part methods</param>
+/// <param name="Year">Solver year</param>
+/// <param name="Day">Solver part</param>
 /// <param name="IsNotMarkedPartial">If the class isn't marked as partial</param>
 /// <param name="IsMarkedAbstract">If the class is marked as abstract</param>
 /// <param name="IsMissingConstructor">If the class is missing it's required constructor</param>
@@ -44,6 +46,7 @@ internal sealed record PartMethodInfo(MethodDeclarationSyntax MethodNode,
 internal sealed record SolverInfo(ClassDeclarationSyntax ClassNode,
                                   INamedTypeSymbol ClassSymbol,
                                   IReadOnlyList<PartMethodInfo> PartMethods,
+                                  uint Year, uint Day,
                                   bool IsNotMarkedPartial = false,
                                   bool IsMarkedAbstract = false,
                                   bool IsMissingConstructor = false,
@@ -77,7 +80,7 @@ internal sealed record SolverInfo(ClassDeclarationSyntax ClassNode,
         // Diagnostic if not marked as partial
         if (this.IsNotMarkedPartial)
         {
-            PostDiagnostic(context, Diagnostics.SolverClassNotPartial);
+            PostDiagnostic(context, Diagnostics.ClassNotPartial);
             return true;
         }
 
@@ -98,7 +101,48 @@ internal sealed record SolverInfo(ClassDeclarationSyntax ClassNode,
     /// </summary>
     /// <param name="context">Source generation context</param>
     /// <param name="descriptor">Diagnostic descriptor</param>
-    public void PostDiagnostic(SourceProductionContext context, DiagnosticDescriptor descriptor)
+    private void PostDiagnostic(SourceProductionContext context, DiagnosticDescriptor descriptor)
+    {
+        Diagnostic diagnostic = Diagnostic.Create(descriptor,
+                                                  this.ClassNode.Identifier.GetLocation(),
+                                                  this.ClassSymbol.Name);
+        context.ReportDiagnostic(diagnostic);
+    }
+}
+
+/// <summary>
+/// Solver Table info
+/// </summary>
+/// <param name="ClassNode">Solver Table class node</param>
+/// <param name="ClassSymbol">Solver Table class symbol</param>
+/// <param name="IsNotMarkedPartial">If the class isn't marked as partial</param>
+internal sealed record SolverTableInfo(ClassDeclarationSyntax ClassNode,
+                                       INamedTypeSymbol ClassSymbol,
+                                       bool IsNotMarkedPartial = false)
+{
+    /// <summary>
+    /// Handles all class-level diagnostics
+    /// </summary>
+    /// <param name="context">Source generation context</param>
+    /// <returns><see langword="true"/> if a diagnostic has been emitted or generation is not needed, otherwise <see langword="false"/></returns>
+    public bool HandleClassDiagnostics(SourceProductionContext context)
+    {
+        // Diagnostic if class is marked abstract
+        if (this.IsNotMarkedPartial)
+        {
+            PostDiagnostic(context, Diagnostics.ClassNotPartial);
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Posts the given diagnostic
+    /// </summary>
+    /// <param name="context">Source generation context</param>
+    /// <param name="descriptor">Diagnostic descriptor</param>
+    private void PostDiagnostic(SourceProductionContext context, DiagnosticDescriptor descriptor)
     {
         Diagnostic diagnostic = Diagnostic.Create(descriptor,
                                                   this.ClassNode.Identifier.GetLocation(),

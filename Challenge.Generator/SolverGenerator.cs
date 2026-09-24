@@ -1,9 +1,13 @@
+using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using Challenge.Solvers;
+using Challenge.Solvers.Attributes;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -18,32 +22,47 @@ namespace Challenge.Generator;
 /// When using the source code as a baseline, an incremental source generator is preferable because it reduces the performance overhead.
 /// </summary>
 [Generator]
-public sealed class SolverRunPartsGenerator : IIncrementalGenerator
+public sealed class SolverGenerator : IIncrementalGenerator
 {
-    /// <summary>
-    /// ILogger type name
-    /// </summary>
     private const string LOGGER_TYPE_FULL_NAME = "Microsoft.Extensions.Logging.ILogger";
+
+
+    /// <summary>
+    /// This assembly's version string
+    /// </summary>
+    private static string Version
+    {
+        get
+        {
+            Version version = typeof(SolverGenerator).Assembly.GetName().Version;
+            return $"{version.Major}.{version.Minor:D2}.{version.Build:D4}.{version.Revision:D4}";
+        }
+    }
 
     /// <inheritdoc/>
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        // Find valid solvers
-        IncrementalValuesProvider<SolverInfo?> solvers = context.SyntaxProvider
-                                                                .CreateSyntaxProvider(FindSolvers, GetSolverInfo)
-                                                                .Where(s => s is not null);
+        // Find valid solvers and generate source for them
+        IncrementalValuesProvider<SolverInfo> allSolvers = context.SyntaxProvider
+                                                                  .CreateSyntaxProvider(FindClassesWithAttributes, GetSolverInfo)
+                                                                  .Where(s => s is not null)!;
+        context.RegisterSourceOutput(allSolvers, GenerateSolverSource);
 
-        // Register them and generate
-        context.RegisterSourceOutput(solvers, RegisterSolverSource!);
+        // Generate solver match source
+        IncrementalValuesProvider<(SolverTableInfo, ImmutableArray<SolverInfo>)> allSolverTables = context.SyntaxProvider
+                                                                                                          .CreateSyntaxProvider(FindClassesWithAttributes, GetSolverTableInfo)
+                                                                                                          .Where(s => s is not null)
+                                                                                                          .Combine(allSolvers.Collect())!;
+        context.RegisterSourceOutput(allSolverTables, GenerateSolverTableSource);
     }
 
     /// <summary>
-    /// Findd potential solver objects
+    /// Find potential solver objects
     /// </summary>
     /// <param name="node">Current syntax node</param>
     /// <param name="token">Cancellation token</param>
     /// <returns><see landword="true"/> if the node could be a solver, otherwise <see landword="false"/></returns>
-    private static bool FindSolvers(SyntaxNode node, CancellationToken token)
+    private static bool FindClassesWithAttributes(SyntaxNode node, CancellationToken token)
     {
         token.ThrowIfCancellationRequested();
 
@@ -55,7 +74,7 @@ public sealed class SolverRunPartsGenerator : IIncrementalGenerator
     /// </summary>
     /// <param name="context">Generation context</param>
     /// <param name="token">Cancellation token</param>
-    /// <returns></returns>
+    /// <returns>The parsed solver info</returns>
     private static SolverInfo? GetSolverInfo(GeneratorSyntaxContext context, CancellationToken token)
     {
         token.ThrowIfCancellationRequested();
@@ -67,15 +86,22 @@ public sealed class SolverRunPartsGenerator : IIncrementalGenerator
 
         // Check if type has the solver attribute
         INamedTypeSymbol? solverAttributeSymbol = context.SemanticModel.Compilation.GetTypeByMetadataName(typeof(SolverAttribute).FullName!);
-        if (solverAttributeSymbol is null || GetAttributeOfType(solverSymbol, solverAttributeSymbol) is null) return null;
+        if (solverAttributeSymbol is null) return null;
+
+        AttributeData? solverAttribute = GetAttributeOfType(solverSymbol, solverAttributeSymbol);
+        if (solverAttribute is null) return null;
+
+        // Get the attribute args
+        uint year = (uint)solverAttribute.ConstructorArguments[0].Value!;
+        uint day  = (uint)solverAttribute.ConstructorArguments[1].Value!;
 
         // Check if the type inherits Solver
         INamedTypeSymbol solverBaseSymbol = context.SemanticModel.Compilation.GetTypeByMetadataName(typeof(Solver).FullName!)!;
-        if (!InheritsType(solverSymbol, solverBaseSymbol)) return new SolverInfo(solverNode, solverSymbol, [], IsMissingBaseClass: true);
+        if (!InheritsType(solverSymbol, solverBaseSymbol)) return new SolverInfo(solverNode, solverSymbol, [], year, day, IsMissingBaseClass: true);
 
         // Check if the type is marked as abstract
         bool isMarkedAbstract = solverNode.Modifiers.Any(m => m.IsKind(SyntaxKind.AbstractKeyword));
-        if (isMarkedAbstract) return new SolverInfo(solverNode, solverSymbol, [], IsMarkedAbstract: true);
+        if (isMarkedAbstract) return new SolverInfo(solverNode, solverSymbol, [], year, day, IsMarkedAbstract: true);
 
         // Check if the type has the required constructor
         INamedTypeSymbol loggerSymbol = context.SemanticModel.Compilation.GetTypeByMetadataName(LOGGER_TYPE_FULL_NAME)!;
@@ -108,7 +134,7 @@ public sealed class SolverRunPartsGenerator : IIncrementalGenerator
 
         // Return a solver info if we have methods to generate or a constructor to generate
         return partMethods.Length is not 0 || isMissingConstructor
-                   ? new SolverInfo(solverNode, solverSymbol, partMethods,
+                   ? new SolverInfo(solverNode, solverSymbol, partMethods, year, day,
                                     IsNotMarkedPartial: isNotMarkedPartial,
                                     IsMissingConstructor: isMissingConstructor,
                                     PartRunMethod: partRunMethod)
@@ -116,18 +142,132 @@ public sealed class SolverRunPartsGenerator : IIncrementalGenerator
     }
 
     /// <summary>
+    /// Gets the solver table info for a given context node
+    /// </summary>
+    /// <param name="context">Generation context</param>
+    /// <param name="token">Cancellation token</param>
+    /// <returns>The parsed solver table info</returns>
+    private static SolverTableInfo? GetSolverTableInfo(GeneratorSyntaxContext context, CancellationToken token)
+    {
+        token.ThrowIfCancellationRequested();
+
+        // Get the class symbol
+        ClassDeclarationSyntax solverNode = (ClassDeclarationSyntax)context.Node;
+        INamedTypeSymbol? solverSymbol = context.SemanticModel.GetDeclaredSymbol(solverNode, token);
+        if (solverSymbol is null) return null;
+
+        // Check if type has the solver table attribute
+        INamedTypeSymbol? solverAttributeSymbol = context.SemanticModel.Compilation.GetTypeByMetadataName(typeof(SolverTableAttribute).FullName!);
+        if (solverAttributeSymbol is null ||GetAttributeOfType(solverSymbol, solverAttributeSymbol) is null) return null;
+
+        // Check if the type is marked as partial
+        bool isNotMarkedPartial = !solverNode.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword));
+        return new SolverTableInfo(solverNode, solverSymbol, IsNotMarkedPartial: isNotMarkedPartial);
+    }
+
+    /// <summary>
     /// Register solvers for source generation
     /// </summary>
     /// <param name="context">Source generation context</param>
     /// <param name="solver">Solver instance</param>
-    private static void RegisterSolverSource(SourceProductionContext context, SolverInfo solver)
+    private static void GenerateSolverSource(SourceProductionContext context, SolverInfo solver)
     {
         // Handle class diagnostics
         if (solver.HandleClassDiagnostics(context)) return;
 
         // Generate source code
         IReadOnlyList<PartMethod> methodsToGenerate = GetMethodsToGenerate(context, solver);
-        context.AddSource($"{solver.ClassSymbol.ToDisplayString()}.generated.cs", SourceText.From(GenerateSource(solver, methodsToGenerate), Encoding.UTF8));
+        context.AddSource($"{solver.ClassSymbol.ToDisplayString()}.generated.cs", SourceText.From(GenerateSolverSource(solver, methodsToGenerate), Encoding.UTF8));
+    }
+
+    /// <summary>
+    /// Registers solver tables for source generation
+    /// </summary>
+    /// <param name="context">Source generation context</param>
+    /// <param name="solverTable">Solver table instance</param>
+    private static void GenerateSolverTableSource(SourceProductionContext context, (SolverTableInfo info, ImmutableArray<SolverInfo> solvers) solverTable)
+    {
+        // Handle class diagnostics
+        if (solverTable.info.HandleClassDiagnostics(context)) return;
+        context.AddSource($"{solverTable.info.ClassSymbol.ToDisplayString()}.generated.cs", SourceText.From(GenerateSolverTableSource(solverTable.info, solverTable.solvers), Encoding.UTF8));
+    }
+
+    /// <summary>
+    /// Generates the source code for a given solver
+    /// </summary>
+    /// <param name="solver">Solver data</param>
+    /// <param name="partMethods">Part methods</param>
+    /// <returns>The generated source code for this <paramref name="solver"/></returns>
+    private static string GenerateSolverSource(SolverInfo solver, IReadOnlyList<PartMethod> partMethods)
+    {
+        if (!TryGetTemplate("Solver", out Template? template)) return string.Empty;
+
+        string fileNamespace = solver.ClassSymbol.ContainingNamespace?.ToDisplayString() ?? string.Empty;
+        string classAccess = GetAccessString(solver.ClassSymbol.DeclaredAccessibility);
+        string className = solver.ClassSymbol.Name;
+        string toolName = typeof(SolverGenerator).FullName!;
+
+        ScriptObject[] methods = new ScriptObject[partMethods.Count];
+        for (int i = 0; i < partMethods.Count; i++)
+        {
+            PartMethod method = partMethods[i];
+            methods[i] = new ScriptObject
+            {
+                ["name"] = method.Name,
+                ["part"] = method.Part
+            };
+        }
+
+        return template.Render(new
+        {
+            fileNamespace,
+            classAccess,
+            className,
+            solver.IsMissingConstructor,
+            toolName,
+            Version,
+            methods
+        });
+    }
+
+    /// <summary>
+    /// Generates source code for the solver table
+    /// </summary>
+    /// <param name="solverTableInfo">Solver info data</param>
+    /// <param name="solverInfos">Solvers to generate for</param>
+    private static string GenerateSolverTableSource(SolverTableInfo solverTableInfo, ImmutableArray<SolverInfo> solverInfos)
+    {
+        // Get template
+        if (!TryGetTemplate("SolverTable", out Template? template)) return string.Empty;
+
+        // Create solvers array
+        ScriptObject[] solvers = new ScriptObject[solverInfos.Length];
+        for (int i = 0; i < solvers.Length; i++)
+        {
+            SolverInfo solver = solverInfos[i];
+            solvers[i] = new ScriptObject
+            {
+                ["year"] = solver.Year,
+                ["day"]  = solver.Day,
+                ["name"] = solver.ClassSymbol.ToDisplayString()
+            };
+        }
+
+        string className = solverTableInfo.ClassSymbol.Name;
+        string fileNamespace = solverTableInfo.ClassSymbol.ContainingNamespace?.ToDisplayString() ?? string.Empty;
+        string classAccess = GetAccessString(solverTableInfo.ClassSymbol.DeclaredAccessibility);
+        string toolName = typeof(SolverGenerator).FullName!;
+
+        // Render template and write source
+        return template.Render(new
+        {
+            fileNamespace,
+            classAccess,
+            className,
+            toolName,
+            Version,
+            solvers
+        });
     }
 
     /// <summary>
@@ -238,48 +378,36 @@ public sealed class SolverRunPartsGenerator : IIncrementalGenerator
     }
 
     /// <summary>
-    /// Generates the source code for a given solver
+    /// Gets the accessibility string for a given accessibility value
     /// </summary>
-    /// <param name="solver">Solver data</param>
-    /// <param name="methods">Part methods</param>
-    /// <returns>The generated source code for this <paramref name="solver"/></returns>
-    private static string GenerateSource(SolverInfo solver, IReadOnlyList<PartMethod> methods)
+    /// <param name="accessibility">Member accessibility</param>
+    /// <returns>The equivalent accessibility string</returns>
+    private static string GetAccessString(Accessibility accessibility) => accessibility switch
     {
-        string className = solver.ClassSymbol.Name;
-        string fileNamespace = solver.ClassSymbol.ContainingNamespace?.ToDisplayString() ?? string.Empty;
-        string classAccess = solver.ClassSymbol.DeclaredAccessibility switch
-        {
-            Accessibility.ProtectedAndInternal => "protected internal",
-            Accessibility.Protected            => "protected",
-            Accessibility.Internal             => "internal",
-            Accessibility.Public               => "public",
-            _                                  => string.Empty
-        };
+        Accessibility.ProtectedAndInternal => "protected internal",
+        Accessibility.Protected            => "protected",
+        Accessibility.Internal             => "internal",
+        Accessibility.Public               => "public",
+        _                                  => string.Empty
+    };
 
-        using Stream? resource = typeof(SolverRunPartsGenerator).Assembly.GetManifestResourceStream("Challenge.Generator.Templates.Solver.sbn");
-        if (resource is null) return string.Empty;
-
-        using StreamReader reader = new(resource);
-        Template template = Template.Parse(reader.ReadToEnd());
-        ScriptObject[] methodsContainer = new ScriptObject[methods.Count];
-        for (int i = 0; i < methods.Count; i++)
+    /// <summary>
+    /// Tries to get the given template from the assembly resources
+    /// </summary>
+    /// <param name="name">Template file name, without the extension</param>
+    /// <param name="template">Found template, if any</param>
+    /// <returns><see langword="true"/> if the template was found and created, otherwise <see langword="false"/></returns>
+    private static bool TryGetTemplate(string name, [NotNullWhen(true)] out Template? template)
+    {
+        using Stream? resourceStream = typeof(SolverGenerator).Assembly.GetManifestResourceStream($"{typeof(SolverGenerator).Namespace}.Templates.{name}.sbn");
+        if (resourceStream is not null)
         {
-            PartMethod method = methods[i];
-            methodsContainer[i] = new ScriptObject
-            {
-                [nameof(PartMethod.Name)] = method.Name,
-                [nameof(PartMethod.Part)] = method.Part
-            };
+            using StreamReader reader = new(resourceStream);
+            template = Template.Parse(reader.ReadToEnd());
+            return true;
         }
-        return template.Render(new
-        {
-            fileNamespace,
-            classAccess,
-            className,
-            solver.IsMissingConstructor,
-            ToolName = typeof(SolverRunPartsGenerator).FullName,
-            Version = typeof(SolverRunPartsGenerator).Assembly.GetName().Version.ToString(),
-            Methods = methodsContainer
-        });
+
+        template = null;
+        return false;
     }
 }

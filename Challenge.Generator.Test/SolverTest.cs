@@ -1,14 +1,15 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Challenge.Solvers;
+using Challenge.Solvers.Attributes;
 
 namespace Challenge.Generator.Test;
 
 [Solver(2000, 1)]
 [SuppressMessage("Performance", "CA1822:Mark members as static")]
-internal sealed partial class GeneratorTest : Solver
+internal sealed partial class SolverTest : Solver
 {
     /// <inheritdoc />
-    public GeneratorTest() : base(null!, null!) { }
+    public SolverTest() : base(null!) { }
 
     [Part(1)]
     private void RunPart1() { }
@@ -19,3 +20,6 @@ internal sealed partial class GeneratorTest : Solver
     [Part(3)]
     private void RunPart3() { }
 }
+
+[SolverTable]
+internal sealed partial class SolverTableTest;

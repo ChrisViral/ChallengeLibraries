@@ -1,4 +1,5 @@
 ﻿using Challenge.Solvers;
+using Challenge.Solvers.Attributes;
 using Microsoft.CodeAnalysis;
 
 namespace Challenge.Generator;
@@ -42,12 +43,12 @@ internal static class Diagnostics
             true);
 
     /// <summary>
-    /// Solver class is not partial
+    /// Class is not partial
     /// </summary>
-    public static readonly DiagnosticDescriptor SolverClassNotPartial =
+    public static readonly DiagnosticDescriptor ClassNotPartial =
         new("CG004",
-            "Solver class is not partial",
-            "The solver class {0} must be partial to allow for source generation",
+            "Class is not partial",
+            "The class {0} must be partial to allow for source generation",
             "SourceGenerator",
             DiagnosticSeverity.Error,
             true);

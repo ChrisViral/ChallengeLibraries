@@ -15,15 +15,15 @@ namespace {{ file_namespace }};
     {{~ end ~}}
     {{~ if !methods.empty? ~}}
     /// <inheritdoc />
-    /// <exception cref="System.InvalidOperationException">If the <paramref name="part" /> is not defined for this Solver</exception>
+    /// <exception cref="global::System.InvalidOperationException">If the <paramref name="part" /> is not defined for this Solver</exception>
     [global::System.CodeDom.Compiler.GeneratedCode("{{ tool_name }}", "{{ version }}")]
     public override void Run(global::System.UInt32 part)
     {
         switch (part)
         {
         {{~ for method in methods ~}}
-            case {{ method.Part }}U:
-                {{ method.Name }}();
+            case {{ method.part }}U:
+                this.{{ method.name }}();
                 return;
 
         {{~ end ~}}

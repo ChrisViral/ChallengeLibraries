@@ -7,6 +7,7 @@ using CSharpFunctionalExtensions;
 using DotMake.CommandLine;
 using Microsoft.Extensions.Logging;
 using ZLinq;
+using SolverAttribute = Challenge.Solvers.Attributes.SolverAttribute;
 
 namespace Challenge.CLI;
 
