@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Challenge.Solvers;
-using Challenge.Solvers.Attributes;
 using CSharpFunctionalExtensions;
 
 namespace Challenge.Generator.Test;

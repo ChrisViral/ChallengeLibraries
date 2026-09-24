@@ -31,7 +31,7 @@ public partial class SolveCommand
     [LoggerMessage(LogLevel.Error, "Submitted answer is incorrect:{ErrorMessage}")]
     static partial void LogIncorrectAnswer(ILogger logger, string errorMessage);
 
-    [LoggerMessage(LogLevel.Information, "Instantiating solver for {Year} {Day}")]
+    [LoggerMessage(LogLevel.Information, "Instantiating solver for {Year} day {Day}")]
     static partial void LogInstantiatingSolver(ILogger logger, uint year, uint day);
 
     [LoggerMessage(LogLevel.Information, "Total elapsed time: {Elapsed}")]

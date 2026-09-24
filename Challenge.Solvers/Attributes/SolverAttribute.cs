@@ -1,6 +1,6 @@
 ﻿using JetBrains.Annotations;
 
-namespace Challenge.Solvers.Attributes;
+namespace Challenge.Solvers;
 
 /// <summary>
 /// Solver data

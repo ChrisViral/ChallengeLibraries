@@ -13,10 +13,7 @@ namespace Challenge.Solvers
         public virtual partial void Run(uint part);
     }
 
-    namespace Attributes
-    {
-        public partial class SolverAttribute;
-        public partial class PartAttribute;
-        public partial class SolverTableAttribute;
-    }
+    public partial class SolverAttribute;
+    public partial class PartAttribute;
+    public partial class SolverTableAttribute;
 }

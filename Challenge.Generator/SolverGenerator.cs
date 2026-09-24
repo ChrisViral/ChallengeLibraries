@@ -7,7 +7,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using Challenge.Solvers;
-using Challenge.Solvers.Attributes;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
