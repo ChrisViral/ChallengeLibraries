@@ -9,9 +9,6 @@ namespace Challenge.Generator.Test;
 [SuppressMessage("Performance", "CA1822:Mark members as static")]
 internal sealed partial class SolverTest : Solver
 {
-    /// <inheritdoc />
-    public SolverTest() : base(null!) { }
-
     [Part(1)]
     private void RunPart1() { }
 
@@ -26,9 +23,6 @@ internal sealed partial class SolverTest : Solver
 [SuppressMessage("Performance", "CA1822:Mark members as static")]
 internal sealed partial class SolverTest2 : Solver
 {
-    /// <inheritdoc />
-    public SolverTest2() : base(null!) { }
-
     [Part(1)]
     private void RunPart1() { }
 

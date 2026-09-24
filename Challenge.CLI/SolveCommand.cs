@@ -142,7 +142,7 @@ public sealed partial class SolveCommand(ILoggerFactory loggerFactory, ISolverRe
         {
             // Instantiate solver
             LogInstantiatingSolver(this.Logger, this.Year, this.Day);
-            solver = this.Resolver.GetSolver(this.Year, this.Day, this.loggerFactory.CreateLogger<Solver>());
+            solver = this.Resolver.GetSolver(this.Year, this.Day);
         }
         catch (Exception e)
         {
@@ -154,6 +154,7 @@ public sealed partial class SolveCommand(ILoggerFactory loggerFactory, ISolverRe
 
         if (solver is null) return false;
 
+        solver.Logger = this.loggerFactory.CreateLogger(solver.GetType());
         LogSolverLoaded(this.Logger, solver.GetType().FullName!);
         return true;
 

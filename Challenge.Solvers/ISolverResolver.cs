@@ -1,6 +1,5 @@
 ﻿using CSharpFunctionalExtensions;
 using JetBrains.Annotations;
-using Microsoft.Extensions.Logging;
 
 namespace Challenge.Solvers;
 
@@ -37,7 +36,6 @@ public interface ISolverResolver
     /// </summary>
     /// <param name="year">Solver year</param>
     /// <param name="day">Solver day</param>
-    /// <param name="logger">Logger instance</param>
     /// <returns>The found and instantiated solver, or <see langword="null"/> if none was found</returns>
-    Solver? GetSolver(uint year, uint day, ILogger logger);
+    Solver? GetSolver(uint year, uint day);
 }

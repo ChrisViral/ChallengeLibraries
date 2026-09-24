@@ -40,11 +40,14 @@ public abstract class GridSolver<T> : Solver<Grid<T>>
     /// <summary>
     /// Creates a new <see cref="GridSolver{T}"/> Solver with the input data properly parsed
     /// </summary>
-    /// <param name="logger">Logger instance</param>
+    protected GridSolver() { }
+
+    /// <summary>
+    /// Creates a new <see cref="GridSolver{T}"/> Solver with the input data properly parsed
+    /// </summary>
     /// <param name="splitters">Splitting characters, defaults to newline only</param>
     /// <param name="options">Input parsing options, defaults to removing empty entries and trimming entries</param>
-    /// <exception cref="InvalidOperationException">Thrown if the conversion to <see cref="Grid{T}"/> fails</exception>
-    protected GridSolver(ILogger logger, char[]? splitters = null, StringSplitOptions options = DEFAULT_OPTIONS) : base(logger, splitters, options) { }
+    protected GridSolver(char[]? splitters = null, StringSplitOptions options = DEFAULT_OPTIONS) : base(splitters, options) { }
 
     /// <inheritdoc />
     protected sealed override Grid<T> Convert(string[] rawInput)

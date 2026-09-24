@@ -10,7 +10,7 @@ namespace {{ file_namespace }};
     {{~ if is_missing_constructor ~}}
     /// <inheritdoc />
     [global::System.CodeDom.Compiler.GeneratedCode("{{ tool_name }}", "{{ version }}")]
-    public {{ class_name }}(global::Microsoft.Extensions.Logging.ILogger logger) : base(logger) { }
+    public {{ class_name }}() { }
 
     {{~ end ~}}
     {{~ if !methods.empty? ~}}

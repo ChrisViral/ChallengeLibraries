@@ -52,19 +52,26 @@ public abstract partial class Solver : IDisposable
     /// <summary>
     /// Logger instance
     /// </summary>
-    protected ILogger Logger { get; }
+    public ILogger Logger { get; set; } = null!;
 
     /// <summary>
-    /// Creates a new <see cref="Solver"/> from the specified file
+    /// Creates a new <see cref="Solver"/>
     /// </summary>
-    /// <param name="logger">Logger instance</param>
+    protected Solver()
+    {
+        this.splitters    = DefaultSplitters;
+        this.splitOptions = DEFAULT_OPTIONS;
+    }
+
+    /// <summary>
+    /// Creates a new <see cref="Solver"/>
+    /// </summary>
     /// <param name="splitters">Splitting characters, defaults to newline only</param>
     /// <param name="options">Input parsing options, defaults to removing empty entries and trimming entries</param>
-    protected Solver(ILogger logger, char[]? splitters = null, StringSplitOptions options = DEFAULT_OPTIONS)
+    protected Solver(char[]? splitters = null, StringSplitOptions options = DEFAULT_OPTIONS)
     {
         // Setup data
-        this.Logger = logger;
-        this.splitters = splitters ?? DefaultSplitters;
+        this.splitters    = splitters ?? DefaultSplitters;
         this.splitOptions = options;
     }
 
@@ -208,11 +215,14 @@ public abstract class Solver<T> : Solver
     /// <summary>
     /// Creates a new generic <see cref="Solver{T}"/>
     /// </summary>
-    /// <param name="logger">Logger instance</param>
+    protected Solver() { }
+
+    /// <summary>
+    /// Creates a new generic <see cref="Solver{T}"/>
+    /// </summary>
     /// <param name="splitters">Splitting characters, defaults to newline only</param>
     /// <param name="options">Input parsing options, defaults to removing empty entries and trimming entries</param>
-    /// <exception cref="InvalidOperationException">Thrown if the conversion to <typeparamref name="T"/> fails</exception>
-    protected Solver(ILogger logger, char[]? splitters = null, StringSplitOptions options = DEFAULT_OPTIONS) : base(logger, splitters, options) { }
+    protected Solver(char[]? splitters = null, StringSplitOptions options = DEFAULT_OPTIONS) : base(splitters, options) { }
 
     /// <inheritdoc />
     public override void ParseInput(string input)

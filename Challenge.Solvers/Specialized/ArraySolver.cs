@@ -11,13 +11,16 @@ namespace Challenge.Solvers.Specialized;
 public abstract class ArraySolver<T> : Solver<T[]>
 {
     /// <summary>
-    /// Creates a new <see cref="GridSolver{T}"/> Solver
+    /// Creates a new <see cref="ArraySolver{T}"/> Solver
     /// </summary>
-    /// <param name="logger">Logger instance</param>
+    protected ArraySolver() { }
+
+    /// <summary>
+    /// Creates a new <see cref="ArraySolver{T}"/> Solver
+    /// </summary>
     /// <param name="splitters">Splitting characters, defaults to newline only</param>
     /// <param name="options">Input parsing options, defaults to removing empty entries and trimming entries</param>
-    /// <exception cref="InvalidOperationException">Thrown if the conversion to <typeparamref name="T"/><c>[]</c> fails</exception>
-    protected ArraySolver(ILogger logger, char[]? splitters = null, StringSplitOptions options = DEFAULT_OPTIONS) : base(logger, splitters, options) { }
+    protected ArraySolver(char[]? splitters = null, StringSplitOptions options = DEFAULT_OPTIONS) : base(splitters, options) { }
 
     /// <inheritdoc />
     protected sealed override T[] Convert(string[] rawInput) => rawInput.ConvertAll(ConvertLine);

@@ -25,11 +25,6 @@ namespace Challenge.Generator;
 public sealed class SolverGenerator : IIncrementalGenerator
 {
     /// <summary>
-    /// ILogger fully qualified name
-    /// </summary>
-    private const string LOGGER_TYPE_FULL_NAME = "Microsoft.Extensions.Logging.ILogger";
-
-    /// <summary>
     /// GetSolver method name
     /// </summary>
     private const string GET_SOLVER_METHOD_NAME = "GetSolver";
@@ -114,8 +109,7 @@ public sealed class SolverGenerator : IIncrementalGenerator
         if (isMarkedAbstract) return new SolverInfo(solverNode, solverSymbol, [], year, day, IsMarkedAbstract: true);
 
         // Check if the type has the required constructor
-        INamedTypeSymbol loggerSymbol = context.SemanticModel.Compilation.GetTypeByMetadataName(LOGGER_TYPE_FULL_NAME)!;
-        bool isMissingConstructor = !solverSymbol.Constructors.Any(m => IsValidConstructorSignature(m, loggerSymbol));
+        bool isMissingConstructor = !solverSymbol.Constructors.Any(IsValidConstructorSignature);
 
         // Check if the type is marked as partial
         bool isNotMarkedPartial = !solverNode.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword));
@@ -177,8 +171,7 @@ public sealed class SolverGenerator : IIncrementalGenerator
         bool isNotMarkedPartial = !solverTableNode.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword));
         if (isNotMarkedPartial) return new SolverTableInfo(solverTableNode, solverTableSymbol, null, IsNotMarkedPartial: true);
 
-        INamedTypeSymbol loggerSymbol = context.SemanticModel.Compilation.GetTypeByMetadataName(LOGGER_TYPE_FULL_NAME)!;
-        IMethodSymbol? getSolverMethodSymbol = GetGetSolverMethodDefinition(solverTableSymbol, loggerSymbol);
+        IMethodSymbol? getSolverMethodSymbol = GetGetSolverMethodDefinition(solverTableSymbol);
         return new SolverTableInfo(solverTableNode, solverTableSymbol, getSolverMethodSymbol, IsNotMarkedPartial: isNotMarkedPartial);
     }
 
@@ -379,13 +372,8 @@ public sealed class SolverGenerator : IIncrementalGenerator
     /// Checks if the given constructor is a valid Solver constructor
     /// </summary>
     /// <param name="constructor">Constructor to check</param>
-    /// <param name="loggerSymbol">Logger type symbol</param>
     /// <returns><see langword="true"/> if <paramref name="constructor"/> is a valid Solver constructor, otherwise <see langword="false"/></returns>
-    private static bool IsValidConstructorSignature(IMethodSymbol constructor, INamedTypeSymbol loggerSymbol)
-    {
-        return constructor.Parameters.Length is 1
-            && SymbolEqualityComparer.Default.Equals(constructor.Parameters[0].Type.OriginalDefinition, loggerSymbol);
-    }
+    private static bool IsValidConstructorSignature(IMethodSymbol constructor) => constructor.Parameters.Length is 0;
 
     /// <summary>
     /// Checks if the given method is a Part Run method
@@ -402,15 +390,14 @@ public sealed class SolverGenerator : IIncrementalGenerator
     /// Gets the GetSolver method for this type, if implemented
     /// </summary>
     /// <param name="type">Type to find the GetSolver method in</param>
-    /// <param name="loggerSymbol">ILogger type symbol</param>
     /// <returns>The found GetSolver method symbol, or <see langword="null"/></returns>
-    private static IMethodSymbol? GetGetSolverMethodDefinition(INamedTypeSymbol? type, INamedTypeSymbol loggerSymbol)
+    private static IMethodSymbol? GetGetSolverMethodDefinition(INamedTypeSymbol? type)
     {
         while (type is not null)
         {
             IMethodSymbol? getSolverMethod = type.GetMembers()
                                                     .OfType<IMethodSymbol>()
-                                                    .FirstOrDefault(m => IsGetSolverMethod(m, loggerSymbol));
+                                                    .FirstOrDefault(IsGetSolverMethod);
             if (getSolverMethod is not null) return getSolverMethod;
 
             type = type.BaseType;
@@ -423,14 +410,12 @@ public sealed class SolverGenerator : IIncrementalGenerator
     /// Checks if the given method is a GetSolver method
     /// </summary>
     /// <param name="method">Method symbol</param>
-    /// <param name="loggerSymbol">ILogger type symbol</param>
     /// <returns><see langword="true"/> if <paramref name="method"/> is a GetSolver method, otherwise <see langword="false"/></returns>
-    private static bool IsGetSolverMethod(IMethodSymbol method, INamedTypeSymbol loggerSymbol)
+    private static bool IsGetSolverMethod(IMethodSymbol method)
     {
-        return method is { Name: GET_SOLVER_METHOD_NAME, Parameters.Length: 3 }
+        return method is { Name: GET_SOLVER_METHOD_NAME, Parameters.Length: 2 }
             && method.Parameters[0].Type.SpecialType is SpecialType.System_UInt32
-            && method.Parameters[1].Type.SpecialType is SpecialType.System_UInt32
-            && SymbolEqualityComparer.Default.Equals(method.Parameters[2].Type.OriginalDefinition, loggerSymbol);
+            && method.Parameters[1].Type.SpecialType is SpecialType.System_UInt32;
     }
 
     /// <summary>
