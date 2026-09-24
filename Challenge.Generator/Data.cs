@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -86,7 +87,7 @@ internal sealed record SolverInfo(ClassDeclarationSyntax ClassNode,
 
         if (this.PartMethods.Count is not 0 && this.PartRunMethod is not null)
         {
-            Diagnostic diagnostic = Diagnostic.Create(Diagnostics.SolverDefinesPartRunMethod,
+            Diagnostic diagnostic = Diagnostic.Create(Diagnostics.MethodCannotBeDefined,
                                                       this.PartRunMethod.Node.Identifier.GetLocation(),
                                                       this.PartRunMethod.Symbol.Name);
             context.ReportDiagnostic(diagnostic);
@@ -115,9 +116,11 @@ internal sealed record SolverInfo(ClassDeclarationSyntax ClassNode,
 /// </summary>
 /// <param name="ClassNode">Solver Table class node</param>
 /// <param name="ClassSymbol">Solver Table class symbol</param>
+/// <param name="ExistingGetSolverMethod">The existing GetSolver method, if any</param>
 /// <param name="IsNotMarkedPartial">If the class isn't marked as partial</param>
 internal sealed record SolverTableInfo(ClassDeclarationSyntax ClassNode,
                                        INamedTypeSymbol ClassSymbol,
+                                       IMethodSymbol? ExistingGetSolverMethod,
                                        bool IsNotMarkedPartial = false)
 {
     /// <summary>
@@ -131,6 +134,26 @@ internal sealed record SolverTableInfo(ClassDeclarationSyntax ClassNode,
         if (this.IsNotMarkedPartial)
         {
             PostDiagnostic(context, Diagnostics.ClassNotPartial);
+            return true;
+        }
+
+        if (this.ExistingGetSolverMethod is null) return false;
+
+        // Diagnostic if existing solver method is defined in the target class
+        if (SymbolEqualityComparer.Default.Equals(this.ExistingGetSolverMethod.ContainingType, this.ClassSymbol))
+        {
+            MethodDeclarationSyntax methodSyntaxNode = (MethodDeclarationSyntax)this.ExistingGetSolverMethod.DeclaringSyntaxReferences.First().GetSyntax();
+            Diagnostic diagnostic = Diagnostic.Create(Diagnostics.MethodCannotBeOverriden,
+                                                      methodSyntaxNode.Identifier.GetLocation(),
+                                                      this.ExistingGetSolverMethod.Name);
+            context.ReportDiagnostic(diagnostic);
+            return true;
+        }
+
+        // Diagnostic if the method is sealed in the parent
+        if (this.ExistingGetSolverMethod is { IsOverride: true, IsSealed: true } or { IsOverride: false, IsVirtual: false, IsAbstract: false })
+        {
+            PostDiagnostic(context, Diagnostics.MethodCannotBeOverriden);
             return true;
         }
 

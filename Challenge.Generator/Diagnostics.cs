@@ -65,12 +65,23 @@ internal static class Diagnostics
             true);
 
     /// <summary>
-    /// Solver class is abstract
+    /// Method cannot be user-defined
     /// </summary>
-    public static readonly DiagnosticDescriptor SolverDefinesPartRunMethod =
+    public static readonly DiagnosticDescriptor MethodCannotBeDefined =
         new("CG006",
-            "Solver defines it's own Part Run method",
-            "The method {0} cannot be defined as it will be generated",
+            "Method cannot be user-defined",
+            "The method {0} cannot be user-defined as it will be generated",
+            "SourceGenerator",
+            DiagnosticSeverity.Error,
+            true);
+
+    /// <summary>
+    /// Method cannot be overriden
+    /// </summary>
+    public static readonly DiagnosticDescriptor MethodCannotBeOverriden =
+        new("CG007",
+            "Method cannot be overriden",
+            "The method {0} needs to be overrideable from the parent type as it will be generated",
             "SourceGenerator",
             DiagnosticSeverity.Error,
             true);

@@ -1,6 +1,8 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Challenge.Solvers;
 using Challenge.Solvers.Attributes;
+using CSharpFunctionalExtensions;
+using Microsoft.Extensions.Logging;
 
 namespace Challenge.Generator.Test;
 
@@ -21,5 +23,38 @@ internal sealed partial class SolverTest : Solver
     private void RunPart3() { }
 }
 
+[Solver(2001, 2)]
+[SuppressMessage("Performance", "CA1822:Mark members as static")]
+internal sealed partial class SolverTest2 : Solver
+{
+    /// <inheritdoc />
+    public SolverTest2() : base(null!) { }
+
+    [Part(1)]
+    private void RunPart1() { }
+
+    [Part(2)]
+    private void RunPart2() { }
+
+    [Part(3)]
+    private void RunPart3() { }
+}
+
 [SolverTable]
-internal sealed partial class SolverTableTest;
+internal partial class SolverTableTest : ISolverResolver
+{
+    /// <inheritdoc />
+    public string ChallengeName { get; } = "";
+
+    /// <inheritdoc />
+    public async Task<Result<string>> FetchInput(SolverData data, CancellationToken token = default)
+    {
+        return default;
+    }
+
+    /// <inheritdoc />
+    public async Task<Result> SubmitAnswer(string answer, SolverData data, CancellationToken token = default)
+    {
+        return default;
+    }
+}

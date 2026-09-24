@@ -3,11 +3,12 @@
 
 ### New Rules
 
-| Rule ID | Category        | Severity | Notes                   |
-|---------|-----------------|----------|-------------------------|
-CG006 | SourceGenerator | Error | Diagnostics
-| CG001   | SourceGenerator | Error    | SolverRunPartsGenerator |
-| CG002   | SourceGenerator | Error    | SolverRunPartsGenerator |
-| CG003   | SourceGenerator | Error    | SolverRunPartsGenerator |
-| CG004   | SourceGenerator | Error    | SolverRunPartsGenerator |
-| CG005   | SourceGenerator | Error    | SolverRunPartsGenerator |
+| Rule ID | Category        | Severity | Notes       |
+|---------|-----------------|----------|-------------|
+| CG001   | SourceGenerator | Error    | Diagnostics |
+| CG002   | SourceGenerator | Error    | Diagnostics |
+| CG003   | SourceGenerator | Error    | Diagnostics |
+| CG004   | SourceGenerator | Error    | Diagnostics |
+| CG005   | SourceGenerator | Error    | Diagnostics |
+| CG006   | SourceGenerator | Error    | Diagnostics |
+| CG007   | SourceGenerator | Error    | Diagnostics |

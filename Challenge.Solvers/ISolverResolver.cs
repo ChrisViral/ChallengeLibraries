@@ -1,8 +1,8 @@
-﻿using Challenge.Solvers;
-using CSharpFunctionalExtensions;
+﻿using CSharpFunctionalExtensions;
 using JetBrains.Annotations;
+using Microsoft.Extensions.Logging;
 
-namespace Challenge.CLI;
+namespace Challenge.Solvers;
 
 /// <summary>
 /// Challenge input fetcher interface
@@ -31,4 +31,13 @@ public interface ISolverResolver
     /// <param name="token">Cancellation token</param>
     /// <returns>A <see cref="Result"/> object indicating if the answer was correct or not</returns>
     Task<Result> SubmitAnswer(string answer, SolverData data, CancellationToken token = default);
+
+    /// <summary>
+    /// Gets the solver for the given year/day combination
+    /// </summary>
+    /// <param name="year">Solver year</param>
+    /// <param name="day">Solver day</param>
+    /// <param name="logger">Logger instance</param>
+    /// <returns>The found and instantiated solver, or <see langword="null"/> if none was found</returns>
+    Solver? GetSolver(uint year, uint day, ILogger logger);
 }

@@ -37,6 +37,9 @@ public abstract class SolverResolverBase(ILogger logger) : ISolverResolver
 
     /// <inheritdoc />
     public abstract Task<Result> SubmitAnswer(string answer, SolverData data, CancellationToken token = default);
+
+    /// <inheritdoc />
+    public abstract Solver? GetSolver(uint year, uint day, ILogger logger);
 }
 
 /// <summary>

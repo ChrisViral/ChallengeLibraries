@@ -24,8 +24,15 @@ namespace Challenge.Generator;
 [Generator]
 public sealed class SolverGenerator : IIncrementalGenerator
 {
+    /// <summary>
+    /// ILogger fully qualified name
+    /// </summary>
     private const string LOGGER_TYPE_FULL_NAME = "Microsoft.Extensions.Logging.ILogger";
 
+    /// <summary>
+    /// GetSolver method name
+    /// </summary>
+    private const string GET_SOLVER_METHOD_NAME = "GetSolver";
 
     /// <summary>
     /// This assembly's version string
@@ -152,17 +159,21 @@ public sealed class SolverGenerator : IIncrementalGenerator
         token.ThrowIfCancellationRequested();
 
         // Get the class symbol
-        ClassDeclarationSyntax solverNode = (ClassDeclarationSyntax)context.Node;
-        INamedTypeSymbol? solverSymbol = context.SemanticModel.GetDeclaredSymbol(solverNode, token);
-        if (solverSymbol is null) return null;
+        ClassDeclarationSyntax solverTableNode = (ClassDeclarationSyntax)context.Node;
+        INamedTypeSymbol? solverTableSymbol = context.SemanticModel.GetDeclaredSymbol(solverTableNode, token);
+        if (solverTableSymbol is null) return null;
 
         // Check if type has the solver table attribute
         INamedTypeSymbol? solverAttributeSymbol = context.SemanticModel.Compilation.GetTypeByMetadataName(typeof(SolverTableAttribute).FullName!);
-        if (solverAttributeSymbol is null ||GetAttributeOfType(solverSymbol, solverAttributeSymbol) is null) return null;
+        if (solverAttributeSymbol is null ||GetAttributeOfType(solverTableSymbol, solverAttributeSymbol) is null) return null;
 
         // Check if the type is marked as partial
-        bool isNotMarkedPartial = !solverNode.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword));
-        return new SolverTableInfo(solverNode, solverSymbol, IsNotMarkedPartial: isNotMarkedPartial);
+        bool isNotMarkedPartial = !solverTableNode.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword));
+        if (isNotMarkedPartial) return new SolverTableInfo(solverTableNode, solverTableSymbol, null, IsNotMarkedPartial: true);
+
+        INamedTypeSymbol loggerSymbol = context.SemanticModel.Compilation.GetTypeByMetadataName(LOGGER_TYPE_FULL_NAME)!;
+        IMethodSymbol? getSolverMethodSymbol = GetGetSolverMethodDefinition(solverTableSymbol, loggerSymbol);
+        return new SolverTableInfo(solverTableNode, solverTableSymbol, getSolverMethodSymbol, IsNotMarkedPartial: isNotMarkedPartial);
     }
 
     /// <summary>
@@ -257,6 +268,9 @@ public sealed class SolverGenerator : IIncrementalGenerator
         string fileNamespace = solverTableInfo.ClassSymbol.ContainingNamespace?.ToDisplayString() ?? string.Empty;
         string classAccess = GetAccessString(solverTableInfo.ClassSymbol.DeclaredAccessibility);
         string toolName = typeof(SolverGenerator).FullName!;
+        bool needsOverride = solverTableInfo.ExistingGetSolverMethod is { IsOverride: true }
+                                                                     or { IsVirtual: true }
+                                                                     or { IsAbstract: true };
 
         // Render template and write source
         return template.Render(new
@@ -265,6 +279,7 @@ public sealed class SolverGenerator : IIncrementalGenerator
             classAccess,
             className,
             toolName,
+            needsOverride,
             Version,
             solvers
         });
@@ -367,14 +382,49 @@ public sealed class SolverGenerator : IIncrementalGenerator
     }
 
     /// <summary>
-    /// Checks if the given method is an override of the base Part Run method
+    /// Checks if the given method is a Part Run method
     /// </summary>
     /// <param name="data">Method data</param>
-    /// <returns><see langword="true"/> if <paramref name="data"/> is a Part Run method override, otherwise <see langword="false"/></returns>
+    /// <returns><see langword="true"/> if <paramref name="data"/> is a Part Run method, otherwise <see langword="false"/></returns>
     private static bool IsPartRunMethod(MethodData data)
     {
         return data.Symbol is { Name: nameof(Solver.Run), Parameters.Length: 1 }
             && data.Symbol.Parameters[0].Type.SpecialType is SpecialType.System_UInt32;
+    }
+
+    /// <summary>
+    /// Gets the GetSolver method for this type, if implemented
+    /// </summary>
+    /// <param name="type">Type to find the GetSolver method in</param>
+    /// <param name="loggerSymbol">ILogger type symbol</param>
+    /// <returns>The found GetSolver method symbol, or <see langword="null"/></returns>
+    private static IMethodSymbol? GetGetSolverMethodDefinition(INamedTypeSymbol? type, INamedTypeSymbol loggerSymbol)
+    {
+        while (type is not null)
+        {
+            IMethodSymbol? getSolverMethod = type.GetMembers()
+                                                    .OfType<IMethodSymbol>()
+                                                    .FirstOrDefault(m => IsGetSolverMethod(m, loggerSymbol));
+            if (getSolverMethod is not null) return getSolverMethod;
+
+            type = type.BaseType;
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Checks if the given method is a GetSolver method
+    /// </summary>
+    /// <param name="method">Method symbol</param>
+    /// <param name="loggerSymbol">ILogger type symbol</param>
+    /// <returns><see langword="true"/> if <paramref name="method"/> is a GetSolver method, otherwise <see langword="false"/></returns>
+    private static bool IsGetSolverMethod(IMethodSymbol method, INamedTypeSymbol loggerSymbol)
+    {
+        return method is { Name: GET_SOLVER_METHOD_NAME, Parameters.Length: 3 }
+            && method.Parameters[0].Type.SpecialType is SpecialType.System_UInt32
+            && method.Parameters[1].Type.SpecialType is SpecialType.System_UInt32
+            && SymbolEqualityComparer.Default.Equals(method.Parameters[2].Type.OriginalDefinition, loggerSymbol);
     }
 
     /// <summary>
