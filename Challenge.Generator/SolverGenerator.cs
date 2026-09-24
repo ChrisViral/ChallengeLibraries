@@ -24,6 +24,10 @@ namespace Challenge.Generator;
 public sealed class SolverGenerator : IIncrementalGenerator
 {
     /// <summary>
+    /// Full name of the ISolverResolver interface
+    /// </summary>
+    private const string SOLVER_RESOLVER_INTERFACE_FULL_NAME = "Challenge.Solvers.ISolverResolver";
+    /// <summary>
     /// GetSolver method name
     /// </summary>
     private const string GET_SOLVER_METHOD_NAME = "GetSolver";
@@ -167,6 +171,11 @@ public sealed class SolverGenerator : IIncrementalGenerator
         // Check if the type is marked as partial
         bool isNotMarkedPartial = !solverTableNode.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword));
         if (isNotMarkedPartial) return new SolverTableInfo(solverTableNode, solverTableSymbol, null, IsNotMarkedPartial: true);
+
+        // Check if we implement the interface
+        INamedTypeSymbol? interfaceSymbol = context.SemanticModel.Compilation.GetTypeByMetadataName(SOLVER_RESOLVER_INTERFACE_FULL_NAME);
+        bool hasSolverResolverInterface = solverTableSymbol.AllInterfaces.Any(i => SymbolEqualityComparer.Default.Equals(i, interfaceSymbol));
+        if (!hasSolverResolverInterface) return new SolverTableInfo(solverTableNode, solverTableSymbol, null, IsMissingSolverResolverInterface: true);
 
         IMethodSymbol? getSolverMethodSymbol = GetGetSolverMethodDefinition(solverTableSymbol);
         return new SolverTableInfo(solverTableNode, solverTableSymbol, getSolverMethodSymbol, IsNotMarkedPartial: isNotMarkedPartial);

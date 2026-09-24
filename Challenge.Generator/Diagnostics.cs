@@ -106,4 +106,15 @@ internal static class Diagnostics
             "SourceGenerator",
             DiagnosticSeverity.Error,
             true);
+
+    /// <summary>
+    /// SSolverTable class must implement ISolverResolver
+    /// </summary>
+    public static readonly DiagnosticDescriptor MissingSolverResolverInterface =
+        new("CG010",
+            "SolverTable class must implement ISolverResolver",
+            "The class {0} must implement ISolverResolver",
+            "SourceGenerator",
+            DiagnosticSeverity.Error,
+            true);
 }

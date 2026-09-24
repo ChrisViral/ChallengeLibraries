@@ -143,11 +143,13 @@ internal sealed record SolverInfo(ClassDeclarationSyntax ClassNode,
 /// <param name="ExistingGetSolverMethod">The existing GetSolver method, if any</param>
 /// <param name="IsNestedType">If the class is a nested type</param>
 /// <param name="IsNotMarkedPartial">If the class isn't marked as partial</param>
+/// <param name="IsMissingSolverResolverInterface">If the SolverResolver interface is missing</param>
 internal sealed record SolverTableInfo(ClassDeclarationSyntax ClassNode,
                                        INamedTypeSymbol ClassSymbol,
                                        IMethodSymbol? ExistingGetSolverMethod,
                                        bool IsNestedType = false,
-                                       bool IsNotMarkedPartial = false)
+                                       bool IsNotMarkedPartial = false,
+                                       bool IsMissingSolverResolverInterface = false)
 {
     /// <summary>
     /// Handles all class-level diagnostics
@@ -167,6 +169,13 @@ internal sealed record SolverTableInfo(ClassDeclarationSyntax ClassNode,
         if (this.IsNotMarkedPartial)
         {
             PostDiagnostic(context, Diagnostics.ClassNotPartial);
+            return true;
+        }
+
+        // Diagnostic if interface is missing
+        if (this.IsMissingSolverResolverInterface)
+        {
+            PostDiagnostic(context, Diagnostics.MissingSolverResolverInterface);
             return true;
         }
 

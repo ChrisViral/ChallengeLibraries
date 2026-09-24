@@ -14,3 +14,4 @@
 | CG007   | SourceGenerator | Error    | Diagnostics |
 | CG008   | SourceGenerator | Error    | Diagnostics |
 | CG009   | SourceGenerator | Error    | Diagnostics |
+| CG010   | SourceGenerator | Error    | Diagnostics |
