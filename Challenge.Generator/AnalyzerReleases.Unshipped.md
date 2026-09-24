@@ -12,3 +12,4 @@
 | CG005   | SourceGenerator | Error    | Diagnostics |
 | CG006   | SourceGenerator | Error    | Diagnostics |
 | CG007   | SourceGenerator | Error    | Diagnostics |
+| CG008   | SourceGenerator | Error    | Diagnostics |

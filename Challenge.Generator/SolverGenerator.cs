@@ -102,6 +102,9 @@ public sealed class SolverGenerator : IIncrementalGenerator
         uint year = (uint)solverAttribute.ConstructorArguments[0].Value!;
         uint day  = (uint)solverAttribute.ConstructorArguments[1].Value!;
 
+        // Check if we're a nested type
+        if (solverSymbol.ContainingType is not null) return new SolverInfo(solverNode, solverSymbol, [], year, day, IsNestedType: true);
+
         // Check if the type inherits Solver
         INamedTypeSymbol solverBaseSymbol = context.SemanticModel.Compilation.GetTypeByMetadataName(typeof(Solver).FullName!)!;
         if (!InheritsType(solverSymbol, solverBaseSymbol)) return new SolverInfo(solverNode, solverSymbol, [], year, day, IsMissingBaseClass: true);
@@ -166,6 +169,9 @@ public sealed class SolverGenerator : IIncrementalGenerator
         // Check if type has the solver table attribute
         INamedTypeSymbol? solverAttributeSymbol = context.SemanticModel.Compilation.GetTypeByMetadataName(typeof(SolverTableAttribute).FullName!);
         if (solverAttributeSymbol is null ||GetAttributeOfType(solverTableSymbol, solverAttributeSymbol) is null) return null;
+
+        // Check if we're a nested type
+        if (solverTableSymbol.ContainingType is not null) return new SolverTableInfo(solverTableNode, solverTableSymbol, null, IsNestedType: true);
 
         // Check if the type is marked as partial
         bool isNotMarkedPartial = !solverTableNode.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword));

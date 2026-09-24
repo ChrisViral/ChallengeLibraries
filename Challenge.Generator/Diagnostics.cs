@@ -85,4 +85,15 @@ internal static class Diagnostics
             "SourceGenerator",
             DiagnosticSeverity.Error,
             true);
+
+    /// <summary>
+    /// Class cannot be a nested type
+    /// </summary>
+    public static readonly DiagnosticDescriptor IsNestedType =
+        new("CG008",
+            "Class cannot be a nested type",
+            "The class {0} cannot be a nested type for proper code generation",
+            "SourceGenerator",
+            DiagnosticSeverity.Error,
+            true);
 }

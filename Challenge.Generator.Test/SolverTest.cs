@@ -2,7 +2,6 @@
 using Challenge.Solvers;
 using Challenge.Solvers.Attributes;
 using CSharpFunctionalExtensions;
-using Microsoft.Extensions.Logging;
 
 namespace Challenge.Generator.Test;
 

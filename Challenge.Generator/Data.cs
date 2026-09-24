@@ -39,6 +39,7 @@ internal sealed record PartMethodInfo(MethodDeclarationSyntax MethodNode,
 /// <param name="PartMethods">Solver part methods</param>
 /// <param name="Year">Solver year</param>
 /// <param name="Day">Solver part</param>
+/// <param name="IsNestedType">If the class is a nested type</param>
 /// <param name="IsNotMarkedPartial">If the class isn't marked as partial</param>
 /// <param name="IsMarkedAbstract">If the class is marked as abstract</param>
 /// <param name="IsMissingConstructor">If the class is missing it's required constructor</param>
@@ -48,6 +49,7 @@ internal sealed record SolverInfo(ClassDeclarationSyntax ClassNode,
                                   INamedTypeSymbol ClassSymbol,
                                   IReadOnlyList<PartMethodInfo> PartMethods,
                                   uint Year, uint Day,
+                                  bool IsNestedType = false,
                                   bool IsNotMarkedPartial = false,
                                   bool IsMarkedAbstract = false,
                                   bool IsMissingConstructor = false,
@@ -61,6 +63,13 @@ internal sealed record SolverInfo(ClassDeclarationSyntax ClassNode,
     /// <returns><see langword="true"/> if a diagnostic has been emitted or generation is not needed, otherwise <see langword="false"/></returns>
     public bool HandleClassDiagnostics(SourceProductionContext context)
     {
+        // Diagnostic of class is a nested type
+        if (this.IsNestedType)
+        {
+            PostDiagnostic(context, Diagnostics.IsNestedType);
+            return true;
+        }
+
         // Diagnostic if base class is missing
         if (this.IsMissingBaseClass)
         {
@@ -117,10 +126,12 @@ internal sealed record SolverInfo(ClassDeclarationSyntax ClassNode,
 /// <param name="ClassNode">Solver Table class node</param>
 /// <param name="ClassSymbol">Solver Table class symbol</param>
 /// <param name="ExistingGetSolverMethod">The existing GetSolver method, if any</param>
+/// <param name="IsNestedType">If the class is a nested type</param>
 /// <param name="IsNotMarkedPartial">If the class isn't marked as partial</param>
 internal sealed record SolverTableInfo(ClassDeclarationSyntax ClassNode,
                                        INamedTypeSymbol ClassSymbol,
                                        IMethodSymbol? ExistingGetSolverMethod,
+                                       bool IsNestedType = false,
                                        bool IsNotMarkedPartial = false)
 {
     /// <summary>
@@ -130,6 +141,13 @@ internal sealed record SolverTableInfo(ClassDeclarationSyntax ClassNode,
     /// <returns><see langword="true"/> if a diagnostic has been emitted or generation is not needed, otherwise <see langword="false"/></returns>
     public bool HandleClassDiagnostics(SourceProductionContext context)
     {
+        // Diagnostic of class is a nested type
+        if (this.IsNestedType)
+        {
+            PostDiagnostic(context, Diagnostics.IsNestedType);
+            return true;
+        }
+
         // Diagnostic if class is marked abstract
         if (this.IsNotMarkedPartial)
         {
