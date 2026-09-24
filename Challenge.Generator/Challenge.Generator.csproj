@@ -2,18 +2,39 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <IsPackable>false</IsPackable>
     <Nullable>enable</Nullable>
     <LangVersion>14</LangVersion>
+    <RootNamespace>Challenge.Generator</RootNamespace>
+    <PlatformTarget>x64</PlatformTarget>
+    <Platforms>x64</Platforms>
+    <Configurations>Release;Debug</Configurations>
+    <DocumentationFile>bin\Debug\Challenge.Generator.xml</DocumentationFile>
+    <AssemblyOriginatorKeyFile>Properties\Challenge.Generator.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
     <IsRoslynComponent>true</IsRoslynComponent>
-    <RootNamespace>Challenge.Generator</RootNamespace>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <PackageOutputPath>..\Packages</PackageOutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <PackageId>Challenge.Generator</PackageId>
-    <AssemblyOriginatorKeyFile>Properties\Challenge.Generator.snk</AssemblyOriginatorKeyFile>
-    <PlatformTarget>x64</PlatformTarget>
-    <DocumentationFile>bin\Debug\Challenge.Generator.xml</DocumentationFile>
-    <Configurations>Release;Debug</Configurations>
-    <Platforms>x64</Platforms>
+    <Title>Challenge Generator</Title>
+    <Authors>ChrisViral</Authors>
+    <Owner>ChrisViral</Owner>
+    <Description>Challenge solver source generator</Description>
+    <Copyright>Copyright © 2026 Christophe Savard</Copyright>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/ChrisViral/ChallengeLibraries</RepositoryUrl>
+    <PackageTags>Advent of Code,Code Challenge,Source Generator</PackageTags>
+    <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -58,11 +79,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="$(PackageReadmeFile)" />
     <None Remove="Challenge.Generator.csproj.DotSettings" />
     <EmbeddedResource Include="Templates\**\*.sbn" />
-    <Compile Include="..\Challenge.Solvers\NameExport.cs">
-      <Link>Imported\NameExport.cs</Link>
-    </Compile>
+    <Compile Include="..\Challenge.Solvers\NameExport.cs" Link="Imported\NameExport.cs" />
+    <None Include="$(OutputPath)\$(AssemblyName).dll"
+          Pack="true"
+          PackagePath="analyzers/dotnet/cs"
+          Visible="false" />
   </ItemGroup>
 
 </Project>
