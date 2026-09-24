@@ -198,6 +198,7 @@ public sealed class SolverGenerator : IIncrementalGenerator
     {
         // Handle class diagnostics
         if (solverTable.info.HandleClassDiagnostics(context)) return;
+
         context.AddSource($"{solverTable.info.ClassSymbol.ToDisplayString()}.generated.cs", SourceText.From(GenerateSolverTableSource(solverTable.info, solverTable.solvers), Encoding.UTF8));
     }
 
@@ -251,9 +252,10 @@ public sealed class SolverGenerator : IIncrementalGenerator
 
         // Create solvers array
         ScriptObject[] solvers = new ScriptObject[solverInfos.Length];
-        for (int i = 0; i < solvers.Length; i++)
+        foreach ((SolverInfo solver, int i) in solverInfos.OrderBy(s => s.Year)
+                                                          .ThenBy(s => s.Day)
+                                                          .Select((s, i) => (s, i)))
         {
-            SolverInfo solver = solverInfos[i];
             solvers[i] = new ScriptObject
             {
                 ["year"] = solver.Year,
