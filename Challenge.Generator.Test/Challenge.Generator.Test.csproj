@@ -28,15 +28,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Challenge.Generator\Challenge.Generator.csproj"
-                      OutputItemType="Analyzer"
-                      ReferenceOutputAssembly="false" />
-    <ProjectReference Include="..\Challenge.Solvers\Challenge.Solvers.csproj" />
+    <PackageReference Include="Challenge.Generator" Version="2026.9.575.1427" />
+    <PackageReference Include="JetBrains.Annotations" Version="2026.2.0" />
+    <PackageReference Include="JetBrains.ExternalAnnotations" Version="10.2.170" />
   </ItemGroup>
 
-  <Target Name="CleanSourceGeneratedFiles" BeforeTargets="BeforeBuild" DependsOnTargets="$(BeforeBuildDependsOn)">
-    <RemoveDir Directories="Generated" />
-  </Target>
+  <ItemGroup>
+    <ProjectReference Include="..\Challenge.Solvers\Challenge.Solvers.csproj" />
+  </ItemGroup>
 
   <ItemGroup>
     <None Remove="Challenge.Generator.Test.csproj.DotSettings" />
@@ -44,9 +43,8 @@
     <Content Include="Generated\**" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="JetBrains.Annotations" Version="2026.2.0" />
-    <PackageReference Include="JetBrains.ExternalAnnotations" Version="10.2.170" />
-  </ItemGroup>
+  <Target Name="CleanSourceGeneratedFiles" BeforeTargets="BeforeBuild" DependsOnTargets="$(BeforeBuildDependsOn)">
+    <RemoveDir Directories="Generated" />
+  </Target>
 
 </Project>
