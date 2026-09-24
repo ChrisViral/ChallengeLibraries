@@ -136,12 +136,10 @@ public sealed class SolverGenerator : IIncrementalGenerator
         ];
 
         // Return a solver info if we have methods to generate or a constructor to generate
-        return partMethods.Length is not 0 || isMissingConstructor
-                   ? new SolverInfo(solverNode, solverSymbol, partMethods, year, day,
-                                    IsNotMarkedPartial: isNotMarkedPartial,
-                                    IsMissingConstructor: isMissingConstructor,
-                                    PartRunMethod: partRunMethod)
-                   : null;
+        return new SolverInfo(solverNode, solverSymbol, partMethods, year, day,
+                              IsNotMarkedPartial: isNotMarkedPartial,
+                              IsMissingConstructor: isMissingConstructor,
+                              PartRunMethod: partRunMethod);
     }
 
     /// <summary>
@@ -183,6 +181,8 @@ public sealed class SolverGenerator : IIncrementalGenerator
     {
         // Handle class diagnostics
         if (solver.HandleClassDiagnostics(context)) return;
+
+        if (solver.PartMethods.Count is not 0 && !solver.IsMissingConstructor) return;
 
         // Generate source code
         IReadOnlyList<PartMethod> methodsToGenerate = GetMethodsToGenerate(context, solver);
