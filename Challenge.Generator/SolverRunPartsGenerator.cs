@@ -279,7 +279,6 @@ public sealed class SolverRunPartsGenerator : IIncrementalGenerator
             solver.IsMissingConstructor,
             ToolName = typeof(SolverRunPartsGenerator).FullName,
             Version = typeof(SolverRunPartsGenerator).Assembly.GetName().Version.ToString(),
-            HasParts = methodsContainer.Length is not 0,
             Methods = methodsContainer
         });
     }
