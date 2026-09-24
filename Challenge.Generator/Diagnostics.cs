@@ -1,5 +1,4 @@
 ﻿using Challenge.Solvers;
-using Challenge.Solvers.Attributes;
 using Microsoft.CodeAnalysis;
 
 namespace Challenge.Generator;
