@@ -4,22 +4,22 @@ namespace Challenge.CLI;
 
 public partial class SolveCommand
 {
-    [LoggerMessage(LogLevel.Information, "Fetching input for for {Challenge} {Year} {Day}{Part}{Module}")]
+    [LoggerMessage(LogLevel.Information, "Fetching input for for {Challenge} {Year} day {Day}{Part}{Module}")]
     static partial void LogFetchingInput(ILogger logger, string challenge, uint year, uint day, string part, string module);
 
-    [LoggerMessage(LogLevel.Error, "Could not fetch input for {Challenge} {Year} {Day}{Part}{Module}: {Message}\n")]
+    [LoggerMessage(LogLevel.Error, "Could not fetch input for {Challenge} {Year} day {Day}{Part}{Module}: {Message}\n")]
     static partial void LogInputFetchFailed(ILogger logger, string challenge, uint year, uint day, string part, string module, string message);
 
-    [LoggerMessage(LogLevel.Error, "Failed to create the solver for {Challenge} {Year} {Day}{Module}")]
+    [LoggerMessage(LogLevel.Error, "Failed to create the solver for {Challenge} {Year} day {Day}{Module}")]
     static partial void LogFailedCreateSolver(ILogger logger, string challenge, uint year, uint day, string module);
 
-    [LoggerMessage(LogLevel.Information, "Running solver for {Challenge} {Year} {Day}{Part}{Module}")]
+    [LoggerMessage(LogLevel.Information, "Running solver for {Challenge} {Year} day {Day}{Part}{Module}")]
     static partial void LogRunSolver(ILogger logger, string challenge, uint year, uint day, string part, string module);
 
-    [LoggerMessage(LogLevel.Error, "Encountered exception while creating solver for {Challenge} {Year} {Day}{Module}")]
+    [LoggerMessage(LogLevel.Error, "Encountered exception while creating solver for {Challenge} {Year} day {Day}{Module}")]
     static partial void LogExceptionWhileCreatingSolver(ILogger logger, string challenge, uint year, uint day, string module, Exception exception);
 
-    [LoggerMessage(LogLevel.Error, "Encountered exception while running solver for {Challenge} {Year} {Day}{Part}{Module}")]
+    [LoggerMessage(LogLevel.Error, "Encountered exception while running solver for {Challenge} {Year} day {Day}{Part}{Module}")]
     static partial void LogExceptionWhileRunningSolver(ILogger logger, string challenge, uint year, uint day, string part, string module, Exception exception);
 
     [LoggerMessage(LogLevel.Information, "Problem input parsed in: {Elapsed}")]
