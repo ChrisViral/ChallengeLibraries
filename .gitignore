@@ -62,7 +62,7 @@ nunit-*.xml
 *.DotSettings.user
 .claude/
 Generated/
+.run/
 
-# Puzzle files files
-[Ii]nput/
-[Oo]utput/
+# Test project
+Challenge.Generator.Test/
