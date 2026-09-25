@@ -32,7 +32,8 @@ artifacts/
 ScaffoldingReadMe.txt
 
 # NuGet Packages
-# *.nupkg
+*.nupkg
+!/Packages/*.nupkg
 # NuGet Symbol Packages
 *.snupkg
 
