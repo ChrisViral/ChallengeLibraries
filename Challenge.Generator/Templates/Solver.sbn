@@ -11,7 +11,7 @@ namespace {{ file_namespace }};
     /// <inheritdoc />
     /// <exception cref="global::System.InvalidOperationException">If the <paramref name="part" /> is not defined for this Solver</exception>
     [global::System.CodeDom.Compiler.GeneratedCode("{{ tool_name }}", "{{ version }}")]
-    public override void Run(global::System.UInt32 part)
+    public override void Run(uint part)
     {
         switch (part)
         {

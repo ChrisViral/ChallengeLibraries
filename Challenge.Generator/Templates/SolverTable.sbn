@@ -9,7 +9,7 @@ namespace {{ file_namespace }};
 {
     /// <inheritdoc />
     [global::System.CodeDom.Compiler.GeneratedCode("{{ tool_name }}", "{{ version }}")]
-    public {{ if needs_override -}} override {{ end -}} global::Challenge.Solvers.Solver? GetSolver(global::System.UInt32 year, global::System.UInt32 day) => (year, day) switch
+    public {{ if needs_override -}} override {{ end -}} global::Challenge.Solvers.Solver? GetSolver(uint year, uint day) => (year, day) switch
     {
         {{~ for solver in solvers ~}}
         ({{ solver.year }}U, {{ solver.day }}U) => new global::{{ solver.name }}(),
