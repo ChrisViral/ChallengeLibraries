@@ -86,29 +86,26 @@ public abstract partial class SolverResolverBase<T>(ILogger logger, T settings) 
             inputFile.Directory.Create();
         }
 
-        // Validate rate limit
-        TimeSpan timeSinceLastRequest = DateTimeOffset.UtcNow - DateTimeOffset.FromUnixTimeSeconds(this.Settings.LastRequestTimestamp);
-        if (timeSinceLastRequest.TotalSeconds < this.RateLimit.TotalSeconds)
+        // See if we don't have the input already cached from a previous request
+        Result<string> inputResult = GetCachedInput(data);
+        if (!inputResult.TryGetValue(out string? fetchedInput))
         {
-            LogRateLimited(this.Logger, timeSinceLastRequest.TotalSeconds, this.RateLimit.TotalSeconds);
-            return Result.Failure<string>("Request rate limited");
-        }
+            // Validate rate limit
+            TimeSpan timeSinceLastRequest = DateTimeOffset.UtcNow - DateTimeOffset.FromUnixTimeSeconds(this.Settings.LastRequestTimestamp);
+            if (timeSinceLastRequest.TotalSeconds < this.RateLimit.TotalSeconds)
+            {
+                LogRateLimited(this.Logger, timeSinceLastRequest.TotalSeconds, this.RateLimit.TotalSeconds);
+                return Result.Failure<string>("Request rate limited");
+            }
 
-        string fetchedInput;
-        try
-        {
-            // Fetch input and write to file
-            fetchedInput = await GetInputFromAPI(data, token).ConfigureAwait(false);
-        }
-        catch (Exception e)
-        {
-            // Return exception description in case of failure
-            return Result.Failure<string>(e.Message);
-        }
+            // Fetch from api, if invalid, return error message
+            inputResult = await GetInputFromAPI(data, token).ConfigureAwait(false);
+            if (!inputResult.TryGetValue(out fetchedInput)) return inputResult;
 
-        // Write back settings with new timestamp
-        this.Settings.LastRequestTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-        await SaveSettings(token).ConfigureAwait(false);
+            // Write back settings with new timestamp
+            this.Settings.LastRequestTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+            await SaveSettings(token).ConfigureAwait(false);
+        }
 
         // Write input to file and return
         await using StreamWriter writer = inputFile.CreateText();
@@ -141,7 +138,14 @@ public abstract partial class SolverResolverBase<T>(ILogger logger, T settings) 
     /// <param name="data">Solver data</param>
     /// <param name="token">Cancellation token</param>
     /// <returns>The input for the problem</returns>
-    protected abstract Task<string> GetInputFromAPI(SolverData data, CancellationToken token);
+    protected abstract Task<Result<string>> GetInputFromAPI(SolverData data, CancellationToken token);
+
+    /// <summary>
+    /// Tries to get the cached API input
+    /// </summary>
+    /// <param name="data">Solver data to get the input for</param>
+    /// <returns>A <see cref="Result"/> object either containing the found cached input, or an error message</returns>
+    protected virtual Result<string> GetCachedInput(SolverData data) => Result.Failure<string>("Cached input not implemented");
 }
 
 /// <summary>
