@@ -63,6 +63,3 @@ nunit-*.xml
 .claude/
 Generated/
 .run/
-
-# Test project
-Challenge.Generator.Test/

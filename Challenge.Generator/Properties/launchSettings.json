@@ -3,7 +3,7 @@
   "profiles": {
     "Challenge.Generator": {
       "commandName": "DebugRoslynComponent",
-      "targetProject": "../Challenge.Generator.Test/Challenge.Generator.Test.csproj"
+      "targetProject": "Test/Challenge.Generator.Test.csproj"
     }
   }
 }

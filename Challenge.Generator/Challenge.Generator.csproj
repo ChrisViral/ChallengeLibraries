@@ -79,6 +79,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Test\**\*"/>
+    <None Remove="Test\**\*"/>
     <None Include="README.md" Pack="true" PackagePath="$(PackageReadmeFile)" />
     <None Remove="Challenge.Generator.csproj.DotSettings" />
     <EmbeddedResource Include="Templates\**\*.sbn" />
