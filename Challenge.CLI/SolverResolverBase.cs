@@ -1,5 +1,4 @@
 ﻿using System.Text.Json;
-using System.Text.Json.Serialization.Metadata;
 using Challenge.Solvers;
 using CSharpFunctionalExtensions;
 using JetBrains.Annotations;
@@ -49,7 +48,7 @@ public abstract class SolverResolverBase(ILogger logger) : ISolverResolver
 /// <param name="settings">Resolver settings</param>
 [PublicAPI]
 public abstract partial class SolverResolverBase<T>(ILogger logger, T settings) : SolverResolverBase(logger)
-    where T : ResolverSettings
+    where T : ResolverSettings, IResolverSettings<T>
 {
     /// <summary>
     /// Minimum time between API requests
@@ -57,14 +56,9 @@ public abstract partial class SolverResolverBase<T>(ILogger logger, T settings) 
     protected abstract TimeSpan RateLimit { get; }
 
     /// <summary>
-    /// Settings Json type info
-    /// </summary>
-    protected abstract JsonTypeInfo<T> SettingsTypeInfo { get; }
-
-    /// <summary>
     /// Resolver settings
     /// </summary>
-    protected T Settings { get; } = settings;
+    protected T Settings { get; set; } = settings;
 
     /// <inheritdoc />
     public sealed override async Task<Result<string>> FetchInput(SolverData data, CancellationToken token = default)
@@ -103,7 +97,7 @@ public abstract partial class SolverResolverBase<T>(ILogger logger, T settings) 
             if (!inputResult.TryGetValue(out fetchedInput)) return inputResult;
 
             // Write back settings with new timestamp
-            this.Settings.LastRequestTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+            this.Settings = this.Settings with { LastRequestTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds() };
             await SaveSettings(token).ConfigureAwait(false);
         }
 
@@ -122,7 +116,7 @@ public abstract partial class SolverResolverBase<T>(ILogger logger, T settings) 
         // Write back settings with new timestamp
         FileInfo settingsFile = new(SettingsPath);
         await using FileStream settingsWriteFileStream = settingsFile.OpenWrite();
-        await JsonSerializer.SerializeAsync(settingsWriteFileStream, this.Settings, this.SettingsTypeInfo, token).ConfigureAwait(false);
+        await JsonSerializer.SerializeAsync(settingsWriteFileStream, this.Settings, T.SettingsTypeInfo, token).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -145,17 +139,5 @@ public abstract partial class SolverResolverBase<T>(ILogger logger, T settings) 
     /// </summary>
     /// <param name="data">Solver data to get the input for</param>
     /// <returns>A <see cref="Result"/> object either containing the found cached input, or an error message</returns>
-    protected virtual Result<string> GetCachedInput(SolverData data) => Result.Failure<string>("Cached input not implemented");
-}
-
-/// <summary>
-/// SolverResolver with default settings
-/// </summary>
-/// <param name="logger">Logger instance</param>
-/// <param name="settings">Resolver settings</param>
-[PublicAPI]
-public abstract class DefaultSolverResolverBase(ILogger logger, ResolverSettings settings) : SolverResolverBase<ResolverSettings>(logger, settings)
-{
-    /// <inheritdoc />
-    protected sealed override JsonTypeInfo<ResolverSettings> SettingsTypeInfo => ResolverSettingsJsonContext.Default.ResolverSettings;
+    protected virtual Result<string> GetCachedInput(SolverData data) => Result.Failure<string>("Input cache not implemented");
 }

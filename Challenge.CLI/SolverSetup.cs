@@ -1,4 +1,6 @@
-﻿using DotMake.CommandLine;
+﻿using System.Text.Json;
+using Challenge.Solvers;
+using DotMake.CommandLine;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
@@ -9,20 +11,23 @@ namespace Challenge.CLI;
 /// <summary>
 /// Challenge program setup helper
 /// </summary>
-/// <typeparam name="T">Settings type</typeparam>
+/// <typeparam name="TSettings">Settings type</typeparam>
+/// <typeparam name="TResolver">Resolver type</typeparam>
 [PublicAPI]
-public abstract class Setup<T> : IDisposable
-    where T : ResolverSettings
+public abstract class SolverSetup<TSettings, TResolver> : IDisposable
+    where TSettings : ResolverSettings, IResolverSettings<TSettings>
+    where TResolver : class, ISolverResolver
 {
+    /// <summary> Cancellation token source </summary>
     private readonly CancellationTokenSource cancellationSource = new();
     /// <summary> Settings instance </summary>
-    protected T settings = null!;
+    protected TSettings settings = null!;
 
     /// <summary>
     /// Creates a new program setup with the given title
     /// </summary>
     /// <param name="title">Program title</param>
-    protected Setup(string title) => Console.Title = title;
+    protected SolverSetup(string title) => Console.Title = title;
 
     /// <summary>
     /// Tries to setup the data for this program
@@ -79,7 +84,7 @@ public abstract class Setup<T> : IDisposable
         }
 
         // Get settings
-        T? loadedSettings;
+        TSettings? loadedSettings;
         await using (FileStream settingsStream = settingsFile.OpenRead())
         {
             loadedSettings = await GetSettings(settingsStream, this.cancellationSource.Token).ConfigureAwait(false);
@@ -92,7 +97,16 @@ public abstract class Setup<T> : IDisposable
         }
 
         this.settings = loadedSettings;
-        Cli.Ext.ConfigureServices(ConfigureServices);
+        Cli.Ext.ConfigureServices(services =>
+        {
+            // Add logging
+            services.AddSingleton<ISolverResolver, TResolver>()
+                    .AddSingleton(this.settings)
+                    .AddLogging(builder => builder.AddSerilog(Log.Logger, true));
+
+            // Configure other services
+            ConfigureServices(services);
+        });
         return true;
     }
 
@@ -132,7 +146,10 @@ public abstract class Setup<T> : IDisposable
     /// </summary>
     /// <param name="fileStream">File stream to which to save the settings to</param>
     /// <param name="token">Cancellation token</param>
-    public abstract Task CreateDefaultSettings(FileStream fileStream, CancellationToken token);
+    private static async Task CreateDefaultSettings(FileStream fileStream, CancellationToken token)
+    {
+        await JsonSerializer.SerializeAsync(fileStream, TSettings.Default, TSettings.SettingsTypeInfo, token).ConfigureAwait(false);
+    }
 
     /// <summary>
     /// Gets the settings from the given file
@@ -140,7 +157,10 @@ public abstract class Setup<T> : IDisposable
     /// <param name="fileStream">File stream from which to load the settings</param>
     /// <param name="token">Cancellation token</param>
     /// <returns>The loaded settings object, if any</returns>
-    public abstract ValueTask<T?> GetSettings(FileStream fileStream, CancellationToken token);
+    public static async ValueTask<TSettings?> GetSettings(FileStream fileStream, CancellationToken token)
+    {
+        return await JsonSerializer.DeserializeAsync(fileStream, TSettings.SettingsTypeInfo, token).ConfigureAwait(false);
+    }
 
     /// <summary>
     /// Configures the Dependency Injection services
