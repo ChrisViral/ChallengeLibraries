@@ -1,7 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 using Challenge.Utils;
 using JetBrains.Annotations;
-using Microsoft.Extensions.Logging;
 
 namespace Challenge.Solvers.Specialized;
 

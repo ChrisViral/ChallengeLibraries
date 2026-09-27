@@ -26,7 +26,7 @@ public sealed class SolverGenerator : IIncrementalGenerator
     /// <summary>
     /// Full name of the ISolverResolver interface
     /// </summary>
-    private const string SOLVER_RESOLVER_INTERFACE_FULL_NAME = "Challenge.Solvers.ISolverResolver";
+    private const string SOLVER_RESOLVER_INTERFACE_FULL_NAME = "Challenge.CLI.ISolverResolver";
     /// <summary>
     /// GetSolver method name
     /// </summary>

@@ -1,6 +1,5 @@
 ﻿using Challenge.Utils.Extensions.Arrays;
 using JetBrains.Annotations;
-using Microsoft.Extensions.Logging;
 
 namespace Challenge.Solvers.Specialized;
 
@@ -8,7 +7,7 @@ namespace Challenge.Solvers.Specialized;
 /// Array solver base
 /// </summary>
 [PublicAPI]
-public abstract class ArraySolver<T> : Solver<T[]>
+public abstract class ArraySolver<[MeansImplicitUse(ImplicitUseTargetFlags.WithMembers)] T> : Solver<T[]>
 {
     /// <summary>
     /// Creates a new <see cref="ArraySolver{T}"/> Solver
@@ -27,10 +26,8 @@ public abstract class ArraySolver<T> : Solver<T[]>
 
     /// <summary>
     /// Converts an input line into an array member<br/>
-    /// <b>NOTE</b>: This method <b>must</b> be pure as it initializes the base class
     /// </summary>
     /// <param name="line">Line to convert</param>
     /// <returns>The created member</returns>
-    [Pure]
     protected abstract T ConvertLine(string line);
 }

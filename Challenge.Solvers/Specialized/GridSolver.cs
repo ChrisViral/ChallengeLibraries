@@ -2,7 +2,6 @@
 using Challenge.Utils.Extensions.Enums;
 using Challenge.Utils.Extensions.Ranges;
 using JetBrains.Annotations;
-using Microsoft.Extensions.Logging;
 
 namespace Challenge.Solvers.Specialized;
 
@@ -10,7 +9,7 @@ namespace Challenge.Solvers.Specialized;
 /// Grid Solver base
 /// </summary>
 [PublicAPI]
-public abstract class GridSolver<T> : Solver<Grid<T>>
+public abstract class GridSolver<[MeansImplicitUse(ImplicitUseTargetFlags.WithMembers)] T> : Solver<Grid<T>>
 {
     /// <summary>
     /// Grid parse mode
@@ -82,7 +81,6 @@ public abstract class GridSolver<T> : Solver<Grid<T>>
 
     /// <summary>
     /// Converts an input line into a Grid row array<br/>
-    /// <b>NOTE</b>: This method <b>must</b> be pure as it initializes the base class
     /// </summary>
     /// <param name="line">Line to convert</param>
     /// <returns>The created row</returns>

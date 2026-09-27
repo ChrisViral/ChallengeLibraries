@@ -28,13 +28,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Challenge.Generator" Version="2026.9.582.361" />
+    <PackageReference Include="Challenge.Generator" Version="2026.9.629.337" />
     <PackageReference Include="JetBrains.Annotations" Version="2026.2.0" />
     <PackageReference Include="JetBrains.ExternalAnnotations" Version="10.2.170" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Challenge.Solvers\Challenge.Solvers.csproj" />
+    <ProjectReference Include="..\..\Challenge.CLI\Challenge.CLI.csproj" />
   </ItemGroup>
 
   <ItemGroup>

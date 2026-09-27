@@ -11,7 +11,7 @@ namespace Challenge.CLI;
 /// </summary>
 /// <param name="logger">Logger instance</param>
 [PublicAPI]
-public abstract class SolverResolverBase(ILogger logger) : ISolverResolver
+public abstract class SolverResolver(ILogger logger) : ISolverResolver
 {
     /// <summary>
     /// Input folder name
@@ -47,7 +47,7 @@ public abstract class SolverResolverBase(ILogger logger) : ISolverResolver
 /// <param name="logger">Logger instance</param>
 /// <param name="settings">Resolver settings</param>
 [PublicAPI]
-public abstract partial class SolverResolverBase<T>(ILogger logger, T settings) : SolverResolverBase(logger)
+public abstract partial class SolverResolver<T>(ILogger logger, T settings) : SolverResolver(logger)
     where T : ResolverSettings, IResolverSettings<T>
 {
     /// <summary>

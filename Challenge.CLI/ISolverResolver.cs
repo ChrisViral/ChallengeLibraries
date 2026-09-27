@@ -1,7 +1,8 @@
-﻿using CSharpFunctionalExtensions;
+﻿using Challenge.Solvers;
+using CSharpFunctionalExtensions;
 using JetBrains.Annotations;
 
-namespace Challenge.Solvers;
+namespace Challenge.CLI;
 
 /// <summary>
 /// Challenge input fetcher interface

@@ -1,5 +1,4 @@
 ﻿using System.Text.Json;
-using Challenge.Solvers;
 using DotMake.CommandLine;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,7 +15,7 @@ namespace Challenge.CLI;
 [PublicAPI]
 public abstract class SolverSetup<TSettings, TResolver> : IDisposable
     where TSettings : ResolverSettings, IResolverSettings<TSettings>
-    where TResolver : class, ISolverResolver
+    where TResolver : SolverResolver<TSettings>
 {
     /// <summary> Cancellation token source </summary>
     private readonly CancellationTokenSource cancellationSource = new();
@@ -63,32 +62,27 @@ public abstract class SolverSetup<TSettings, TResolver> : IDisposable
                                   .CreateLogger();
 
         // Ensure input directory exists
-        if (!Directory.Exists(SolverResolverBase.INPUT_FOLDER))
+        if (!Directory.Exists(SolverResolver.INPUT_FOLDER))
         {
-            Directory.CreateDirectory(SolverResolverBase.INPUT_FOLDER);
+            Directory.CreateDirectory(SolverResolver.INPUT_FOLDER);
         }
 
         // Check if settings exist
-        FileInfo settingsFile = new(SolverResolverBase.SettingsPath);
+        FileInfo settingsFile = new(SolverResolver.SettingsPath);
         if (!settingsFile.Exists)
         {
             // Create empty settings file
-            await using (FileStream newSettingsStream = settingsFile.Create())
-            {
-                await CreateDefaultSettings(newSettingsStream, this.cancellationSource.Token).ConfigureAwait(false);
-            }
+            await using FileStream newSettingsStream = settingsFile.Create();
+            await CreateDefaultSettings(newSettingsStream, this.cancellationSource.Token).ConfigureAwait(false);
 
             // Prompt user to add cookie to file
-            Log.Error("Could not find the settings file, please add your cookie and to the generated file\n{FileName}", settingsFile.FullName);
+            Log.Error("Could not find the settings file, please add your cookie and to the generated file: {FileName}", settingsFile.FullName);
             return false;
         }
 
         // Get settings
-        TSettings? loadedSettings;
-        await using (FileStream settingsStream = settingsFile.OpenRead())
-        {
-            loadedSettings = await GetSettings(settingsStream, this.cancellationSource.Token).ConfigureAwait(false);
-        }
+        await using FileStream settingsStream = settingsFile.OpenRead();
+        TSettings? loadedSettings = await GetSettings(settingsStream, this.cancellationSource.Token).ConfigureAwait(false);
 
         if (loadedSettings is null)
         {
@@ -99,7 +93,7 @@ public abstract class SolverSetup<TSettings, TResolver> : IDisposable
         this.settings = loadedSettings;
         Cli.Ext.ConfigureServices(services =>
         {
-            // Add logging
+            // Add resolver, settings, and logging
             services.AddSingleton<ISolverResolver, TResolver>()
                     .AddSingleton(this.settings)
                     .AddLogging(builder => builder.AddSerilog(Log.Logger, true));
@@ -123,9 +117,9 @@ public abstract class SolverSetup<TSettings, TResolver> : IDisposable
             args = ["-h"];
         }
 
-#if !DEBUG
+#if DEBUG
         // Don't wrap on debug to allow breakpoints
-        return await Cli.RunAsync<ChallengeCommand>(args, cancellationToken: cancellationSource.Token).ConfigureAwait(false);
+        return await Cli.RunAsync<ChallengeCommand>(args, cancellationToken: this.cancellationSource.Token).ConfigureAwait(false);
 #else
         try
         {

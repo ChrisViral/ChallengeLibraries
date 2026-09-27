@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using Challenge.CLI;
 using Challenge.Solvers;
 using CSharpFunctionalExtensions;
 

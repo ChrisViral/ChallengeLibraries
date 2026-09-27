@@ -200,7 +200,7 @@ public abstract partial class Solver : IDisposable
 /// </summary>
 /// <typeparam name="T">The fully parse input type</typeparam>
 [PublicAPI]
-public abstract class Solver<T> : Solver
+public abstract class Solver<[MeansImplicitUse(ImplicitUseTargetFlags.WithMembers)] T> : Solver
 {
     /// <summary>
     /// Parsed input data
