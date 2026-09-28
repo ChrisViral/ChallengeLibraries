@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Linq;
+﻿using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -140,12 +138,14 @@ internal sealed record SolverInfo(ClassDeclarationSyntax ClassNode,
 /// </summary>
 /// <param name="ClassNode">Solver Table class node</param>
 /// <param name="ClassSymbol">Solver Table class symbol</param>
+/// <param name="GetSolverMethodDefinition">The GetSolver interface method definition</param>
 /// <param name="ExistingGetSolverMethod">The existing GetSolver method, if any</param>
 /// <param name="IsNestedType">If the class is a nested type</param>
 /// <param name="IsNotMarkedPartial">If the class isn't marked as partial</param>
 /// <param name="IsMissingSolverResolverInterface">If the SolverResolver interface is missing</param>
 internal sealed record SolverTableInfo(ClassDeclarationSyntax ClassNode,
                                        INamedTypeSymbol ClassSymbol,
+                                       IMethodSymbol GetSolverMethodDefinition,
                                        IMethodSymbol? ExistingGetSolverMethod,
                                        bool IsNestedType = false,
                                        bool IsNotMarkedPartial = false,

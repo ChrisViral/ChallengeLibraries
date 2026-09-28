@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>14</LangVersion>
     <RootNamespace>Challenge.Generator</RootNamespace>
     <PlatformTarget>x64</PlatformTarget>
@@ -79,16 +80,20 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Remove="Test\**\*"/>
-    <None Remove="Test\**\*"/>
     <None Include="README.md" Pack="true" PackagePath="$(PackageReadmeFile)" />
-    <None Remove="Challenge.Generator.csproj.DotSettings" />
     <EmbeddedResource Include="Templates\**\*.sbn" />
-    <Compile Include="..\Challenge.Solvers\NameExport.cs" Link="Imported\NameExport.cs" />
     <None Include="$(OutputPath)\$(AssemblyName).dll"
           Pack="true"
           PackagePath="analyzers/dotnet/cs"
           Visible="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Test\**\*"/>
+    <None Remove="Test\**\*"/>
+    <None Remove="Challenge.Generator.csproj.DotSettings" />
+    <Compile Include="..\Challenge.CLI\ISolverResolver.cs" Link="Imported\CLINameImport.cs" />
+    <Compile Include="..\Challenge.Solvers\SolversNameExport.cs" Link="Imported\SolversNameImport.cs" />
   </ItemGroup>
 
 </Project>

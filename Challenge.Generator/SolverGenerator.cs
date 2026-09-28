@@ -1,11 +1,7 @@
-using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading;
+using Challenge.CLI;
 using Challenge.Solvers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -24,13 +20,21 @@ namespace Challenge.Generator;
 public sealed class SolverGenerator : IIncrementalGenerator
 {
     /// <summary>
-    /// Full name of the ISolverResolver interface
+    /// Source generator qualified name format
     /// </summary>
-    private const string SOLVER_RESOLVER_INTERFACE_FULL_NAME = "Challenge.CLI.ISolverResolver";
-    /// <summary>
-    /// GetSolver method name
-    /// </summary>
-    private const string GET_SOLVER_METHOD_NAME = "GetSolver";
+    private static readonly SymbolDisplayFormat GeneratorQualifiedFormat =
+        new(globalNamespaceStyle: SymbolDisplayGlobalNamespaceStyle.Included,
+            typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
+            genericsOptions: SymbolDisplayGenericsOptions.IncludeTypeParameters
+                           | SymbolDisplayGenericsOptions.IncludeVariance,
+            memberOptions: SymbolDisplayMemberOptions.IncludeParameters
+                         | SymbolDisplayMemberOptions.IncludeType,
+            parameterOptions: SymbolDisplayParameterOptions.IncludeType
+                            | SymbolDisplayParameterOptions.IncludeName
+                            | SymbolDisplayParameterOptions.IncludeParamsRefOut
+                            | SymbolDisplayParameterOptions.IncludeOptionalBrackets,
+            miscellaneousOptions: SymbolDisplayMiscellaneousOptions.UseSpecialTypes
+                                | SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier);
 
     /// <summary>
     /// This assembly's version string
@@ -165,20 +169,23 @@ public sealed class SolverGenerator : IIncrementalGenerator
         INamedTypeSymbol? solverAttributeSymbol = context.SemanticModel.Compilation.GetTypeByMetadataName(typeof(SolverTableAttribute).FullName!);
         if (solverAttributeSymbol is null ||GetAttributeOfType(solverTableSymbol, solverAttributeSymbol) is null) return null;
 
+        // Get the GetSolver method info symbol
+        INamedTypeSymbol? interfaceSymbol = context.SemanticModel.Compilation.GetTypeByMetadataName(typeof(ISolverResolver).FullName!);
+        if (interfaceSymbol?.GetMembers(nameof(ISolverResolver.GetSolver)).SingleOrDefault() is not IMethodSymbol getSolverSymbol) return null;
+
         // Check if we're a nested type
-        if (solverTableSymbol.ContainingType is not null) return new SolverTableInfo(solverTableNode, solverTableSymbol, null, IsNestedType: true);
+        if (solverTableSymbol.ContainingType is not null) return new SolverTableInfo(solverTableNode, solverTableSymbol, getSolverSymbol, null, IsNestedType: true);
 
         // Check if the type is marked as partial
         bool isNotMarkedPartial = !solverTableNode.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword));
-        if (isNotMarkedPartial) return new SolverTableInfo(solverTableNode, solverTableSymbol, null, IsNotMarkedPartial: true);
+        if (isNotMarkedPartial) return new SolverTableInfo(solverTableNode, solverTableSymbol, getSolverSymbol, null, IsNotMarkedPartial: true);
 
         // Check if we implement the interface
-        INamedTypeSymbol? interfaceSymbol = context.SemanticModel.Compilation.GetTypeByMetadataName(SOLVER_RESOLVER_INTERFACE_FULL_NAME);
         bool hasSolverResolverInterface = solverTableSymbol.AllInterfaces.Any(i => SymbolEqualityComparer.Default.Equals(i, interfaceSymbol));
-        if (!hasSolverResolverInterface) return new SolverTableInfo(solverTableNode, solverTableSymbol, null, IsMissingSolverResolverInterface: true);
+        if (!hasSolverResolverInterface) return new SolverTableInfo(solverTableNode, solverTableSymbol, getSolverSymbol, null, IsMissingSolverResolverInterface: true);
 
-        IMethodSymbol? getSolverMethodSymbol = GetGetSolverMethodDefinition(solverTableSymbol);
-        return new SolverTableInfo(solverTableNode, solverTableSymbol, getSolverMethodSymbol, IsNotMarkedPartial: isNotMarkedPartial);
+        IMethodSymbol? getSolverImplementationSymbol = solverTableSymbol.FindImplementationForInterfaceMember(getSolverSymbol) as IMethodSymbol;
+        return new SolverTableInfo(solverTableNode, solverTableSymbol, getSolverSymbol, getSolverImplementationSymbol, IsNotMarkedPartial: isNotMarkedPartial);
     }
 
     /// <summary>
@@ -268,7 +275,7 @@ public sealed class SolverGenerator : IIncrementalGenerator
             {
                 ["year"] = solver.Year,
                 ["day"]  = solver.Day,
-                ["name"] = solver.ClassSymbol.ToDisplayString()
+                ["name"] = solver.ClassSymbol.ToDisplayString(GeneratorQualifiedFormat)
             };
         }
 
@@ -279,6 +286,7 @@ public sealed class SolverGenerator : IIncrementalGenerator
         bool needsOverride = solverTableInfo.ExistingGetSolverMethod is { IsOverride: true }
                                                                      or { IsVirtual: true }
                                                                      or { IsAbstract: true };
+        string methodSignature = solverTableInfo.GetSolverMethodDefinition.ToDisplayString(GeneratorQualifiedFormat);
 
         // Render template and write source
         return template.Render(new
@@ -288,6 +296,7 @@ public sealed class SolverGenerator : IIncrementalGenerator
             className,
             toolName,
             needsOverride,
+            methodSignature,
             Version,
             solvers
         });
@@ -393,38 +402,6 @@ public sealed class SolverGenerator : IIncrementalGenerator
     {
         return data.Symbol is { Name: nameof(Solver.Run), Parameters.Length: 1 }
             && data.Symbol.Parameters[0].Type.SpecialType is SpecialType.System_UInt32;
-    }
-
-    /// <summary>
-    /// Gets the GetSolver method for this type, if implemented
-    /// </summary>
-    /// <param name="type">Type to find the GetSolver method in</param>
-    /// <returns>The found GetSolver method symbol, or <see langword="null"/></returns>
-    private static IMethodSymbol? GetGetSolverMethodDefinition(INamedTypeSymbol? type)
-    {
-        while (type is not null)
-        {
-            IMethodSymbol? getSolverMethod = type.GetMembers()
-                                                    .OfType<IMethodSymbol>()
-                                                    .FirstOrDefault(IsGetSolverMethod);
-            if (getSolverMethod is not null) return getSolverMethod;
-
-            type = type.BaseType;
-        }
-
-        return null;
-    }
-
-    /// <summary>
-    /// Checks if the given method is a GetSolver method
-    /// </summary>
-    /// <param name="method">Method symbol</param>
-    /// <returns><see langword="true"/> if <paramref name="method"/> is a GetSolver method, otherwise <see langword="false"/></returns>
-    private static bool IsGetSolverMethod(IMethodSymbol method)
-    {
-        return method is { Name: GET_SOLVER_METHOD_NAME, Parameters.Length: 2 }
-            && method.Parameters[0].Type.SpecialType is SpecialType.System_UInt32
-            && method.Parameters[1].Type.SpecialType is SpecialType.System_UInt32;
     }
 
     /// <summary>
