@@ -287,6 +287,7 @@ public sealed class SolverGenerator : IIncrementalGenerator
                                                                      or { IsVirtual: true }
                                                                      or { IsAbstract: true };
         string methodSignature = solverTableInfo.GetSolverMethodDefinition.ToDisplayString(GeneratorQualifiedFormat);
+        string parameters = $"({string.Join(", ", solverTableInfo.GetSolverMethodDefinition.Parameters.Select(p => p.Name))})";
 
         // Render template and write source
         return template.Render(new
@@ -297,6 +298,7 @@ public sealed class SolverGenerator : IIncrementalGenerator
             toolName,
             needsOverride,
             methodSignature,
+            parameters,
             Version,
             solvers
         });

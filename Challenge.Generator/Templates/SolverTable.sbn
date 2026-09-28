@@ -9,11 +9,11 @@ namespace {{ file_namespace }};
 {
     /// <inheritdoc />
     [global::System.CodeDom.Compiler.GeneratedCode("{{ tool_name }}", "{{ version }}")]
-    public {{ if needs_override -}} override {{ end -}} {{ method_signature }} => (year, day) switch
+    public {{ if needs_override -}} override {{ end -}} {{ method_signature }} => {{ parameters }} switch
     {
         {{~ for solver in solvers ~}}
         ({{ solver.year }}U, {{ solver.day }}U) => new {{ solver.name }}(),
         {{~ end ~}}
-        _ => null
+        _ => default
     };
 }
