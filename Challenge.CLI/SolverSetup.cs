@@ -99,7 +99,7 @@ public abstract class SolverSetup<TSettings, TResolver> : IDisposable
                     .AddLogging(builder => builder.AddSerilog(Log.Logger, true));
 
             // Configure other services
-            ConfigureServices(services);
+            ConfigureAPIClients(services);
         });
         return true;
     }
@@ -157,10 +157,10 @@ public abstract class SolverSetup<TSettings, TResolver> : IDisposable
     }
 
     /// <summary>
-    /// Configures the Dependency Injection services
+    /// Configures the Dependency Injection API Client services
     /// </summary>
     /// <param name="services">Service collection instance</param>
-    public abstract void ConfigureServices(IServiceCollection services);
+    public abstract void ConfigureAPIClients(IServiceCollection services);
 
     /// <inheritdoc />
     public void Dispose()
