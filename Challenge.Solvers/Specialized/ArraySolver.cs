@@ -1,4 +1,5 @@
-﻿using Challenge.Utils.Extensions.Arrays;
+﻿using System.Collections.Immutable;
+using Challenge.Utils.Extensions.Arrays;
 using JetBrains.Annotations;
 
 namespace Challenge.Solvers.Specialized;
@@ -19,7 +20,7 @@ public abstract class ArraySolver<[MeansImplicitUse(ImplicitUseTargetFlags.WithM
     /// </summary>
     /// <param name="splitters">Splitting characters, defaults to newline only</param>
     /// <param name="options">Input parsing options, defaults to removing empty entries and trimming entries</param>
-    protected ArraySolver(char[]? splitters = null, StringSplitOptions options = DEFAULT_OPTIONS) : base(splitters, options) { }
+    protected ArraySolver(ImmutableArray<char>? splitters = null, StringSplitOptions options = DEFAULT_OPTIONS) : base(splitters, options) { }
 
     /// <inheritdoc />
     protected sealed override T[] Convert(string[] rawInput) => rawInput.ConvertAll(ConvertLine);

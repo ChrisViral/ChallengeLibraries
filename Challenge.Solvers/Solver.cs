@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Challenge.Utils.Extensions.Enums;
@@ -6,6 +7,7 @@ using Challenge.Utils.Extensions.TimeSpans;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using TextCopy;
+using ZLinq;
 
 namespace Challenge.Solvers;
 
@@ -22,10 +24,10 @@ public abstract partial class Solver : IDisposable
     /// <summary>
     /// Default split characters
     /// </summary>
-    private static readonly char[] DefaultSplitters = ['\n'];
+    private static readonly ImmutableArray<char> DefaultSplitters = ['\n'];
 
     private readonly StringSplitOptions splitOptions;
-    private readonly char[] splitters;
+    private readonly ImmutableArray<char> splitters;
     private readonly Stopwatch partWatch = new();
     private uint currentPart = 1;
 
@@ -68,7 +70,7 @@ public abstract partial class Solver : IDisposable
     /// </summary>
     /// <param name="splitters">Splitting characters, defaults to newline only</param>
     /// <param name="options">Input parsing options, defaults to removing empty entries and trimming entries</param>
-    protected Solver(char[]? splitters = null, StringSplitOptions options = DEFAULT_OPTIONS)
+    protected Solver(ImmutableArray<char>? splitters = null, StringSplitOptions options = DEFAULT_OPTIONS)
     {
         // Setup data
         this.splitters    = splitters ?? DefaultSplitters;
@@ -90,7 +92,10 @@ public abstract partial class Solver : IDisposable
         else
         {
             // Else split data
-            this.Data = input.Split(this.splitters, this.splitOptions);
+            int splitCount = input.AsSpan().CountAny(this.splitters.AsSpan());
+            Span<Range> splits = stackalloc Range[splitCount];
+            input.SplitAny(splits, this.splitters.AsSpan(), this.splitOptions);
+            this.Data = splits.Select(split => input[split]).ToArray();
         }
         parseWatch.Stop();
         this.ParseTime = parseWatch.Elapsed;
@@ -222,7 +227,7 @@ public abstract class Solver<[MeansImplicitUse(ImplicitUseTargetFlags.WithMember
     /// </summary>
     /// <param name="splitters">Splitting characters, defaults to newline only</param>
     /// <param name="options">Input parsing options, defaults to removing empty entries and trimming entries</param>
-    protected Solver(char[]? splitters = null, StringSplitOptions options = DEFAULT_OPTIONS) : base(splitters, options) { }
+    protected Solver(ImmutableArray<char>? splitters = null, StringSplitOptions options = DEFAULT_OPTIONS) : base(splitters, options) { }
 
     /// <inheritdoc />
     public override void ParseInput(string input)
@@ -245,7 +250,7 @@ public abstract class Solver<[MeansImplicitUse(ImplicitUseTargetFlags.WithMember
         this.ParseTime += parseWatch.Elapsed;
     }
 
-    /// <inheritdoc cref="IDisposable.Dispose"/>
+    /// <inheritdoc />
     public override void Dispose()
     {
         if (this.IsDisposed) return;

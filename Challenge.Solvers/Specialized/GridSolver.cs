@@ -1,4 +1,5 @@
-﻿using Challenge.Collections;
+﻿using System.Collections.Immutable;
+using Challenge.Collections;
 using Challenge.Utils.Extensions.Enums;
 using Challenge.Utils.Extensions.Ranges;
 using JetBrains.Annotations;
@@ -46,7 +47,7 @@ public abstract class GridSolver<[MeansImplicitUse(ImplicitUseTargetFlags.WithMe
     /// </summary>
     /// <param name="splitters">Splitting characters, defaults to newline only</param>
     /// <param name="options">Input parsing options, defaults to removing empty entries and trimming entries</param>
-    protected GridSolver(char[]? splitters = null, StringSplitOptions options = DEFAULT_OPTIONS) : base(splitters, options) { }
+    protected GridSolver(ImmutableArray<char>? splitters = null, StringSplitOptions options = DEFAULT_OPTIONS) : base(splitters, options) { }
 
     /// <inheritdoc />
     protected sealed override Grid<T> Convert(string[] rawInput)

@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Collections.Immutable;
+using System.Text.RegularExpressions;
 using Challenge.Utils;
 using JetBrains.Annotations;
 
@@ -26,7 +27,7 @@ public abstract class RegexSolver<[MeansImplicitUse(ImplicitUseTargetFlags.WithM
     /// </summary>
     /// <param name="splitters">Splitting characters, defaults to newline only</param>
     /// <param name="options">Input parsing options, defaults to removing empty entries and trimming entries</param>
-    protected RegexSolver(char[]? splitters = null, StringSplitOptions options = DEFAULT_OPTIONS) : base(splitters, options) { }
+    protected RegexSolver(ImmutableArray<char>? splitters = null, StringSplitOptions options = DEFAULT_OPTIONS) : base(splitters, options) { }
 
     /// <inheritdoc />
     protected sealed override T[] Convert(string[] rawInput) => RegexFactory<T>.ConstructObjects(this.Matcher, rawInput);
