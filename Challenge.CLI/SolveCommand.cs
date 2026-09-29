@@ -170,46 +170,41 @@ public sealed partial class SolveCommand(ILoggerFactory loggerFactory, ISolverRe
     private async Task<int> RunAllSolvers(Solver solver, List<(SolverData data, string input)> inputs, CancellationToken token)
     {
 #if DEBUG
-        if (inputs.Count is 1)
+        foreach ((SolverData data, string input) in inputs)
         {
             // In debug mode we want to break at the exception location
-            LogRunSolver(this.Logger, this.Resolver.ChallengeName, this.Year, this.Day, string.Empty, this.Module);
-            solver.ParseInput(inputs[0].input);
+            LogRunSolver(this.Logger, this.Resolver.ChallengeName, this.Year, this.Day, GetPartString(data.Part), this.Module);
+            solver.ParseInput(input);
             LogInputParsed(this.Logger, solver.ParseTime.GetElapsedString());
-            solver.RunAndStartStopwatch();
-        }
-        else
-        {
-            foreach ((SolverData data, string input) in inputs)
+
+            if (data.Part.HasValue)
             {
-                // In debug mode we want to break at the exception location
-                LogRunSolver(this.Logger, this.Resolver.ChallengeName, this.Year, this.Day, GetPartString(data.Part), this.Module);
-                solver.ParseInput(input);
-                LogInputParsed(this.Logger, solver.ParseTime.GetElapsedString());
-                solver.RunAndStartStopwatch(data.Part!.Value);
+                solver.RunAndStartStopwatch(data.Part.Value);
+            }
+            else
+            {
+                solver.RunAndStartStopwatch();
             }
         }
 #else
         uint? currentPart = null;
         try
         {
-            if (inputs.Count is 1)
+            // In release mode, we want to catch exceptions
+            foreach ((SolverData data, string input) in inputs)
             {
-                // In debug mode we want to break at the exception location
-                LogRunSolver(this.Logger, this.Resolver.ChallengeName, this.Year, this.Day, string.Empty, this.Module);
-                solver.ParseInput(inputs[0].input);
+                currentPart = data.Part;
+                LogRunSolver(this.Logger, this.Resolver.ChallengeName, this.Year, this.Day, GetPartString(currentPart), this.Module);
+                solver.ParseInput(input);
                 LogInputParsed(this.Logger, solver.ParseTime.GetElapsedString());
-                solver.RunAndStartStopwatch();
-            }
-            else
-            {
-                foreach ((SolverData data, string input) in inputs)
+
+                if (currentPart.HasValue)
                 {
-                    // In debug mode we want to break at the exception location
-                    LogRunSolver(this.Logger, this.Resolver.ChallengeName, this.Year, this.Day, GetPartString(data.Part), this.Module);
-                    solver.ParseInput(input);
-                    LogInputParsed(this.Logger, solver.ParseTime.GetElapsedString());
-                    solver.RunAndStartStopwatch(data.Part!.Value);
+                    solver.RunAndStartStopwatch(currentPart.Value);
+                }
+                else
+                {
+                    solver.RunAndStartStopwatch();
                 }
             }
         }
