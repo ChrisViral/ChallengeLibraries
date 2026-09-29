@@ -179,13 +179,12 @@ public class Counter<TKey, TCount> : IDictionary<TKey, TCount>, IReadOnlyDiction
     /// Adds a new value to the Counter
     /// </summary>
     /// <param name="value">Value to add</param>
-    /// <returns><see langword="true"/> if the value was already in the counter and was incremented, otherwise <see langword="false"/></returns>
-    public bool Add(TKey value)
+    /// <returns>The count currently held in the Counter for this value</returns>
+    public TCount Add(TKey value)
     {
-        if (this.dictionary.TryAdd(value, TCount.One)) return true;
+        if (this.dictionary.TryAdd(value, TCount.One)) return TCount.One;
 
-        this.dictionary[value]++;
-        return false;
+        return ++this.dictionary[value];
 
     }
 
