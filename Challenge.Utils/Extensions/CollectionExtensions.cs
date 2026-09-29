@@ -244,7 +244,13 @@ public static class CollectionExtensions
             return nodes;
         }
 
-        /// <inheritdoc cref="GetElementAt(LinkedList{T}, int)"/>
+        /// <summary>
+        /// Gets the element at a given index within this <see cref="LinkedList{T}"/>
+        /// </summary>
+        /// <param name="index">Element index to get</param>
+        /// <returns>The node at the given index within the list</returns>
+        /// <exception cref="InvalidOperationException">If the list is empty</exception>
+        /// <exception cref="ArgumentOutOfRangeException">If <paramref name="index"/> is outside of the range of the list</exception>
         [Pure]
         public LinkedListNode<T> GetElementAt(Index index) => list.GetElementAt(index.GetOffset(list.Count));
 
