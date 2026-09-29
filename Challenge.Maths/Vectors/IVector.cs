@@ -21,10 +21,6 @@ public enum AdjacentOptions
     /// Self vector included
     /// </summary>
     WITH_SELF      = 0b10,
-    /// <summary>
-    /// Both diagonally adjacent and self vector included
-    /// </summary>
-    ALL            = 0b11
 }
 
 /// <summary>
