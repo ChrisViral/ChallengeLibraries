@@ -1,5 +1,6 @@
 ﻿using System.Numerics;
 using System.Runtime.CompilerServices;
+using JetBrains.Annotations;
 
 namespace Challenge.Maths.Vectors;
 
@@ -9,6 +10,7 @@ namespace Challenge.Maths.Vectors;
 /// <param name="X">X component</param>
 /// <param name="Y">Y component</param>
 /// <typeparam name="T">Integer type</typeparam>
+[PublicAPI]
 public readonly record struct DirectionVector<T>((Direction direction, T length) X, (Direction direction, T length) Y) where T : unmanaged, IBinaryInteger<T>, IMinMaxValue<T>
 {
     /// <summary>
@@ -44,6 +46,7 @@ public readonly record struct DirectionVector<T>((Direction direction, T length)
 /// <summary>
 /// <see cref="DirectionVector{T}"/> extensions
 /// </summary>
+[PublicAPI]
 public static class DirectionVectorExtensions
 {
     /// <typeparam name="T">Integer type</typeparam>

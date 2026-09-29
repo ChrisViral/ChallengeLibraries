@@ -2,6 +2,7 @@
 using System.Collections.Immutable;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using Challenge.Utils.Extensions.Enums;
 using Challenge.Utils.Extensions.Spans;
 using JetBrains.Annotations;
 using ZLinq;
@@ -95,10 +96,9 @@ public static class Vector3Extensions
     /// Adjacent vector enumerator
     /// </summary>
     /// <param name="vector">Vector to get the adjacent positions for</param>
-    /// <param name="withDiagonals">If diagonal adjacents should be included</param>
-    /// <param name="withSelf">If the self vector should be included</param>
+    /// <param name="options">Adjacent vector options</param>
     [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
-    public ref struct AdjacentEnumerator<T>(Vector3<T> vector, bool withDiagonals, bool withSelf) : IValueEnumerator<Vector3<T>>
+    public ref struct AdjacentEnumerator<T>(Vector3<T> vector, AdjacentOptions options) : IValueEnumerator<Vector3<T>>
         where T : unmanaged, IBinaryInteger<T>, IMinMaxValue<T>
     {
         /// <summary>
@@ -152,9 +152,9 @@ public static class Vector3Extensions
             Vector3<T>.Forwards + Vector3<T>.Up + Vector3<T>.Right,
         ];
 
-        private readonly bool withSelf = withSelf;
+        private readonly bool withSelf = options.HasFlags(AdjacentOptions.WITH_SELF);
         private readonly Vector3<T> vector = vector;
-        private readonly ReadOnlySpan<Vector3<T>> offsets = withDiagonals ? AllOffsets.AsSpan() : Offsets.AsSpan();
+        private readonly ReadOnlySpan<Vector3<T>> offsets = options.HasFlags(AdjacentOptions.WITH_DIAGONALS) ? AllOffsets.AsSpan() : Offsets.AsSpan();
         private int index = 0;
 
         /// <inheritdoc />
@@ -229,15 +229,14 @@ public static class Vector3Extensions
     /// Adjacent vector enumerator
     /// </summary>
     /// <param name="vector">Vector to get the adjacent positions for</param>
-    /// <param name="withDiagonals">If diagonal adjacents should be included</param>
-    /// <param name="withSelf">If the self vector should be included</param>
+    /// <param name="options">Adjacent vector options</param>
     [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
-    public sealed class AdjacentEnumerable<T>(Vector3<T> vector, bool withDiagonals, bool withSelf) : IEnumerable<Vector3<T>>, IEnumerator<Vector3<T>>
+    public sealed class AdjacentEnumerable<T>(Vector3<T> vector, AdjacentOptions options) : IEnumerable<Vector3<T>>, IEnumerator<Vector3<T>>
         where T : unmanaged, IBinaryInteger<T>, IMinMaxValue<T>
     {
-        private readonly bool withSelf = withSelf;
+        private readonly bool withSelf = options.HasFlags(AdjacentOptions.WITH_SELF);
         private readonly Vector3<T> vector = vector;
-        private readonly ImmutableArray<Vector3<T>> offsets = withDiagonals ? AdjacentEnumerator<T>.AllOffsets : AdjacentEnumerator<T>.Offsets;
+        private readonly ImmutableArray<Vector3<T>> offsets = options.HasFlags(AdjacentOptions.WITH_DIAGONALS) ? AdjacentEnumerator<T>.AllOffsets : AdjacentEnumerator<T>.Offsets;
         private int index = -1;
 
         /// <summary>
@@ -320,23 +319,21 @@ public static class Vector3Extensions
         /// <summary>
         /// Gets all the adjacent Vector3 to this one
         /// </summary>
-        /// <param name="withDiagonals">If diagonal vectors should be included</param>
-        /// <param name="withSelf">If self vector should be included</param>
+        /// <param name="options">Adjacent vector options</param>
         /// <returns>Adjacent vectors</returns>
         /// ReSharper disable once CognitiveComplexity
-        public ValueEnumerable<AdjacentEnumerator<T>, Vector3<T>> Adjacent(bool withDiagonals = false, bool withSelf = false)
+        public ValueEnumerable<AdjacentEnumerator<T>, Vector3<T>> Adjacent(AdjacentOptions options = AdjacentOptions.CARDINAL_ONLY)
         {
-            return new ValueEnumerable<AdjacentEnumerator<T>, Vector3<T>>(new AdjacentEnumerator<T>(value, withDiagonals, withSelf));
+            return new ValueEnumerable<AdjacentEnumerator<T>, Vector3<T>>(new AdjacentEnumerator<T>(value, options));
         }
 
         /// <summary>
         /// Gets all the adjacent Vector3 to this one
         /// </summary>
-        /// <param name="withDiagonals">If diagonal vectors should be included</param>
-        /// <param name="withSelf">If self vector should be included</param>
+        /// <param name="options">Adjacent vector options</param>
         /// <returns>Adjacent vectors</returns>
         /// ReSharper disable once CognitiveComplexity
-        public AdjacentEnumerable<T> AsAdjacentEnumerable(bool withDiagonals = false, bool withSelf = false) => new(value, withDiagonals, withSelf);
+        public AdjacentEnumerable<T> AsAdjacentEnumerable(AdjacentOptions options = AdjacentOptions.CARDINAL_ONLY) => new(value, options);
 
         /// <summary>
         /// Enumerates in row order all the vectors which have components in the range [0,max[ for each dimension, using this vector's values as the maximums

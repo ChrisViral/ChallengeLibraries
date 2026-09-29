@@ -1,5 +1,6 @@
 ﻿using System.Numerics;
 using System.Runtime.CompilerServices;
+using Challenge.Utils.Extensions.Enums;
 using JetBrains.Annotations;
 using ZLinq;
 
@@ -153,13 +154,13 @@ public static class Vector4Extensions
         /// <summary>
         /// Gets all the adjacent Vector4 to this one
         /// </summary>
-        /// <param name="withDiagonals">If diagonal vectors should be included</param>
-        /// <param name="withSelf">If self vector should be included</param>
+        /// <param name="options">Adjacent vector options</param>
         /// <returns>Adjacent vectors</returns>
         /// ReSharper disable once CognitiveComplexity
-        public IEnumerable<Vector4<T>> Adjacent(bool withDiagonals = false, bool withSelf = false)
+        public IEnumerable<Vector4<T>> Adjacent(AdjacentOptions options = AdjacentOptions.CARDINAL_ONLY)
         {
-            if (withDiagonals)
+            bool withSelf = options.HasFlags(AdjacentOptions.WITH_SELF);
+            if (options.HasFlags(AdjacentOptions.WITH_DIAGONALS))
             {
                 for (T x = -T.One; x <= T.One; x++)
                 {

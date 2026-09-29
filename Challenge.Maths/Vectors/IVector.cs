@@ -4,6 +4,30 @@ using JetBrains.Annotations;
 namespace Challenge.Maths.Vectors;
 
 /// <summary>
+/// Adjacent vector options
+/// </summary>
+[PublicAPI, Flags]
+public enum AdjacentOptions
+{
+    /// <summary>
+    /// Only cardinally adajacent vectors
+    /// </summary>
+    CARDINAL_ONLY  = 0b00,
+    /// <summary>
+    /// Diagonally adjacent vectors including
+    /// </summary>
+    WITH_DIAGONALS = 0b01,
+    /// <summary>
+    /// Self vector included
+    /// </summary>
+    WITH_SELF      = 0b10,
+    /// <summary>
+    /// Both diagonally adjacent and self vector included
+    /// </summary>
+    ALL            = 0b11
+}
+
+/// <summary>
 /// Vector base interface
 /// </summary>
 [PublicAPI]
