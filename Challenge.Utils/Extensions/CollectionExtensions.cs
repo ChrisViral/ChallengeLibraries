@@ -243,5 +243,43 @@ public static class CollectionExtensions
 
             return nodes;
         }
+
+        /// <inheritdoc cref="GetElementAt(LinkedList{T}, int)"/>
+        [Pure]
+        public LinkedListNode<T> GetElementAt(Index index) => list.GetElementAt(index.GetOffset(list.Count));
+
+        /// <summary>
+        /// Gets the element at a given index within this <see cref="LinkedList{T}"/>
+        /// </summary>
+        /// <param name="index">Element index to get</param>
+        /// <returns>The node at the given index within the list</returns>
+        /// <exception cref="InvalidOperationException">If the list is empty</exception>
+        /// <exception cref="ArgumentOutOfRangeException">If <paramref name="index"/> is outside of the range of the list</exception>
+        [Pure]
+        public LinkedListNode<T> GetElementAt(int index)
+        {
+            if (list.Count is 0) throw new InvalidOperationException("The list is empty");
+            if (index < 0 || index >= list.Count) throw new ArgumentOutOfRangeException(nameof(index), index, $"Index must be in the range of the list [0, {list.Count}[");
+
+            LinkedListNode<T> target;
+            if (index <= list.Count / 2)
+            {
+                target = list.First!;
+                for (int i = 0; i < index; i++)
+                {
+                    target = target.Next!;
+                }
+            }
+            else
+            {
+                target = list.Last!;
+                for (int i = list.Count - 1; i > index; i--)
+                {
+                    target = target.Previous!;
+                }
+            }
+
+            return target;
+        }
     }
 }
