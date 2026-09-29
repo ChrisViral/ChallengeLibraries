@@ -51,6 +51,30 @@ public abstract partial class SolverResolver<T>(ILogger logger, T settings) : So
     where T : ResolverSettings, IResolverSettings<T>
 {
     /// <summary>
+    /// Input cache fetching error
+    /// </summary>
+    [PublicAPI]
+    protected enum CacheFetchError
+    {
+        /// <summary>
+        /// Input cache not implemented
+        /// </summary>
+        NotImplemented,
+        /// <summary>
+        /// Input unavailable, fetching from API will not produce valid input
+        /// </summary>
+        Unavailable,
+        /// <summary>
+        /// Input was not found in cache, fetching from API required
+        /// </summary>
+        NotFound,
+        /// <summary>
+        /// Exception raised while trying to fetch input from cache
+        /// </summary>
+        ExceptionRaised,
+    }
+
+    /// <summary>
     /// Minimum time between API requests
     /// </summary>
     protected abstract TimeSpan RateLimit { get; }
@@ -81,9 +105,11 @@ public abstract partial class SolverResolver<T>(ILogger logger, T settings) : So
         }
 
         // See if we don't have the input already cached from a previous request
-        Result<string> inputResult = GetCachedInput(data);
-        if (!inputResult.TryGetValue(out string? fetchedInput))
+        Result<string, CacheFetchError> cacheResult = GetCachedInput(data);
+        if (!cacheResult.TryGetValue(out string? fetchedInput))
         {
+            if (cacheResult.Error is CacheFetchError.Unavailable) return Result.Failure<string>("Input not yet available");
+
             // Validate rate limit
             TimeSpan timeSinceLastRequest = DateTimeOffset.UtcNow - DateTimeOffset.FromUnixTimeSeconds(this.Settings.LastRequestTimestamp);
             if (timeSinceLastRequest.TotalSeconds < this.RateLimit.TotalSeconds)
@@ -93,7 +119,7 @@ public abstract partial class SolverResolver<T>(ILogger logger, T settings) : So
             }
 
             // Fetch from api, if invalid, return error message
-            inputResult = await GetInputFromAPI(data, token).ConfigureAwait(false);
+            Result<string> inputResult = await GetInputFromAPI(data, token).ConfigureAwait(false);
             if (!inputResult.TryGetValue(out fetchedInput)) return inputResult;
 
             // Write back settings with new timestamp
@@ -139,5 +165,5 @@ public abstract partial class SolverResolver<T>(ILogger logger, T settings) : So
     /// </summary>
     /// <param name="data">Solver data to get the input for</param>
     /// <returns>A <see cref="Result"/> object either containing the found cached input, or an error message</returns>
-    protected virtual Result<string> GetCachedInput(SolverData data) => Result.Failure<string>("Input cache not implemented");
+    protected virtual Result<string, CacheFetchError> GetCachedInput(SolverData data) => Result.Failure<string, CacheFetchError>(CacheFetchError.NotImplemented);
 }
