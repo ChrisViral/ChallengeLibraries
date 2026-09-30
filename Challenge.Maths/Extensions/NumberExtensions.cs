@@ -76,6 +76,16 @@ public static class NumberExtensions
         }
 
         /// <summary>
+        /// Gets the <paramref name="value"/>th + 1 triangular number
+        /// </summary>
+        /// <value>The <paramref name="value"/>th + 1 triangular number</value>
+        public T NextTriangular
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => ((value + T.One) * (value + NumberUtils<T>.Two)) / NumberUtils<T>.Two;
+        }
+
+        /// <summary>
         /// Checks if an integer is prime or not
         /// </summary>
         /// <returns><see langword="true"/> if the number is prime, otherwise <see langword="false"/></returns>
