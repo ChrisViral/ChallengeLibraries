@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using System.Buffers;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using Challenge.Maths.Vectors;
 using Challenge.Utils.Extensions.Enumerables;
@@ -141,6 +142,68 @@ public static class MathUtils
     /// <typeparam name="T">Integer type</typeparam>
     /// <returns>The modular inverse <paramref name="n"/>^(-1) % <paramref name="mod"/></returns>
     public static T ModularInverse<T>(T n, T mod) where T : IBinaryInteger<T> => ModularPower(n, mod - NumberUtils<T>.Two, mod);
+
+    /// <summary>
+    /// Minimum coin change problem implementation, finds the shortest set of given coins which can satisfy the specified value <paramref name="n"/>
+    /// </summary>
+    /// <param name="n">Value to split into coins</param>
+    /// <param name="coins">List of valid coins</param>
+    /// <returns>An array containing the resulting coins that create <paramref name="n"/>, or an empty array if no solution is found</returns>
+    /// <exception cref="ArgumentOutOfRangeException">If <paramref name="n"/> is negative, or any of the <paramref name="coins"/> zero or negative</exception>
+    /// ReSharper disable once CognitiveComplexity
+    public static int[] MinimumCoinChange(int n, ReadOnlySpan<int> coins)
+    {
+        if (n < 0) throw new ArgumentOutOfRangeException(nameof(n), "Value to separate into coins cannot be negative");
+        if (coins.Any(c => c <= 0)) throw new ArgumentOutOfRangeException(nameof(coins), "All coins must be greater than zero");
+        if (n is 0) return [];
+
+        int bufferSize = n + 1;
+        int[] countArray     = ArrayPool<int>.Shared.Rent(bufferSize);
+        int[] previousArray = ArrayPool<int>.Shared.Rent(bufferSize);
+        try
+        {
+            Span<int> count = countArray.AsSpan(0, bufferSize);
+            Span<int> previous = previousArray.AsSpan(0, bufferSize);
+
+            count.Fill(int.MaxValue);
+            count[0] = 0;
+
+            for (int sum = 1; sum <= n; sum++)
+            {
+                ref int sumCount = ref count[sum];
+                foreach (int value in coins)
+                {
+                    if (value > sum) continue;
+
+                    ref int diffCount = ref count[sum - value];
+                    if (diffCount != int.MaxValue && diffCount + 1 < sumCount)
+                    {
+                        sumCount = diffCount + 1;
+                        previous[sum] = value;
+                    }
+                }
+            }
+
+            int solutionSize = count[n];
+            if (solutionSize is int.MaxValue) return [];
+
+            int current = n;
+            int[] result = new int[solutionSize];
+            for (int i = 0; i < result.Length; i++)
+            {
+                int previousValue = previous[current];
+                result[i] = previousValue;
+                current  -= previousValue;
+            }
+
+            return result;
+        }
+        finally
+        {
+            ArrayPool<int>.Shared.Return(countArray);
+            ArrayPool<int>.Shared.Return(previousArray);
+        }
+    }
 
     /// <summary>
     /// 2x2 Matrix modular power
