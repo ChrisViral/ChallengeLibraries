@@ -59,19 +59,19 @@ public abstract partial class SolverResolver<T>(ILogger logger, T settings) : So
         /// <summary>
         /// Input cache not implemented
         /// </summary>
-        NotImplemented,
+        NOT_IMPLEMENTED,
         /// <summary>
         /// Input unavailable, fetching from API will not produce valid input
         /// </summary>
-        Unavailable,
+        UNAVAILABLE,
         /// <summary>
         /// Input was not found in cache, fetching from API required
         /// </summary>
-        NotFound,
+        NOT_FOUND,
         /// <summary>
         /// Exception raised while trying to fetch input from cache
         /// </summary>
-        ExceptionRaised,
+        EXCEPTION_RAISED,
     }
 
     /// <summary>
@@ -108,7 +108,7 @@ public abstract partial class SolverResolver<T>(ILogger logger, T settings) : So
         Result<string, CacheFetchError> cacheResult = GetCachedInput(data);
         if (!cacheResult.TryGetValue(out string? fetchedInput))
         {
-            if (cacheResult.Error is CacheFetchError.Unavailable) return Result.Failure<string>("Input not yet available");
+            if (cacheResult.Error is CacheFetchError.UNAVAILABLE) return Result.Failure<string>("Input not yet available");
 
             // Validate rate limit
             TimeSpan timeSinceLastRequest = DateTimeOffset.UtcNow - DateTimeOffset.FromUnixTimeSeconds(this.Settings.LastRequestTimestamp);
@@ -165,5 +165,5 @@ public abstract partial class SolverResolver<T>(ILogger logger, T settings) : So
     /// </summary>
     /// <param name="data">Solver data to get the input for</param>
     /// <returns>A <see cref="Result"/> object either containing the found cached input, or an error message</returns>
-    protected virtual Result<string, CacheFetchError> GetCachedInput(SolverData data) => Result.Failure<string, CacheFetchError>(CacheFetchError.NotImplemented);
+    protected virtual Result<string, CacheFetchError> GetCachedInput(SolverData data) => Result.Failure<string, CacheFetchError>(CacheFetchError.NOT_IMPLEMENTED);
 }
