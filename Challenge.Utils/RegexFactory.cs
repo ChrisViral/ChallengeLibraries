@@ -134,6 +134,7 @@ public sealed class RegexFactory<[MeansImplicitUse(ImplicitUseTargetFlags.WithMe
     /// <returns>The created <typeparamref name="T"/> object</returns>
     /// <exception cref="InvalidCastException">If an error happens while casting the parameters</exception>
     /// <exception cref="KeyNotFoundException">If no matching constructor with the right amount of parameters is found</exception>
+    [Pure]
     public T ConstructObject(string input)
     {
         string[] captures = this.regex.Match(input).CapturedGroups
@@ -164,6 +165,7 @@ public sealed class RegexFactory<[MeansImplicitUse(ImplicitUseTargetFlags.WithMe
     /// <returns>An array of the created <typeparamref name="T"/> objects</returns>
     /// <exception cref="InvalidCastException">If an error happens while casting the parameters</exception>
     /// <exception cref="KeyNotFoundException">If no matching constructor with the right amount of parameters is found</exception>
+    [Pure]
     public T[] ConstructObjects(string input)
     {
         //Get all matches
@@ -202,6 +204,7 @@ public sealed class RegexFactory<[MeansImplicitUse(ImplicitUseTargetFlags.WithMe
     /// <exception cref="InvalidCastException">If an error happens while casting the parameters</exception>
     /// <exception cref="KeyNotFoundException">If no matching constructor with the right amount of parameters is found</exception>
     /// ReSharper disable once MemberCanBePrivate.Global
+    [Pure]
     public T[] ConstructObjects(IReadOnlyList<string> input)
     {
         //Make sure some input is passed
@@ -228,6 +231,7 @@ public sealed class RegexFactory<[MeansImplicitUse(ImplicitUseTargetFlags.WithMe
     /// <exception cref="InvalidCastException">If an error happens while casting the parameters</exception>
     /// <exception cref="MissingMethodException">If no default constructor is found</exception>
     /// ReSharper disable once MemberCanBePrivate.Global
+    [Pure]
     public T PopulateObject(string input)
     {
         //Find all matches, extract key/value pairs
@@ -265,6 +269,7 @@ public sealed class RegexFactory<[MeansImplicitUse(ImplicitUseTargetFlags.WithMe
     /// <exception cref="InvalidCastException">If an error happens while casting the parameters</exception>
     /// <exception cref="MissingMethodException">If no default constructor is found</exception>
     /// ReSharper disable once MemberCanBePrivate.Global
+    [Pure]
     public T[] PopulateObjects(IReadOnlyList<string> input)
     {
         //Make sure some input is passed
@@ -290,7 +295,7 @@ public sealed class RegexFactory<[MeansImplicitUse(ImplicitUseTargetFlags.WithMe
     /// <exception cref="ArgumentException">If the passed pattern has length 0</exception>
     /// <exception cref="InvalidCastException">If an error happens while casting the parameters</exception>
     /// <exception cref="KeyNotFoundException">If no matching constructor with the right amount of parameters is found</exception>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T[] ConstructObjects(Regex regex, IReadOnlyList<string> input)
     {
         // ReSharper disable once ArrangeMethodOrOperatorBody
@@ -308,7 +313,7 @@ public sealed class RegexFactory<[MeansImplicitUse(ImplicitUseTargetFlags.WithMe
     /// <exception cref="ArgumentException">If the passed pattern has length 0</exception>
     /// <exception cref="InvalidCastException">If an error happens while casting the parameters</exception>
     /// <exception cref="KeyNotFoundException">If no matching constructor with the right amount of parameters is found</exception>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T[] ConstructObjects(Regex regex, string input)
     {
         // ReSharper disable once ArrangeMethodOrOperatorBody
@@ -327,7 +332,7 @@ public sealed class RegexFactory<[MeansImplicitUse(ImplicitUseTargetFlags.WithMe
     /// <exception cref="ArgumentException">If the passed pattern has length 0</exception>
     /// <exception cref="InvalidCastException">If an error happens while casting the parameters</exception>
     /// <exception cref="MissingMethodException">If no default constructor is found</exception>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T[] PopulateObjects(Regex regex, IReadOnlyList<string> input)
     {
         // ReSharper disable once ArrangeMethodOrOperatorBody
