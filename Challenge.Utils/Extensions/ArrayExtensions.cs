@@ -133,19 +133,6 @@ public static class ArrayExtensions
             return GetPermutations(array.Copy(), 0);
         }
 
-        /// <inheritdoc cref="Array.Reverse{T}(T[])"/>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void ReverseInPlace() => Array.Reverse(array);
-
-        /// <inheritdoc cref="Array.Reverse{T}(T[])"/>
-        /// <returns>The array reversed in place</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public T[] Reversed()
-        {
-            Array.Reverse(array);
-            return array;
-        }
-
         /// <summary>
         /// Iterates over all the permutations of the given array without allocating new memory for each permutation
         /// </summary>
@@ -176,6 +163,19 @@ public static class ArrayExtensions
             return GetPermutations(output, 0);
         }
 
+        /// <inheritdoc cref="Array.Reverse{T}(T[])"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void ReverseInPlace() => Array.Reverse(array);
+
+        /// <inheritdoc cref="Array.Reverse{T}(T[])"/>
+        /// <returns>The array reversed in place</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public T[] Reversed()
+        {
+            Array.Reverse(array);
+            return array;
+        }
+
         /// <inheritdoc cref="Array.Sort{T}(T[])"/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Sort() => Array.Sort(array);
@@ -191,7 +191,6 @@ public static class ArrayExtensions
         /// <inheritdoc cref="Array.TrueForAll{T}"/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool TrueForAll([InstantHandle] Predicate<T> predicate) => Array.TrueForAll(array, predicate);
-
     }
 
     /// <param name="array">Array segment instance</param>

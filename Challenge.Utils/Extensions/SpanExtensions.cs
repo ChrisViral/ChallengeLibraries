@@ -96,6 +96,42 @@ public static class SpanExtensions
         /// <param name="reversed">Reversed span output</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Reversed(out ReadOnlySpan<T> reversed) => span.AsValueEnumerable().Reverse().Enumerator.TryGetSpan(out reversed);
+
+        /// <summary>
+        /// Produces all the unique permutations of a given array.
+        /// Permutations are calculated in-place and all returned values will be the same array reference
+        /// </summary>
+        /// <returns>The unique permutations of the given array</returns>
+        public IEnumerable<T[]> UniquePermutationsInPlace()
+        {
+            static IEnumerable<T[]> GetPermutations(T[] array)
+            {
+                yield return array;
+                Comparer<T> comparer = Comparer<T>.Default;
+                while (true)
+                {
+                    int i;
+                    for (i = array.Length - 2;
+                         i >= 0 && comparer.Compare(array[i], array[i + 1]) >= 0;
+                         i--);
+
+                    if (i < 0) yield break;
+
+                    int j;
+                    for (j = array.Length - 1;
+                         comparer.Compare(array[i], array[j]) >= 0;
+                         j--);
+
+                    SwapUtils.Swap(ref array[i], ref array[j]);
+                    array.AsSpan(i + 1, array.Length - i - 1).Reverse();
+                    yield return array;
+                }
+            }
+
+            T[] array = [..span];
+            array.Sort();
+            return GetPermutations(array);
+        }
     }
 
     /// <param name="span">Span instance</param>
