@@ -101,7 +101,7 @@ public static class NumberExtensions
             if (value.IsEven || value.IsMultiple(NumberUtils<T>.Three) || value.IsMultiple(NumberUtils<T>.Five)) return false;
 
             // Get square root of n
-            T limit = MathUtils.CeilToInt<T, double>(Math.Sqrt(double.CreateChecked(value)));
+            T limit = MathUtils.IntegerSqrt(value);
             for (T i = NumberUtils<T>.Seven; i <= limit; i += NumberUtils<T>.Six)
             {
                 // We don't need to check anything that is a multiple of two, three, or five

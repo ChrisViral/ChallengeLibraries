@@ -2,8 +2,8 @@
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using Challenge.Maths.Vectors;
-using Challenge.Utils.Extensions.Enumerables;
 using Challenge.Utils.Extensions.Numbers;
+using Challenge.Utils.Extensions.ValueEnumerables;
 using CommunityToolkit.HighPerformance;
 using JetBrains.Annotations;
 using ZLinq;
@@ -79,6 +79,30 @@ public static class MathUtils
         where TResult : IBinaryInteger<TResult>
     {
         return TResult.CreateChecked(TValue.Floor(value));
+    }
+
+    /// <summary>
+    /// Computes the integer square root of a number
+    /// </summary>
+    /// <param name="n">Value to computer the square root for</param>
+    /// <typeparam name="T">Integer value type</typeparam>
+    /// <returns>The square root of <paramref name="n"/></returns>
+    /// <exception cref="ArgumentOutOfRangeException">If <paramref name="n"/> is negative</exception>
+    public static T IntegerSqrt<T>(T n) where T : IBinaryInteger<T>
+    {
+        if (n < T.Zero) throw new ArgumentOutOfRangeException(nameof(n), "Cannot computer the square root of a negative number");
+        if (n < NumberUtils<T>.Two) return n;
+
+        T x = n;
+        T y = (x + n / x) / NumberUtils<T>.Two;
+
+        while (y < x)
+        {
+            x = y;
+            y = (x + n / x) / NumberUtils<T>.Two;
+        }
+
+        return x;
     }
 
     /// <summary>
