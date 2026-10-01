@@ -94,8 +94,8 @@ public abstract partial class Solver : IDisposable
             // Else split data
             int splitCount = input.AsSpan().CountAny(this.splitters.AsSpan());
             Span<Range> splits = stackalloc Range[splitCount + 1];
-            input.SplitAny(splits, this.splitters.AsSpan(), this.splitOptions);
-            this.Data = splits.Select(split => input[split]).ToArray();
+            splitCount = input.SplitAny(splits, this.splitters.AsSpan(), this.splitOptions);
+            this.Data = splits[..splitCount].Select(split => input[split]).ToArray();
         }
         parseWatch.Stop();
         this.ParseTime = parseWatch.Elapsed;
