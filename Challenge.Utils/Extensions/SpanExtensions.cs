@@ -34,6 +34,18 @@ public static class SpanExtensions
         }
 
         /// <summary>
+        /// Applies an action to each value in the span
+        /// </summary>
+        /// <param name="action">Action to apply</param>
+        public void ForEach([InstantHandle] Action<T> action)
+        {
+            foreach (T value in span)
+            {
+                action(value);
+            }
+        }
+
+        /// <summary>
         /// Rotates the data in a span in-place by the given amount of steps
         /// </summary>
         /// <param name="steps">Steps to rotate the data by</param>
@@ -90,6 +102,18 @@ public static class SpanExtensions
     /// <typeparam name="T">Value contained in the span</typeparam>
     extension<T>(ReadOnlySpan<T> span)
     {
+        /// <summary>
+        /// Applies an action to each value in the span
+        /// </summary>
+        /// <param name="action">Action to apply</param>
+        public void ForEach([InstantHandle] Action<T> action)
+        {
+            foreach (T value in span)
+            {
+                action(value);
+            }
+        }
+
         /// <summary>
         /// Gets a reversed copy of this span
         /// </summary>
