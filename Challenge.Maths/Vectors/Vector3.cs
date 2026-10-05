@@ -3,6 +3,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
+using Challenge.Utils.Extensions.Strings;
 using Challenge.Utils.Extensions.Types;
 using JetBrains.Annotations;
 
@@ -12,8 +14,8 @@ namespace Challenge.Maths.Vectors;
 /// Integer three component vector
 /// </summary>
 [PublicAPI]
-public readonly struct Vector3<T> : IVector<Vector3<T>, T>, IDivisionOperators<Vector3<T>, T, Vector3<T>>, IMultiplyOperators<Vector3<T>, T, Vector3<T>>,
-                                    IModulusOperators<Vector3<T>, T, Vector3<T>>, ICrossProductOperator<Vector3<T>, T, Vector3<T>>
+public readonly partial struct Vector3<T> : IVector<Vector3<T>, T>, IDivisionOperators<Vector3<T>, T, Vector3<T>>, IMultiplyOperators<Vector3<T>, T, Vector3<T>>,
+                                            IModulusOperators<Vector3<T>, T, Vector3<T>>, ICrossProductOperator<Vector3<T>, T, Vector3<T>>
     where T : unmanaged, IBinaryNumber<T>, IMinMaxValue<T>
 {
     /// <summary>
@@ -67,6 +69,12 @@ public readonly struct Vector3<T> : IVector<Vector3<T>, T>, IDivisionOperators<V
     /// Maximum vector value
     /// </summary>
     public static Vector3<T> MaxValue  { get; } = new(T.MaxValue, T.MaxValue, T.MaxValue);
+
+    /// <summary>
+    /// Regex direction match
+    /// </summary>
+    [GeneratedRegex(@"^\s*(U|D|L|R|F|B)\s*(\d+)\s*$", RegexOptions.IgnoreCase)]
+    private static partial Regex DirectionMatcher { get; }
 
     /// <summary>
     /// Components array
@@ -439,6 +447,79 @@ public readonly struct Vector3<T> : IVector<Vector3<T>, T>, IDivisionOperators<V
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Vector3<T> MaxMagnitude(Vector3<T> a, Vector3<T> b) => a.Length > b.Length ? a : b;
+
+    /// <summary>
+    /// Parses the Vector2 from a direction and distance
+    /// </summary>
+    /// <param name="value">String to parse</param>
+    /// <returns>The parsed Vector2</returns>
+    /// <exception cref="FormatException">If the direction format or string format is invalid</exception>
+    /// <exception cref="OverflowException">If the number parse causes an overflow</exception>
+    public static Vector3<T> ParseFromDirection(string value)
+    {
+        GroupCollection groups = DirectionMatcher.Match(value).Groups;
+        //Parse direction first
+        Vector3<T> direction = groups[1].ValueSpan[0].ToUpperChar switch
+        {
+            'U' => Up,
+            'D' => Down,
+            'L' => Left,
+            'R' => Right,
+            'F' => Forwards,
+            'B' => Backwards,
+            _   => throw new FormatException($"Direction value ({groups[1].Value}) cannot be parsed into a direction")
+        };
+
+        //Return with correct length
+        return direction * T.Parse(groups[2].ValueSpan, NumberStyles.Number, null);
+    }
+
+    /// <summary>
+    /// Tries to parses the Vector2 from a direction and distance
+    /// </summary>
+    /// <param name="value">String to parse</param>
+    /// <param name="direction">Result out parameter</param>
+    /// <returns>True if the vector was successfully parsed, false otherwise</returns>
+    public static bool TryParseFromDirection(string value, out Vector3<T> direction)
+    {
+        //Check if it matches at all
+        direction = Zero;
+        Match match = DirectionMatcher.Match(value);
+        if (!match.Success) return false;
+
+        GroupCollection groups = match.Groups;
+        if (groups.Count is not 3) return false;
+        if (!T.TryParse(groups[2].ValueSpan, NumberStyles.Number, null, out T distance)) return false;
+
+        Vector3<T> dir;
+        switch (groups[1].ValueSpan[0].ToUpperChar)
+        {
+            case 'U':
+                dir = Up;
+                break;
+            case 'D':
+                dir = Down;
+                break;
+            case 'L':
+                dir = Left;
+                break;
+            case 'R':
+                dir = Right;
+                break;
+            case 'F':
+                dir = Forwards;
+                break;
+            case 'B':
+                dir = Backwards;
+                break;
+
+            default:
+                return false;
+        }
+
+        direction = dir * distance;
+        return true;
+    }
 
     /// <summary>
     /// Parses the two component vector using the given value and number separator
