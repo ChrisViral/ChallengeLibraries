@@ -447,23 +447,24 @@ public readonly partial struct Vector2<T> : IVector<Vector2<T>, T>, IDivisionOpe
         GroupCollection groups = match.Groups;
         if (groups.Count is not 3) return false;
         if (!T.TryParse(groups[2].ValueSpan, NumberStyles.Number, null, out T distance)) return false;
+
         Vector2<T> dir;
-        switch (groups[1].Value)
+        switch (groups[1].ValueSpan[0].ToUpperChar)
         {
-            case "U":
-            case "N":
+            case 'U':
+            case 'N':
                 dir = Up;
                 break;
-            case "D":
-            case "S":
+            case 'D':
+            case 'S':
                 dir = Down;
                 break;
-            case "L":
-            case "W":
+            case 'L':
+            case 'W':
                 dir = Left;
                 break;
-            case "R":
-            case "E":
+            case 'R':
+            case 'E':
                 dir = Right;
                 break;
 
