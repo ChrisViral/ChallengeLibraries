@@ -78,10 +78,10 @@ public static class SearchUtils
         where TCost : INumber<TCost>
     {
         SearchNode<TValue, TCost>? foundGoal = null;
-        Pooled<PriorityQueue<SearchNode<TValue, TCost>>> search = PriorityQueueObjectPool<SearchNode<TValue, TCost>>.PoolForComparer(comparer).Get();
+        using Pooled<PriorityQueue<SearchNode<TValue, TCost>>> search = PriorityQueueObjectPool<SearchNode<TValue, TCost>>.PoolForComparer(comparer).Get();
         search.Ref.Enqueue(new SearchNode<TValue, TCost>(start));
-        Pooled<Dictionary<SearchNode<TValue, TCost>, TCost>> explored = DictionaryObjectPool<SearchNode<TValue, TCost>, TCost>.Shared.Get();
-        goalFound ??= (a, b) => a.Equals(b);
+        using Pooled<Dictionary<SearchNode<TValue, TCost>, TCost>> explored = DictionaryObjectPool<SearchNode<TValue, TCost>, TCost>.Shared.Get();
+        goalFound ??= EqualityComparer<TValue>.Default.Equals;
 
         while (search.Ref.TryDequeue(out SearchNode<TValue, TCost>? current))
         {
@@ -133,7 +133,7 @@ public static class SearchUtils
         totalCost = foundGoal.CostSoFar;
 
         //Trace the path and backtrack
-        Pooled<Stack<TValue>> path = StackObjectPool<TValue>.Shared.Get();
+        using Pooled<Stack<TValue>> path = StackObjectPool<TValue>.Shared.Get();
         //While the parent is not null
         while (foundGoal.Parent is not null)
         {
@@ -143,7 +143,7 @@ public static class SearchUtils
         }
 
         //Copy the path back to an array and return
-        return path.Ref.ToArray();
+        return [..path.Ref];
     }
 
     /// <summary>
@@ -170,10 +170,10 @@ public static class SearchUtils
         where TCost : INumber<TCost>
     {
         SearchNode<TValue, TCost>? foundGoal = null;
-        Pooled<PriorityQueue<SearchNode<TValue, TCost>>> search = PriorityQueueObjectPool<SearchNode<TValue, TCost>>.PoolForComparer(comparer).Get();
+        using Pooled<PriorityQueue<SearchNode<TValue, TCost>>> search = PriorityQueueObjectPool<SearchNode<TValue, TCost>>.PoolForComparer(comparer).Get();
         search.Ref.Enqueue(new SearchNode<TValue, TCost>(start));
-        Pooled<Dictionary<SearchNode<TValue, TCost>, TCost>> explored = DictionaryObjectPool<SearchNode<TValue, TCost>, TCost>.Shared.Get();
-        Pooled<Dictionary<SearchNode<TValue, TCost>, List<SearchNode<TValue, TCost>>>> equivalentNodes =
+        using Pooled<Dictionary<SearchNode<TValue, TCost>, TCost>> explored = DictionaryObjectPool<SearchNode<TValue, TCost>, TCost>.Shared.Get();
+        using Pooled<Dictionary<SearchNode<TValue, TCost>, List<SearchNode<TValue, TCost>>>> equivalentNodes =
             DictionaryObjectPool<SearchNode<TValue, TCost>, List<SearchNode<TValue, TCost>>>.Shared.Get();
         goalFound ??= (a, b) => a.Equals(b);
 
@@ -234,9 +234,9 @@ public static class SearchUtils
         if (foundGoal is null) return (null, null);
 
         //Trace the path and backtrack
-        Pooled<Stack<TValue>> path = StackObjectPool<TValue>.Shared.Get();
-        Pooled<HashSet<TValue>> unique = HashSetObjectPool<TValue>.Shared.Get();
-        Pooled<Queue<SearchNode<TValue, TCost>>> branchesQueue = QueueObjectPool<SearchNode<TValue, TCost>>.Shared.Get();
+        using Pooled<Stack<TValue>> path = StackObjectPool<TValue>.Shared.Get();
+        using Pooled<HashSet<TValue>> unique = HashSetObjectPool<TValue>.Shared.Get();
+        using Pooled<Queue<SearchNode<TValue, TCost>>> branchesQueue = QueueObjectPool<SearchNode<TValue, TCost>>.Shared.Get();
 
         //While the parent is not null
         while (foundGoal.Parent is not null)
@@ -247,7 +247,8 @@ public static class SearchUtils
             foundGoal = foundGoal.Parent;
             if (!equivalentNodes.Ref.TryGetValue(foundGoal, out List<SearchNode<TValue, TCost>>? branches) || branches.Count <= 1) continue;
 
-            foreach (SearchNode<TValue, TCost> branch in branches.Where(branch => !ReferenceEquals(branch, foundGoal)))
+            SearchNode<TValue, TCost> currentFoundGoal = foundGoal;
+            foreach (SearchNode<TValue, TCost> branch in branches.Where(branch => !ReferenceEquals(branch, currentFoundGoal)))
             {
                 branchesQueue.Ref.Enqueue(branch);
             }
@@ -266,7 +267,8 @@ public static class SearchUtils
 
                 if (!equivalentNodes.Ref.TryGetValue(foundGoal, out List<SearchNode<TValue, TCost>>? branches) || branches.Count <= 1) continue;
 
-                foreach (SearchNode<TValue, TCost> branch in branches.Where(branch => !ReferenceEquals(branch, foundGoal)))
+                SearchNode<TValue, TCost> currentFoundGoal = foundGoal;
+                foreach (SearchNode<TValue, TCost> branch in branches.Where(branch => !ReferenceEquals(branch, currentFoundGoal)))
                 {
                     branchesQueue.Ref.Enqueue(branch);
                 }
@@ -276,7 +278,7 @@ public static class SearchUtils
         }
 
         //Copy the path back to an array and return
-        return (path.Ref.ToArray(), unique.Ref);
+        return ([..path.Ref], unique.Ref);
     }
 
     /// <summary>
@@ -295,32 +297,34 @@ public static class SearchUtils
     /// <param name="goalFound">A function that compares the current and end nodes to test if the goal node has been reached</param>
     /// <returns>The optimal found path, or null if no path was found</returns>
     /// ReSharper disable once CognitiveComplexity
-    public static int? GetPathLength<TValue, TCost>(TValue start, TValue goal,
-                                                    [InstantHandle] SearchNode<TValue, TCost>.Heuristic? heuristic,
-                                                    [InstantHandle] WeightedNeighbours<TValue, TCost> neighbours,
-                                                    IComparer<SearchNode<TValue, TCost>> comparer,
-                                                    Dictionary<TValue, int>? distances = null,
-                                                    [InstantHandle] GoalFoundCheck<TValue>? goalFound = null)
+    public static TCost? GetPathLength<TValue, TCost>(TValue start, TValue goal,
+                                                      [InstantHandle] SearchNode<TValue, TCost>.Heuristic? heuristic,
+                                                      [InstantHandle] WeightedNeighbours<TValue, TCost> neighbours,
+                                                      IComparer<SearchNode<TValue, TCost>> comparer,
+                                                      IDictionary<TValue, TCost>? distances = null,
+                                                      [InstantHandle] GoalFoundCheck<TValue>? goalFound = null)
         where TValue : IEquatable<TValue>
-        where TCost : INumber<TCost>
+        where TCost : unmanaged, INumber<TCost>
     {
-        int foundDistance = 0;
         SearchNode<TValue, TCost>? foundGoal = null;
-        Pooled<PriorityQueue<SearchNode<TValue, TCost>>> search = PriorityQueueObjectPool<SearchNode<TValue, TCost>>.PoolForComparer(comparer).Get();
+        using Pooled<PriorityQueue<SearchNode<TValue, TCost>>> search = PriorityQueueObjectPool<SearchNode<TValue, TCost>>.PoolForComparer(comparer).Get();
         search.Ref.Enqueue(new SearchNode<TValue, TCost>(start));
-        Pooled<Dictionary<SearchNode<TValue, TCost>, TCost>> explored = DictionaryObjectPool<SearchNode<TValue, TCost>, TCost>.Shared.Get();
-        goalFound ??= (a, b) => a.Equals(b);
-
-        using Pooled<Dictionary<TValue, int>> pooledDistances = distances is null ? DictionaryObjectPool<TValue, int>.Shared.Get() : default;
-        distances ??= pooledDistances.Ref;
+        using Pooled<Dictionary<SearchNode<TValue, TCost>, TCost>> explored = DictionaryObjectPool<SearchNode<TValue, TCost>, TCost>.Shared.Get();
+        goalFound ??= EqualityComparer<TValue>.Default.Equals;
 
         while (search.Ref.TryDequeue(out SearchNode<TValue, TCost>? current))
         {
             //If we found the goal or the distance is cached
-            if (goalFound(current.Value, goal) || distances.TryGetValue(current.Value, out foundDistance))
+            if (goalFound(current.Value, goal))
             {
                 foundGoal = current;
                 break;
+            }
+
+            if (distances?.TryGetValue(current.Value, out TCost foundDistance) is true)
+            {
+                search.Ref.Enqueue(new SearchNode<TValue, TCost>(current.CostSoFar + foundDistance, goal, heuristic, current));
+                continue;
             }
 
             //Look through all neighbouring nodes
@@ -328,7 +332,7 @@ public static class SearchUtils
                                                                                                                                 n.Value, heuristic, current)))
             {
                 //Check if it's in the closed list
-                if (explored.Ref.TryGetValue(neighbour, out TCost? distance))
+                if (explored.Ref.TryGetValue(neighbour, out TCost distance))
                 {
                     //If it is, check if we found a quicker way
                     if (!(distance > neighbour.CostSoFar)) continue;
@@ -357,16 +361,25 @@ public static class SearchUtils
         //If we found the goal
         if (foundGoal is null) return null;
 
-        //While the parent is not null
-        while (foundGoal.Parent is not null)
+        // Return immediately if not parent
+        if (foundGoal.Parent is null) return foundGoal.CostSoFar;
+
+
+        TCost finalCost = foundGoal.CostSoFar;
+        if (distances is not null)
         {
-            //Push back and go deeper
-            foundGoal = foundGoal.Parent;
-            distances.Add(foundGoal.Value, ++foundDistance);
+            // Set distances output
+            do
+            {
+                //Push back and go deeper
+                foundGoal      = foundGoal.Parent;
+                distances.TryAdd(foundGoal.Value, finalCost - foundGoal.CostSoFar);
+            }
+            while (foundGoal.Parent is not null);
         }
 
         //Copy the path back to an array and return
-        return foundDistance;
+        return finalCost;
     }
 
     /// <summary>
@@ -380,9 +393,9 @@ public static class SearchUtils
     public static int? GetPathLengthBFS<T>(T start, T goal, Neighbours<T> neighbours) where T : IEquatable<T>
     {
         SearchNode<T>? foundGoal = null;
-        Pooled<Queue<SearchNode<T>>> search = QueueObjectPool<SearchNode<T>>.Shared.Get();
+        using Pooled<Queue<SearchNode<T>>> search = QueueObjectPool<SearchNode<T>>.Shared.Get();
         search.Ref.Enqueue(new SearchNode<T>(start));
-        Pooled<HashSet<SearchNode<T>>> explored = HashSetObjectPool<SearchNode<T>>.Shared.Get();
+        using Pooled<HashSet<SearchNode<T>>> explored = HashSetObjectPool<SearchNode<T>>.Shared.Get();
 
         while (search.Ref.TryDequeue(out SearchNode<T>? current))
         {
@@ -422,9 +435,9 @@ public static class SearchUtils
     public static int? GetPathLengthDFS<T>(T start, T goal, Neighbours<T> neighbours) where T : IEquatable<T>
     {
         SearchNode<T>? foundGoal = null;
-        Pooled<Stack<SearchNode<T>>> search = StackObjectPool<SearchNode<T>>.Shared.Get();
+        using Pooled<Stack<SearchNode<T>>> search = StackObjectPool<SearchNode<T>>.Shared.Get();
         search.Ref.Push(new SearchNode<T>(start));
-        Pooled<HashSet<SearchNode<T>>> explored = HashSetObjectPool<SearchNode<T>>.Shared.Get();
+        using Pooled<HashSet<SearchNode<T>>> explored = HashSetObjectPool<SearchNode<T>>.Shared.Get();
 
         while (search.Ref.TryPop(out SearchNode<T>? current))
         {
@@ -463,8 +476,8 @@ public static class SearchUtils
     /// <returns>The length of the path, if found, otherwise <see langword="null"/></returns>
     public static double? GetMaxPathLengthDFS<T>(T start, T goal, Neighbours<T> neighbours) where T : IEquatable<T>
     {
-        Pooled<List<SearchNode<T>>> foundEndNodes = ListObjectPool<SearchNode<T>>.Shared.Get();
-        Pooled<Stack<SearchNode<T>>> search = StackObjectPool<SearchNode<T>>.Shared.Get();
+        using Pooled<List<SearchNode<T>>> foundEndNodes = ListObjectPool<SearchNode<T>>.Shared.Get();
+        using Pooled<Stack<SearchNode<T>>> search = StackObjectPool<SearchNode<T>>.Shared.Get();
         search.Ref.Push(new SearchNode<T>(start));
 
         while (search.Ref.TryPop(out SearchNode<T>? current))
@@ -499,7 +512,7 @@ public static class SearchUtils
     /// <returns>The total count of pathes found</returns>
     public static int CountPossiblePaths<T>(T start, T goal, Neighbours<T> neighbours) where T : IEquatable<T>
     {
-        Pooled<Queue<T>> search = QueueObjectPool<T>.Shared.Get();
+        using Pooled<Queue<T>> search = QueueObjectPool<T>.Shared.Get();
         search.Ref.Enqueue(start);
 
         int possiblePaths = 0;
