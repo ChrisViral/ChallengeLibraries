@@ -65,25 +65,6 @@ public static class CollectionExtensions
         }
 
         /// <summary>
-        /// Enumerate pairs of items in the given list
-        /// </summary>
-        /// <returns>An exhaustive list of all item pairs in <paramref name="list"/></returns>
-        public IEnumerable<(T first, T second)> EnumeratePairs()
-        {
-            if (list.Count <= 1) yield break;
-
-            int end = list.Count - 1;
-            for (int i = 0; i < end; i++)
-            {
-                T first = list[i];
-                for (int j = i + 1; j < list.Count; j++)
-                {
-                    yield return (first, list[j]);
-                }
-            }
-        }
-
-        /// <summary>
         /// Removes an element from the list by swapping the last element of the list in it's spot, and then removing the last element.<br/>
         /// This should technically run in O(1)
         /// </summary>
@@ -123,6 +104,30 @@ public static class CollectionExtensions
             }
             // Remove last element
             list.RemoveAt(lastIndex);
+        }
+    }
+
+    /// <param name="list">List instance</param>
+    /// <typeparam name="T">Type of element in the list</typeparam>
+    extension<T>(IReadOnlyList<T> list)
+    {
+        /// <summary>
+        /// Enumerate pairs of items in the given list
+        /// </summary>
+        /// <returns>An exhaustive list of all item pairs in <paramref name="list"/></returns>
+        public IEnumerable<(T first, T second)> EnumeratePairs()
+        {
+            if (list.Count <= 1) yield break;
+
+            int end = list.Count - 1;
+            for (int i = 0; i < end; i++)
+            {
+                T first = list[i];
+                for (int j = i + 1; j < list.Count; j++)
+                {
+                    yield return (first, list[j]);
+                }
+            }
         }
     }
 
