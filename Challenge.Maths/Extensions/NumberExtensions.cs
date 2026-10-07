@@ -218,7 +218,7 @@ public static class NumberExtensions
         /// <param name="numbers">Numbers to get the GCD for</param>
         /// <returns>Gets the GCD of all the passed numbers</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T GCD(params Span<T> numbers) => numbers.Aggregate(GCD);
+        public static T GCD(params ReadOnlySpan<T> numbers) => numbers.Aggregate(GCD);
 
         /// <summary>
         /// Greatest Common Divisor of all passed numbers
@@ -243,7 +243,7 @@ public static class NumberExtensions
         /// <param name="numbers">Numbers to get the LCM for</param>
         /// <returns>LCM of all the numbers in the array</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T LCM(params Span<T> numbers) => numbers.Aggregate(LCM);
+        public static T LCM(params ReadOnlySpan<T> numbers) => numbers.Aggregate(LCM);
 
         /// <summary>
         /// Least Common Multiple function
@@ -386,7 +386,7 @@ public static class NumberExtensions
         /// <param name="numbers">List of numbers to get the maximum of</param>
         /// <returns>The maximum of all the passed numbers</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T Max(params Span<T> numbers) => numbers.Aggregate(T.Max);
+        public static T Max(params ReadOnlySpan<T> numbers) => numbers.Aggregate(T.Max);
 
         /// <summary>
         /// Gets the maximum of all numbers passed
@@ -402,7 +402,7 @@ public static class NumberExtensions
         /// <param name="numbers">List of numbers to get the minimum of</param>
         /// <returns>The minimum of all the passed numbers</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T Min(params Span<T> numbers) => numbers.Aggregate(T.Min);
+        public static T Min(params ReadOnlySpan<T> numbers) => numbers.Aggregate(T.Min);
 
         /// <summary>
         /// Gets the minimum of all numbers passed
