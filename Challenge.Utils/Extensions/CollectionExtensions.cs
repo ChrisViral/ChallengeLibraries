@@ -109,13 +109,13 @@ public static class CollectionExtensions
 
     /// <param name="list">List instance</param>
     /// <typeparam name="T">Type of element in the list</typeparam>
-    extension<T>(IReadOnlyList<T> list)
+    extension<T>(IReadOnlyList<T> list) where T : IEquatable<T>
     {
         /// <summary>
         /// Enumerate pairs of items in the given list
         /// </summary>
         /// <returns>An exhaustive list of all item pairs in <paramref name="list"/></returns>
-        public IEnumerable<(T first, T second)> EnumeratePairs()
+        public IEnumerable<UnorderedPair<T>> EnumeratePairs()
         {
             if (list.Count <= 1) yield break;
 
@@ -125,7 +125,7 @@ public static class CollectionExtensions
                 T first = list[i];
                 for (int j = i + 1; j < list.Count; j++)
                 {
-                    yield return (first, list[j]);
+                    yield return new UnorderedPair<T>(first, list[j]);
                 }
             }
         }
