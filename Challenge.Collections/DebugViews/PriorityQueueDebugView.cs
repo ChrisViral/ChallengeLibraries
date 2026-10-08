@@ -11,9 +11,8 @@ internal sealed class PriorityQueueDebugView<T>(PriorityQueue<T>? queue) where T
     {
         get
         {
-            T[] array = new T[this.queue.Heap.Count];
-            this.queue.Heap.CopyTo(array, 0);
-            array.Sort();
+            T[] array = new T[this.queue.Count];
+            this.queue.CopyTo(array);
             return array;
         }
     }
