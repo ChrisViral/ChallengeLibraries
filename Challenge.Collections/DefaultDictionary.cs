@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Challenge.Collections.DebugViews;
 using JetBrains.Annotations;
@@ -17,6 +18,60 @@ namespace Challenge.Collections;
 public sealed class DefaultDictionary<TKey, TValue> : IDictionary<TKey, TValue>, IReadOnlyDictionary<TKey, TValue>
     where TKey : notnull
 {
+    /// <summary>
+    /// Default value implementation, can either be a constant value or a factory method
+    /// </summary>
+    public readonly struct DefaultValue
+    {
+        private readonly TValue defaultValue;
+        private readonly Func<TValue>? defaultValueFactory;
+
+        /// <summary>
+        /// Creates a new <see cref="DefaultValue"/> which returns the default of TValue
+        /// </summary>
+        public DefaultValue()
+        {
+            this.defaultValue        = default!;
+            this.defaultValueFactory = null;
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="DefaultValue"/> which returns the given default value
+        /// </summary>
+        /// <param name="value">Default value to return</param>
+        private DefaultValue(TValue value)
+        {
+            this.defaultValue        = value;
+            this.defaultValueFactory = null;
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="DefaultValue"/> which creates a new default value from the given factory method
+        /// </summary>
+        /// <param name="valueFactory">Default value factory method</param>
+        public DefaultValue(Func<TValue> valueFactory)
+        {
+            this.defaultValue        = default!;
+            this.defaultValueFactory = valueFactory;
+        }
+
+        /// <summary>
+        /// Gets the default value
+        /// </summary>
+        /// <returns>Default value instance</returns>
+        public TValue GetDefaultValue()
+        {
+            return this.defaultValueFactory is not null ? this.defaultValueFactory() : this.defaultValue;
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="DefaultValue"/> which returns the given default value
+        /// </summary>
+        /// <param name="value">Default value to return</param>
+        /// <returns>The created <see cref="DefaultValue"/></returns>
+        public static implicit operator DefaultValue(TValue value) => new(value);
+    }
+
     private readonly Dictionary<TKey, TValue> dictionary;
 
     /// <inheritdoc cref="Dictionary{TKey, TValue}.Count" />
@@ -36,7 +91,7 @@ public sealed class DefaultDictionary<TKey, TValue> : IDictionary<TKey, TValue>,
     /// <summary>
     /// Default value of the dictionary
     /// </summary>
-    public TValue DefaultValue { get; }
+    public DefaultValue Default { get; }
 
     /// <inheritdoc cref="Dictionary{TKey, TValue}.Keys" />
     public Dictionary<TKey, TValue>.KeyCollection Keys
@@ -56,7 +111,7 @@ public sealed class DefaultDictionary<TKey, TValue> : IDictionary<TKey, TValue>,
     public TValue this[TKey key]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => this.dictionary.GetValueOrDefault(key, this.DefaultValue);
+        get => this.dictionary.TryGetValue(key, out TValue? value) ? value : this.Default.GetDefaultValue();
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         set => this.dictionary[key] = value;
     }
@@ -65,10 +120,10 @@ public sealed class DefaultDictionary<TKey, TValue> : IDictionary<TKey, TValue>,
     /// Creates a new DefaultDictionary
     /// </summary>
     /// <param name="defaultValue">Default value emmited by the dictionary when no value exists</param>
-    public DefaultDictionary(TValue defaultValue)
+    public DefaultDictionary(DefaultValue defaultValue)
     {
         this.dictionary   = new Dictionary<TKey, TValue>();
-        this.DefaultValue = defaultValue;
+        this.Default = defaultValue;
     }
 
     /// <summary>
@@ -76,10 +131,10 @@ public sealed class DefaultDictionary<TKey, TValue> : IDictionary<TKey, TValue>,
     /// </summary>
     /// <param name="source">Data dictionary</param>
     /// <param name="defaultValue">Default value emmited by the dictionary when no value exists</param>
-    public DefaultDictionary(IDictionary<TKey, TValue> source, TValue defaultValue)
+    public DefaultDictionary(IDictionary<TKey, TValue> source, DefaultValue defaultValue)
     {
         this.dictionary   = new Dictionary<TKey, TValue>(source);
-        this.DefaultValue = defaultValue;
+        this.Default = defaultValue;
     }
 
     /// <summary>
@@ -88,10 +143,10 @@ public sealed class DefaultDictionary<TKey, TValue> : IDictionary<TKey, TValue>,
     /// <param name="source">Data dictionary</param>
     /// <param name="comparer">Match equality comparer</param>
     /// <param name="defaultValue">Default value emmited by the dictionary when no value exists</param>
-    public DefaultDictionary(IDictionary<TKey, TValue> source, IEqualityComparer<TKey> comparer, TValue defaultValue)
+    public DefaultDictionary(IDictionary<TKey, TValue> source, IEqualityComparer<TKey> comparer, DefaultValue defaultValue)
     {
         this.dictionary   = new Dictionary<TKey, TValue>(source, comparer);
-        this.DefaultValue = defaultValue;
+        this.Default = defaultValue;
     }
 
     /// <summary>
@@ -99,10 +154,10 @@ public sealed class DefaultDictionary<TKey, TValue> : IDictionary<TKey, TValue>,
     /// </summary>
     /// <param name="source">Data enumerable</param>
     /// <param name="defaultValue">Default value emmited by the dictionary when no value exists</param>
-    public DefaultDictionary(IEnumerable<KeyValuePair<TKey, TValue>> source, TValue defaultValue)
+    public DefaultDictionary(IEnumerable<KeyValuePair<TKey, TValue>> source, DefaultValue defaultValue)
     {
         this.dictionary   = new Dictionary<TKey, TValue>(source);
-        this.DefaultValue = defaultValue;
+        this.Default = defaultValue;
     }
 
     /// <summary>
@@ -111,10 +166,10 @@ public sealed class DefaultDictionary<TKey, TValue> : IDictionary<TKey, TValue>,
     /// <param name="source">Data dictionary</param>
     /// <param name="comparer">Match equality comparer</param>
     /// <param name="defaultValue">Default value emmited by the dictionary when no value exists</param>
-    public DefaultDictionary(IEnumerable<KeyValuePair<TKey, TValue>> source, IEqualityComparer<TKey> comparer, TValue defaultValue)
+    public DefaultDictionary(IEnumerable<KeyValuePair<TKey, TValue>> source, IEqualityComparer<TKey> comparer, DefaultValue defaultValue)
     {
         this.dictionary   = new Dictionary<TKey, TValue>(source, comparer);
-        this.DefaultValue = defaultValue;
+        this.Default = defaultValue;
     }
 
     /// <summary>
@@ -122,10 +177,10 @@ public sealed class DefaultDictionary<TKey, TValue> : IDictionary<TKey, TValue>,
     /// </summary>
     /// <param name="capacity">Counter capacity</param>
     /// <param name="defaultValue">Default value emmited by the dictionary when no value exists</param>
-    public DefaultDictionary(int capacity, TValue defaultValue)
+    public DefaultDictionary(int capacity, DefaultValue defaultValue)
     {
         this.dictionary   = new Dictionary<TKey, TValue>(capacity);
-        this.DefaultValue = defaultValue;
+        this.Default = defaultValue;
     }
 
     /// <summary>
@@ -133,10 +188,10 @@ public sealed class DefaultDictionary<TKey, TValue> : IDictionary<TKey, TValue>,
     /// </summary>
     /// <param name="comparer">Match equality comparer</param>
     /// <param name="defaultValue">Default value emmited by the dictionary when no value exists</param>
-    public DefaultDictionary(IEqualityComparer<TKey> comparer, TValue defaultValue)
+    public DefaultDictionary(IEqualityComparer<TKey> comparer, DefaultValue defaultValue)
     {
         this.dictionary   = new Dictionary<TKey, TValue>(comparer);
-        this.DefaultValue = defaultValue;
+        this.Default = defaultValue;
     }
 
     /// <summary>
@@ -145,11 +200,69 @@ public sealed class DefaultDictionary<TKey, TValue> : IDictionary<TKey, TValue>,
     /// <param name="capacity">Counter capacity</param>
     /// <param name="comparer">Match equality comparer</param>
     /// <param name="defaultValue">Default value emmited by the dictionary when no value exists</param>
-    public DefaultDictionary(int capacity, IEqualityComparer<TKey> comparer, TValue defaultValue)
+    public DefaultDictionary(int capacity, IEqualityComparer<TKey> comparer, DefaultValue defaultValue)
     {
         this.dictionary   = new Dictionary<TKey, TValue>(capacity, comparer);
-        this.DefaultValue = defaultValue;
+        this.Default = defaultValue;
     }
+
+    /// <summary>
+    /// Creates a new DefaultDictionary with the given factory method
+    /// </summary>
+    /// <param name="defaultValueFactory">Factory method that creates the new value emmited by this DefaultDictionary when no value exists</param>
+    public DefaultDictionary(Func<TValue> defaultValueFactory) : this(new DefaultValue(defaultValueFactory)) { }
+
+    /// <summary>
+    /// Creates a new DefaultDictionary from existing data
+    /// </summary>
+    /// <param name="source">Data dictionary</param>
+    /// <param name="defaultValueFactory">Factory method that creates the new value emmited by this DefaultDictionary when no value exists</param>
+    public DefaultDictionary(IDictionary<TKey, TValue> source, Func<TValue> defaultValueFactory) : this(source, new DefaultValue(defaultValueFactory)) { }
+
+    /// <summary>
+    /// Creates a new DefaultDictionary from existing data
+    /// </summary>
+    /// <param name="source">Data dictionary</param>
+    /// <param name="comparer">Match equality comparer</param>
+    /// <param name="defaultValueFactory">Factory method that creates the new value emmited by this DefaultDictionary when no value exists</param>
+    public DefaultDictionary(IDictionary<TKey, TValue> source, IEqualityComparer<TKey> comparer, Func<TValue> defaultValueFactory) : this(source, comparer, new DefaultValue(defaultValueFactory)) { }
+
+    /// <summary>
+    /// Creates a new DefaultDictionary from existing data
+    /// </summary>
+    /// <param name="source">Data enumerable</param>
+    /// <param name="defaultValueFactory">Factory method that creates the new value emmited by this DefaultDictionary when no value exists</param>
+    public DefaultDictionary(IEnumerable<KeyValuePair<TKey, TValue>> source, Func<TValue> defaultValueFactory) : this(source, new DefaultValue(defaultValueFactory)) { }
+
+    /// <summary>
+    /// Creates a new DefaultDictionary from existing data
+    /// </summary>
+    /// <param name="source">Data dictionary</param>
+    /// <param name="comparer">Match equality comparer</param>
+    /// <param name="defaultValueFactory">Factory method that creates the new value emmited by this DefaultDictionary when no value exists</param>
+    public DefaultDictionary(IEnumerable<KeyValuePair<TKey, TValue>> source, IEqualityComparer<TKey> comparer, Func<TValue> defaultValueFactory) : this(source, comparer, new DefaultValue(defaultValueFactory)) { }
+
+    /// <summary>
+    /// Creates a new DefaultDictionary with the given capacity
+    /// </summary>
+    /// <param name="capacity">Counter capacity</param>
+    /// <param name="defaultValueFactory">Factory method that creates the new value emmited by this DefaultDictionary when no value exists</param>
+    public DefaultDictionary(int capacity, Func<TValue> defaultValueFactory) : this(capacity, new DefaultValue(defaultValueFactory)) { }
+
+    /// <summary>
+    /// Creates a new DefaultDictionary with a specific <see cref="EqualityComparer{T}"/>
+    /// </summary>
+    /// <param name="comparer">Match equality comparer</param>
+    /// <param name="defaultValueFactory">Factory method that creates the new value emmited by this DefaultDictionary when no value exists</param>
+    public DefaultDictionary(IEqualityComparer<TKey> comparer, Func<TValue> defaultValueFactory) : this(comparer, new DefaultValue(defaultValueFactory)) { }
+
+    /// <summary>
+    /// Creates a new DefaultDictionary with the given capacity
+    /// </summary>
+    /// <param name="capacity">Counter capacity</param>
+    /// <param name="comparer">Match equality comparer</param>
+    /// <param name="defaultValueFactory">Factory method that creates the new value emmited by this DefaultDictionary when no value exists</param>
+    public DefaultDictionary(int capacity, IEqualityComparer<TKey> comparer, Func<TValue> defaultValueFactory) : this(capacity, comparer, new DefaultValue(defaultValueFactory)) { }
 
     /// <summary>
     /// Copies a DefaultDictionary
@@ -157,8 +270,8 @@ public sealed class DefaultDictionary<TKey, TValue> : IDictionary<TKey, TValue>,
     /// <param name="other">Other dictionary to copy from</param>
     public DefaultDictionary(DefaultDictionary<TKey, TValue> other)
     {
-        this.dictionary   = new Dictionary<TKey, TValue>(other.dictionary);
-        this.DefaultValue = other.DefaultValue;
+        this.dictionary = new Dictionary<TKey, TValue>(other.dictionary);
+        this.Default    = other.Default;
     }
 
     /// <inheritdoc />
@@ -183,13 +296,7 @@ public sealed class DefaultDictionary<TKey, TValue> : IDictionary<TKey, TValue>,
 
     /// <inheritdoc cref="Dictionary{TKey, TValue}.TryGetValue" />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool TryGetValue(TKey key, out TValue value)
-    {
-        if (this.dictionary.TryGetValue(key, out value!)) return true;
-
-        value = this.DefaultValue;
-        return false;
-    }
+    public bool TryGetValue(TKey key, [NotNullWhen(true)] out TValue? value) => this.dictionary.TryGetValue(key, out value!);
 
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
