@@ -454,6 +454,15 @@ public class Grid<T> : IGrid<T>
     }
 
     /// <summary>
+    /// Checks if the given position is within the grid and holds the given value
+    /// </summary>
+    /// <param name="position">Position to check</param>
+    /// <param name="value">Value to test for</param>
+    /// <returns><see langword="true"/> is <paramref name="position"/> is within the bounds of the grid and that it contains a value equal to <paramref name="value"/>, otherwise <see langword="false"/></returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public virtual bool IsPositionEqual(Vector2<int> position, T value) => WithinGrid(position) && Comparer.Equals(this[position], value);
+
+    /// <summary>
     /// Moves the vector within the grid
     /// </summary>
     /// <param name="vector">Vector to move</param>
