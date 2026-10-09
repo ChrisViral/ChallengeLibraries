@@ -1,4 +1,5 @@
-﻿using Challenge.Utils.Extensions.Enums;
+﻿using System.Collections.Immutable;
+using Challenge.Utils.Extensions.Enums;
 using Challenge.Utils.Extensions.Ranges;
 using JetBrains.Annotations;
 
@@ -147,6 +148,140 @@ public static class ParseUtils
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// Parses the given array from a string
+    /// </summary>
+    /// <param name="line">Line to parse</param>
+    /// <param name="separator">Separator character</param>
+    /// <param name="options">String split options</param>
+    /// <typeparam name="T">Output type</typeparam>
+    /// <returns>An array of the parsed data</returns>
+    public static ImmutableArray<string> ParseImmutableArray<T>(ReadOnlySpan<char> line, char separator, StringSplitOptions options = DEFAULT_OPTIONS)
+    {
+        int count = line.Count(separator) + 1;
+        if (count is 1)
+        {
+            if (options.HasFlags(StringSplitOptions.TrimEntries))
+            {
+                line = line.Trim();
+            }
+
+            return !line.IsEmpty || !options.HasFlags(StringSplitOptions.RemoveEmptyEntries) ? [line.ToString()] : [];
+        }
+
+        Span<Range> splits = stackalloc Range[count];
+        count = line.Split(splits, separator, options);
+
+        ImmutableArray<string>.Builder result = ImmutableArray.CreateBuilder<string>(count);
+        foreach (int i in ..count)
+        {
+            result.Add(line[splits[i]].ToString());
+        }
+
+        return result.ToImmutable();
+    }
+
+    /// <summary>
+    /// Parses the given array from a string
+    /// </summary>
+    /// <param name="line">Line to parse</param>
+    /// <param name="separator">Separator string</param>
+    /// <param name="options">String split options</param>
+    /// <typeparam name="T">Output type</typeparam>
+    /// <returns>An array of the parsed data</returns>
+    public static ImmutableArray<string> ParseImmutableArray<T>(ReadOnlySpan<char> line, ReadOnlySpan<char> separator, StringSplitOptions options = DEFAULT_OPTIONS)
+    {
+        int count = line.Count(separator) + 1;
+        if (count is 1)
+        {
+            if (options.HasFlags(StringSplitOptions.TrimEntries))
+            {
+                line = line.Trim();
+            }
+
+            return !line.IsEmpty || !options.HasFlags(StringSplitOptions.RemoveEmptyEntries) ? [line.ToString()] : [];
+        }
+
+        Span<Range> splits = stackalloc Range[count];
+        count = line.Split(splits, separator, options);
+
+        ImmutableArray<string>.Builder result = ImmutableArray.CreateBuilder<string>(count);
+        foreach (int i in ..count)
+        {
+            result.Add(line[splits[i]].ToString());
+        }
+
+        return result.ToImmutable();
+    }
+
+    /// <summary>
+    /// Parses the given array from a string
+    /// </summary>
+    /// <param name="line">Line to parse</param>
+    /// <param name="separator">Separator character</param>
+    /// <param name="converter">Final output conversion function</param>
+    /// <param name="options">String split options</param>
+    /// <typeparam name="T">Output type</typeparam>
+    /// <returns>An array of the parsed data</returns>
+    public static ImmutableArray<T> ParseImmutableArray<T>(ReadOnlySpan<char> line, char separator, Converter<ReadOnlySpan<char>, T> converter, StringSplitOptions options = DEFAULT_OPTIONS)
+    {
+        int count = line.Count(separator) + 1;
+        if (count is 1)
+        {
+            if (options.HasFlags(StringSplitOptions.TrimEntries))
+            {
+                line = line.Trim();
+            }
+
+            return !line.IsEmpty || !options.HasFlags(StringSplitOptions.RemoveEmptyEntries) ? [converter(line)] : [];
+        }
+
+        Span<Range> splits = stackalloc Range[count];
+        count = line.Split(splits, separator, options);
+
+        ImmutableArray<T>.Builder result = ImmutableArray.CreateBuilder<T>(count);
+        foreach (int i in ..count)
+        {
+            result.Add(converter(line[splits[i]]));
+        }
+
+        return result.ToImmutable();
+    }
+
+    /// <summary>
+    /// Parses the given array from a string
+    /// </summary>
+    /// <param name="line">Line to parse</param>
+    /// <param name="separator">Separator string</param>
+    /// <param name="converter">Final output conversion function</param>
+    /// <param name="options">String split options</param>
+    /// <typeparam name="T">Output type</typeparam>
+    /// <returns>An array of the parsed data</returns>
+    public static ImmutableArray<T> ParseImmutableArray<T>(ReadOnlySpan<char> line, ReadOnlySpan<char> separator, Converter<ReadOnlySpan<char>, T> converter, StringSplitOptions options = DEFAULT_OPTIONS)
+    {
+        int count = line.Count(separator) + 1;
+        if (count is 1)
+        {
+            if (options.HasFlags(StringSplitOptions.TrimEntries))
+            {
+                line = line.Trim();
+            }
+
+            return !line.IsEmpty || !options.HasFlags(StringSplitOptions.RemoveEmptyEntries) ? [converter(line)] : [];
+        }
+
+        Span<Range> splits = stackalloc Range[count];
+        count = line.Split(splits, separator, options);
+
+        ImmutableArray<T>.Builder result = ImmutableArray.CreateBuilder<T>(count);
+        foreach (int i in ..count)
+        {
+            result.Add(converter(line[splits[i]]));
+        }
+
+        return result.ToImmutable();
     }
 
     /// <summary>
