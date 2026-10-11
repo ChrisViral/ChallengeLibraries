@@ -22,9 +22,8 @@ public static class ParseUtils
     /// <param name="line">Line to parse</param>
     /// <param name="separator">Separator character</param>
     /// <param name="options">String split options</param>
-    /// <typeparam name="T">Output type</typeparam>
     /// <returns>An array of the parsed data</returns>
-    public static string[] ParseArray<T>(ReadOnlySpan<char> line, char separator, StringSplitOptions options = DEFAULT_OPTIONS)
+    public static string[] ParseArray(ReadOnlySpan<char> line, char separator, StringSplitOptions options = DEFAULT_OPTIONS)
     {
         int count = line.Count(separator) + 1;
         if (count is 1)
@@ -55,9 +54,8 @@ public static class ParseUtils
     /// <param name="line">Line to parse</param>
     /// <param name="separator">Separator string</param>
     /// <param name="options">String split options</param>
-    /// <typeparam name="T">Output type</typeparam>
     /// <returns>An array of the parsed data</returns>
-    public static string[] ParseArray<T>(ReadOnlySpan<char> line, ReadOnlySpan<char> separator, StringSplitOptions options = DEFAULT_OPTIONS)
+    public static string[] ParseArray(ReadOnlySpan<char> line, ReadOnlySpan<char> separator, StringSplitOptions options = DEFAULT_OPTIONS)
     {
         int count = line.Count(separator) + 1;
         if (count is 1)
@@ -156,9 +154,8 @@ public static class ParseUtils
     /// <param name="line">Line to parse</param>
     /// <param name="separator">Separator character</param>
     /// <param name="options">String split options</param>
-    /// <typeparam name="T">Output type</typeparam>
     /// <returns>An array of the parsed data</returns>
-    public static ImmutableArray<string> ParseImmutableArray<T>(ReadOnlySpan<char> line, char separator, StringSplitOptions options = DEFAULT_OPTIONS)
+    public static ImmutableArray<string> ParseImmutableArray(ReadOnlySpan<char> line, char separator, StringSplitOptions options = DEFAULT_OPTIONS)
     {
         int count = line.Count(separator) + 1;
         if (count is 1)
@@ -189,9 +186,8 @@ public static class ParseUtils
     /// <param name="line">Line to parse</param>
     /// <param name="separator">Separator string</param>
     /// <param name="options">String split options</param>
-    /// <typeparam name="T">Output type</typeparam>
     /// <returns>An array of the parsed data</returns>
-    public static ImmutableArray<string> ParseImmutableArray<T>(ReadOnlySpan<char> line, ReadOnlySpan<char> separator, StringSplitOptions options = DEFAULT_OPTIONS)
+    public static ImmutableArray<string> ParseImmutableArray(ReadOnlySpan<char> line, ReadOnlySpan<char> separator, StringSplitOptions options = DEFAULT_OPTIONS)
     {
         int count = line.Count(separator) + 1;
         if (count is 1)
