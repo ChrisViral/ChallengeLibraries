@@ -1,9 +1,6 @@
 using System.Numerics;
 using Challenge.Utils.Extensions.Delegates;
-using Challenge.Utils.ValueEnumerators;
-using CommunityToolkit.HighPerformance.Enumerables;
 using JetBrains.Annotations;
-using ZLinq;
 
 // ReSharper disable once CheckNamespace
 namespace Challenge.Utils.Extensions.Enumerables;
@@ -118,29 +115,6 @@ public static class EnumerableExtensions
                     if (length --> 0) yield break;
                 }
             }
-        }
-
-        /// <summary>
-        /// Creates an enumerable of pairs of elements
-        /// </summary>
-        /// <param name="isCircular">If the list is circular (last element is paired with the first element)</param>
-        /// <returns>Pairs of subsequent elements in the enumerable</returns>
-        [Pure, LinqTunnel]
-        public IEnumerable<(T first, T second)> Pairwise(bool isCircular = false)
-        {
-            using IEnumerator<T> enumerator = enumerable.GetEnumerator();
-            if (!enumerator.MoveNext()) yield break;
-
-            T first = enumerator.Current;
-            T previous = enumerator.Current;
-            while (enumerator.MoveNext())
-            {
-                T current = enumerator.Current;
-                yield return (previous, current);
-                previous = current;
-            }
-
-            if (isCircular) yield return (previous, first);
         }
 
         /// <summary>
@@ -278,6 +252,37 @@ public static class EnumerableExtensions
         /// <returns>An <see cref="IEnumerable{T}"/> that contains elements from the input sequence that do not satisfy the condition.</returns>
         [Pure, LinqTunnel]
         public IEnumerable<T> WhereNot([InstantHandle] Func<T, int, bool> predicate) => enumerable.Where(predicate.Inverted);
+    }
+
+    /// <param name="enumerable">Enumerable instance</param>
+    /// <typeparam name="T">Type of element to enumerate</typeparam>
+    extension<T>([InstantHandle] IEnumerable<T> enumerable) where T : IEquatable<T>
+    {
+        /// <summary>
+        /// Creates an enumerable of pairs of elements
+        /// </summary>
+        /// <param name="isCircular">If the list is circular (last element is paired with the first element)</param>
+        /// <returns>Pairs of subsequent elements in the enumerable</returns>
+        [Pure, LinqTunnel]
+        public IEnumerable<Pair<T>> Pairwise(bool isCircular = false)
+        {
+            using IEnumerator<T> enumerator = enumerable.GetEnumerator();
+            if (!enumerator.MoveNext()) yield break;
+
+            T first = enumerator.Current;
+            T previous = enumerator.Current;
+            while (enumerator.MoveNext())
+            {
+                T current = enumerator.Current;
+                yield return new Pair<T>(previous, current);
+                previous = current;
+            }
+
+            if (isCircular)
+            {
+                yield return new Pair<T>(previous, first);
+            }
+        }
     }
 
     /// <param name="enumerable">Enumerable to sum</param>
