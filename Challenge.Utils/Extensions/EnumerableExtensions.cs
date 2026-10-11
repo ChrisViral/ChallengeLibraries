@@ -16,20 +16,6 @@ public static class EnumerableExtensions
     extension<T>([InstantHandle] IEnumerable<T> enumerable)
     {
         /// <summary>
-        /// Enumerates all the elements in the passed enumerable, along with the enumeration index
-        /// </summary>
-        /// <returns></returns>
-        [Pure, LinqTunnel]
-        public IEnumerable<(int index, T value)> Enumerate()
-        {
-            int index = 0;
-            foreach (T value in enumerable)
-            {
-                yield return (index++, value);
-            }
-        }
-
-        /// <summary>
         /// Applies an action to every member of the enumerable
         /// </summary>
         /// <param name="action">Action to apply</param>
