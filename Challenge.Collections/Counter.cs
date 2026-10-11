@@ -207,6 +207,21 @@ public class Counter<TKey, TCount> : IDictionary<TKey, TCount>, IReadOnlyDiction
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void CopyTo(TKey[] array, int arrayIndex) => this.dictionary.Keys.CopyTo(array, arrayIndex);
 
+    /// <summary>
+    /// Enumerates all individual values stored in this Counter
+    /// </summary>
+    /// <returns>An enumrable of every value in this counter</returns>
+    public IEnumerable<TKey> EnumerateAll()
+    {
+        foreach ((TKey value, TCount count) in this.dictionary)
+        {
+            for (TCount i = TCount.Zero; i < count; i++)
+            {
+                yield return value;
+            }
+        }
+    }
+
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public IEnumerator<KeyValuePair<TKey, TCount>> GetEnumerator() => this.dictionary.GetEnumerator();
