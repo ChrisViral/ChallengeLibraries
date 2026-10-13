@@ -1,4 +1,4 @@
-﻿using System.Buffers;
+using System.Buffers;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using Challenge.Maths.Vectors;
@@ -98,6 +98,16 @@ public static class MathUtils
     }
 
     /// <summary>
+    /// Integer power function
+    /// </summary>
+    /// <param name="a">Exponentiation base</param>
+    /// <param name="b">Power to raise the value to</param>
+    /// <typeparam name="T">Integer type</typeparam>
+    /// <returns>The result of <c>a^b</c></returns>
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T IntegerPow<T>(T a, int b) where T : IBinaryInteger<T> => a.Pow(b);
+
+    /// <summary>
     /// Computes the integer square root of a number
     /// </summary>
     /// <param name="n">Value to computer the square root for</param>
@@ -119,6 +129,24 @@ public static class MathUtils
         }
 
         return x;
+    }
+
+    /// <summary>
+    /// Computes the full multiplication result for two values by converting them to a larger output type
+    /// </summary>
+    /// <param name="a">First value to multiply</param>
+    /// <param name="b">Second value to multiply</param>
+    /// <typeparam name="TInput">Input integer type</typeparam>
+    /// <typeparam name="TResult">Output integer type</typeparam>
+    /// <returns>The full result of <c>a * b</c></returns>
+    /// <remarks><typeparamref name="TResult"/> should always be an integer type with a larger output space than <typeparamref name="TInput"/></remarks>
+    /// <exception cref="OverflowException">If an overflow occured during multiplication or conversion to <typeparamref name="TResult"/></exception>
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static TResult BigMul<TInput, TResult>(TInput a, TInput b)
+        where TInput : IBinaryInteger<TInput>
+        where TResult : IBinaryInteger<TResult>
+    {
+        return checked(TResult.CreateChecked(a) * TResult.CreateChecked(b));
     }
 
     /// <summary>
