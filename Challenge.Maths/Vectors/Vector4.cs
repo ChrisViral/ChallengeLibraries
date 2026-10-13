@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Numerics;
@@ -229,7 +229,7 @@ public readonly struct Vector4<T> : IVector<Vector4<T>, T>, IDivisionOperators<V
     /// <inheritdoc cref="IComparable.CompareTo"/>
     /// ReSharper disable once TailRecursiveCall - not tail recursive
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public int CompareTo(object? other) => other is Vector4<T> vector ? CompareTo(vector) : 0;
+    public int CompareTo(object? other) => other is Vector4<T> vector ? CompareTo(vector) : -1;
 
     /// <inheritdoc cref="IComparable{T}.CompareTo"/>
     /// ReSharper disable once MemberCanBePrivate.Global

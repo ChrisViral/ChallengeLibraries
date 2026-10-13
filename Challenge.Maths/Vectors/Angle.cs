@@ -149,7 +149,7 @@ public readonly struct Angle : IAdditionOperators<Angle, Angle, Angle>, ISubtrac
 
     /// <inheritdoc cref="IComparable.CompareTo"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public int CompareTo(object? obj) => obj is Angle angle ? CompareTo(angle) : 0;
+    public int CompareTo(object? obj) => obj is Angle angle ? CompareTo(angle) : -1;
 
     /// <inheritdoc cref="IComparable{T}.CompareTo"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

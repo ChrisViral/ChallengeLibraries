@@ -195,7 +195,7 @@ public readonly partial struct Vector2<T> : IVector<Vector2<T>, T>, IDivisionOpe
 
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public int CompareTo(object? other) => other is Vector2<T> vector ? CompareTo(vector) : 0;
+    public int CompareTo(object? other) => other is Vector2<T> vector ? CompareTo(vector) : -1;
 
     /// <inheritdoc cref="IComparable{T}.CompareTo"/>
     /// ReSharper disable once MemberCanBePrivate.Global

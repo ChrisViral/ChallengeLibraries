@@ -263,7 +263,7 @@ public readonly partial struct Vector3<T> : IVector<Vector3<T>, T>, IDivisionOpe
     /// <inheritdoc cref="IComparable.CompareTo"/>
     /// ReSharper disable once TailRecursiveCall - not tail recursive
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public int CompareTo(object? other) => other is Vector3<T> vector ? CompareTo(vector) : 0;
+    public int CompareTo(object? other) => other is Vector3<T> vector ? CompareTo(vector) : -1;
 
     /// <inheritdoc cref="IComparable{T}.CompareTo"/>
     /// ReSharper disable once MemberCanBePrivate.Global
