@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Numerics;
@@ -726,165 +726,6 @@ public readonly struct Vector4<T> : IVector<Vector4<T>, T>, IDivisionOperators<V
     }
 
     /// <inheritdoc />
-    // ReSharper disable once CognitiveComplexity
-    bool IVector.TryMakeFromComponentsChecked<TComponent>(ReadOnlySpan<TComponent> components, out IVector? result)
-    {
-        if (components.Length > Dimension)
-        {
-            result = null;
-            return false;
-        }
-
-        switch (components.Length)
-        {
-            case 1:
-                if (T.TryConvertFromChecked(components[0], out T x))
-                {
-                    result = new Vector4<T>(x, T.Zero, T.Zero, T.Zero);
-                    return true;
-                }
-                result = null;
-                return false;
-
-            case 2:
-                if (T.TryConvertFromChecked(components[0], out x) && T.TryConvertFromChecked(components[1], out T y))
-                {
-                    result = new Vector4<T>(x, y, T.Zero, T.Zero);
-                    return true;
-                }
-                result = null;
-                return false;
-
-            case 3:
-                if (T.TryConvertFromChecked(components[0], out x) && T.TryConvertFromChecked(components[1], out y) && T.TryConvertFromChecked(components[2], out T z))
-                {
-                    result = new Vector4<T>(x, y, z, T.Zero);
-                    return true;
-                }
-                result = null;
-                return false;
-
-            case 4:
-                if (T.TryConvertFromChecked(components[0], out x) && T.TryConvertFromChecked(components[1], out y) && T.TryConvertFromChecked(components[2], out z) && T.TryConvertFromChecked(components[3], out T w))
-                {
-                    result = new Vector4<T>(x, y, z, w);
-                    return true;
-                }
-                result = null;
-                return false;
-
-            default:
-                throw new UnreachableException("Invalid vector dimensions");
-        }
-    }
-
-    /// <inheritdoc />
-    // ReSharper disable once CognitiveComplexity
-    bool IVector.TryMakeFromComponentsSaturating<TComponent>(ReadOnlySpan<TComponent> components, out IVector? result)
-    {
-        if (components.Length > Dimension)
-        {
-            result = null;
-            return false;
-        }
-
-        switch (components.Length)
-        {
-            case 1:
-                if (T.TryConvertFromSaturating(components[0], out T x))
-                {
-                    result = new Vector4<T>(x, T.Zero, T.Zero, T.Zero);
-                    return true;
-                }
-                result = null;
-                return false;
-
-            case 2:
-                if (T.TryConvertFromSaturating(components[0], out x) && T.TryConvertFromSaturating(components[1], out T y))
-                {
-                    result = new Vector4<T>(x, y, T.Zero, T.Zero);
-                    return true;
-                }
-                result = null;
-                return false;
-
-            case 3:
-                if (T.TryConvertFromSaturating(components[0], out x) && T.TryConvertFromSaturating(components[1], out y) && T.TryConvertFromSaturating(components[2], out T z))
-                {
-                    result = new Vector4<T>(x, y, z, T.Zero);
-                    return true;
-                }
-                result = null;
-                return false;
-
-            case 4:
-                if (T.TryConvertFromSaturating(components[0], out x) && T.TryConvertFromSaturating(components[1], out y) && T.TryConvertFromSaturating(components[2], out z) && T.TryConvertFromSaturating(components[3], out T w))
-                {
-                    result = new Vector4<T>(x, y, z, w);
-                    return true;
-                }
-                result = null;
-                return false;
-
-            default:
-                throw new UnreachableException("Invalid vector dimensions");
-        }
-    }
-
-    /// <inheritdoc />
-    // ReSharper disable once CognitiveComplexity
-    bool IVector.TryMakeFromComponentsTruncating<TComponent>(ReadOnlySpan<TComponent> components, out IVector? result)
-    {
-        if (components.Length > Dimension)
-        {
-            result = null;
-            return false;
-        }
-
-        switch (components.Length)
-        {
-            case 1:
-                if (T.TryConvertFromTruncating(components[0], out T x))
-                {
-                    result = new Vector4<T>(x, T.Zero, T.Zero, T.Zero);
-                    return true;
-                }
-                result = null;
-                return false;
-
-            case 2:
-                if (T.TryConvertFromTruncating(components[0], out x) && T.TryConvertFromTruncating(components[1], out T y))
-                {
-                    result = new Vector4<T>(x, y, T.Zero, T.Zero);
-                    return true;
-                }
-                result = null;
-                return false;
-
-            case 3:
-                if (T.TryConvertFromTruncating(components[0], out x) && T.TryConvertFromTruncating(components[1], out y) && T.TryConvertFromTruncating(components[2], out T z))
-                {
-                    result = new Vector4<T>(x, y, z, T.Zero);
-                    return true;
-                }
-                result = null;
-                return false;
-
-            case 4:
-                if (T.TryConvertFromTruncating(components[0], out x) && T.TryConvertFromTruncating(components[1], out y) && T.TryConvertFromTruncating(components[2], out z) && T.TryConvertFromTruncating(components[3], out T w))
-                {
-                    result = new Vector4<T>(x, y, z, w);
-                    return true;
-                }
-                result = null;
-                return false;
-
-            default:
-                throw new UnreachableException("Invalid vector dimensions");
-        }
-    }
-
-    /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static bool INumberBase<Vector4<T>>.IsCanonical(Vector4<T> value) => T.IsCanonical(value.X) && T.IsCanonical(value.Y) && T.IsCanonical(value.Z) && T.IsCanonical(value.Z);
 
@@ -1151,24 +992,9 @@ public readonly struct Vector4<T> : IVector<Vector4<T>, T>, IDivisionOperators<V
     /// <inheritdoc />
     static bool INumberBase<Vector4<T>>.TryConvertToChecked<TOther>(Vector4<T> value, [MaybeNullWhen(false)] out TOther result)
     {
-        result = default;
-        if (result is not IVector vector)
+        if (typeof(IVector).IsAssignableFrom(typeof(TOther)))
         {
-            result = default;
-            return false;
-        }
-
-        int dimension = vector.GetDimension();
-        if (dimension < Dimension)
-        {
-            result = default;
-            return false;
-        }
-
-        if (vector.TryMakeFromComponentsChecked(value.AsSpan(), out IVector? created) && created is TOther other)
-        {
-            result = other;
-            return true;
+            return TOther.TryConvertFromChecked(value, out result);
         }
 
         result = default;
@@ -1178,24 +1004,9 @@ public readonly struct Vector4<T> : IVector<Vector4<T>, T>, IDivisionOperators<V
     /// <inheritdoc />
     static bool INumberBase<Vector4<T>>.TryConvertToSaturating<TOther>(Vector4<T> value, [MaybeNullWhen(false)] out TOther result)
     {
-        result = default;
-        if (result is not IVector vector)
+        if (typeof(IVector).IsAssignableFrom(typeof(TOther)))
         {
-            result = default;
-            return false;
-        }
-
-        int dimension = vector.GetDimension();
-        if (dimension < Dimension)
-        {
-            result = default;
-            return false;
-        }
-
-        if (vector.TryMakeFromComponentsSaturating(value.AsSpan(), out IVector? created) && created is TOther other)
-        {
-            result = other;
-            return true;
+            return TOther.TryConvertFromSaturating(value, out result);
         }
 
         result = default;
@@ -1205,24 +1016,9 @@ public readonly struct Vector4<T> : IVector<Vector4<T>, T>, IDivisionOperators<V
     /// <inheritdoc />
     static bool INumberBase<Vector4<T>>.TryConvertToTruncating<TOther>(Vector4<T> value, [MaybeNullWhen(false)] out TOther result)
     {
-        result = default;
-        if (result is not IVector vector)
+        if (typeof(IVector).IsAssignableFrom(typeof(TOther)))
         {
-            result = default;
-            return false;
-        }
-
-        int dimension = vector.GetDimension();
-        if (dimension < Dimension)
-        {
-            result = default;
-            return false;
-        }
-
-        if (vector.TryMakeFromComponentsTruncating(value.AsSpan(), out IVector? created) && created is TOther other)
-        {
-            result = other;
-            return true;
+            return TOther.TryConvertFromTruncating(value, out result);
         }
 
         result = default;

@@ -71,36 +71,6 @@ public interface IVector
     /// <typeparam name="T">Component output type</typeparam>
     /// <returns><see langword="true"/> if the componentn was successfully converted, otherwise <see langword="false"/></returns>
     bool TryGetComponentTruncating<T>(int index, out T result) where T : unmanaged, IBinaryNumber<T>, IMinMaxValue<T>;
-
-    /// <summary>
-    /// Tries to convert the given components to a vector of the given type, using a checked conversion
-    /// </summary>
-    /// <param name="components">Components to convert</param>
-    /// <param name="result">Output vector if successful</param>
-    /// <typeparam name="T">Component input type</typeparam>
-    /// <returns><see langword="true"/> if the components were made into a vector, otherwise <see langword="false"/></returns>
-    bool TryMakeFromComponentsChecked<T>(ReadOnlySpan<T> components, out IVector? result)
-        where T : unmanaged, IBinaryNumber<T>, IMinMaxValue<T>;
-
-    /// <summary>
-    /// Tries to convert the given components to a vector of the given type, using a saturating conversion
-    /// </summary>
-    /// <param name="components">Components to convert</param>
-    /// <param name="result">Output vector if successful</param>
-    /// <typeparam name="T">Component input type</typeparam>
-    /// <returns><see langword="true"/> if the components were made into a vector, otherwise <see langword="false"/></returns>
-    bool TryMakeFromComponentsSaturating<T>(ReadOnlySpan<T> components, out IVector? result)
-        where T : unmanaged, IBinaryNumber<T>, IMinMaxValue<T>;
-
-    /// <summary>
-    /// Tries to convert the given components to a vector of the given type, using a truncating conversion
-    /// </summary>
-    /// <param name="components">Components to convert</param>
-    /// <param name="result">Output vector if successful</param>
-    /// <typeparam name="T">Component input type</typeparam>
-    /// <returns><see langword="true"/> if the components were made into a vector, otherwise <see langword="false"/></returns>
-    bool TryMakeFromComponentsTruncating<T>(ReadOnlySpan<T> components, out IVector? result)
-        where T : unmanaged, IBinaryNumber<T>, IMinMaxValue<T>;
 }
 
 /// <summary>

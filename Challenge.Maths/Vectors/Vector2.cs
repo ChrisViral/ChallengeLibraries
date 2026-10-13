@@ -850,108 +850,6 @@ public readonly partial struct Vector2<T> : IVector<Vector2<T>, T>, IDivisionOpe
     }
 
     /// <inheritdoc />
-    bool IVector.TryMakeFromComponentsChecked<TComponent>(ReadOnlySpan<TComponent> components, out IVector? result)
-    {
-        if (components.Length > Dimension)
-        {
-            result = null;
-            return false;
-        }
-
-        switch (components.Length)
-        {
-            case 1:
-                if (T.TryConvertFromChecked(components[0], out T x))
-                {
-                    result = new Vector2<T>(x, T.Zero);
-                    return true;
-                }
-                result = null;
-                return false;
-
-            case 2:
-                if (T.TryConvertFromChecked(components[0], out x) && T.TryConvertFromChecked(components[1], out T y))
-                {
-                    result = new Vector2<T>(x, y);
-                    return true;
-                }
-                result = null;
-                return false;
-
-            default:
-                throw new UnreachableException("Invalid vector dimensions");
-        }
-    }
-
-    /// <inheritdoc />
-    bool IVector.TryMakeFromComponentsSaturating<TComponent>(ReadOnlySpan<TComponent> components, out IVector? result)
-    {
-        if (components.Length > Dimension)
-        {
-            result = null;
-            return false;
-        }
-
-        switch (components.Length)
-        {
-            case 1:
-                if (T.TryConvertFromSaturating(components[0], out T x))
-                {
-                    result = new Vector2<T>(x, T.Zero);
-                    return true;
-                }
-                result = null;
-                return false;
-
-            case 2:
-                if (T.TryConvertFromSaturating(components[0], out x) && T.TryConvertFromSaturating(components[1], out T y))
-                {
-                    result = new Vector2<T>(x, y);
-                    return true;
-                }
-                result = null;
-                return false;
-
-            default:
-                throw new UnreachableException("Invalid vector dimensions");
-        }
-    }
-
-    /// <inheritdoc />
-    bool IVector.TryMakeFromComponentsTruncating<TComponent>(ReadOnlySpan<TComponent> components, out IVector? result)
-    {
-        if (components.Length > Dimension)
-        {
-            result = null;
-            return false;
-        }
-
-        switch (components.Length)
-        {
-            case 1:
-                if (T.TryConvertFromTruncating(components[0], out T x))
-                {
-                    result = new Vector2<T>(x, T.Zero);
-                    return true;
-                }
-                result = null;
-                return false;
-
-            case 2:
-                if (T.TryConvertFromTruncating(components[0], out x) && T.TryConvertFromTruncating(components[1], out T y))
-                {
-                    result = new Vector2<T>(x, y);
-                    return true;
-                }
-                result = null;
-                return false;
-
-            default:
-                throw new UnreachableException("Invalid vector dimensions");
-        }
-    }
-
-    /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static bool INumberBase<Vector2<T>>.IsCanonical(Vector2<T> value) => T.IsCanonical(value.X) && T.IsCanonical(value.Y);
 
@@ -1161,24 +1059,9 @@ public readonly partial struct Vector2<T> : IVector<Vector2<T>, T>, IDivisionOpe
     /// <inheritdoc />
     static bool INumberBase<Vector2<T>>.TryConvertToChecked<TOther>(Vector2<T> value, [MaybeNullWhen(false)] out TOther result)
     {
-        result = default;
-        if (result is not IVector vector)
+        if (typeof(IVector).IsAssignableFrom(typeof(TOther)))
         {
-            result = default;
-            return false;
-        }
-
-        int dimension = vector.GetDimension();
-        if (dimension < Dimension)
-        {
-            result = default;
-            return false;
-        }
-
-        if (vector.TryMakeFromComponentsChecked(value.AsSpan(), out IVector? created) && created is TOther other)
-        {
-            result = other;
-            return true;
+            return TOther.TryConvertFromChecked(value, out result);
         }
 
         result = default;
@@ -1188,24 +1071,9 @@ public readonly partial struct Vector2<T> : IVector<Vector2<T>, T>, IDivisionOpe
     /// <inheritdoc />
     static bool INumberBase<Vector2<T>>.TryConvertToSaturating<TOther>(Vector2<T> value, [MaybeNullWhen(false)] out TOther result)
     {
-        result = default;
-        if (result is not IVector vector)
+        if (typeof(IVector).IsAssignableFrom(typeof(TOther)))
         {
-            result = default;
-            return false;
-        }
-
-        int dimension = vector.GetDimension();
-        if (dimension < Dimension)
-        {
-            result = default;
-            return false;
-        }
-
-        if (vector.TryMakeFromComponentsSaturating(value.AsSpan(), out IVector? created) && created is TOther other)
-        {
-            result = other;
-            return true;
+            return TOther.TryConvertFromSaturating(value, out result);
         }
 
         result = default;
@@ -1215,24 +1083,9 @@ public readonly partial struct Vector2<T> : IVector<Vector2<T>, T>, IDivisionOpe
     /// <inheritdoc />
     static bool INumberBase<Vector2<T>>.TryConvertToTruncating<TOther>(Vector2<T> value, [MaybeNullWhen(false)] out TOther result)
     {
-        result = default;
-        if (result is not IVector vector)
+        if (typeof(IVector).IsAssignableFrom(typeof(TOther)))
         {
-            result = default;
-            return false;
-        }
-
-        int dimension = vector.GetDimension();
-        if (dimension < Dimension)
-        {
-            result = default;
-            return false;
-        }
-
-        if (vector.TryMakeFromComponentsTruncating(value.AsSpan(), out IVector? created) && created is TOther other)
-        {
-            result = other;
-            return true;
+            return TOther.TryConvertFromTruncating(value, out result);
         }
 
         result = default;
