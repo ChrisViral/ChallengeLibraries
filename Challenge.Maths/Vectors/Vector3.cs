@@ -27,6 +27,8 @@ public readonly partial struct Vector3<T> : IVector<Vector3<T>, T>, IDivisionOpe
         private T element;
     }
 
+    /// <summary>Default parse separator</summary>
+    private const string DEFAULT_SEPARATOR = ",";
     /// <summary>If this is an integer vector type</summary>
     private static readonly bool IsInteger = typeof(T).IsGenericImplementationOf(typeof(IBinaryInteger<>));
     /// <summary>Small comparison value for floating point numbers</summary>
@@ -531,10 +533,9 @@ public readonly partial struct Vector3<T> : IVector<Vector3<T>, T>, IDivisionOpe
     /// <returns>The parsed vector</returns>
     /// <exception cref="ArgumentNullException">If <paramref name="value"/> or <paramref name="separator"/> is null or empty</exception>
     /// <exception cref="FormatException">If there isn't exactly two or three values present after the split</exception>
-    public static Vector3<T> Parse(string value, string separator = ",", NumberStyles? style = null, IFormatProvider? provider = null)
+    public static Vector3<T> Parse(string value, string separator = DEFAULT_SEPARATOR, NumberStyles? style = null, IFormatProvider? provider = null)
     {
         if (string.IsNullOrEmpty(value)) throw new ArgumentNullException(nameof(value), "Value cannot be null or empty");
-        if (string.IsNullOrEmpty(separator)) throw new ArgumentNullException(nameof(separator), "Separator cannot be null or empty");
 
         return Parse(value.AsSpan(), separator, style, provider);
     }
@@ -549,10 +550,11 @@ public readonly partial struct Vector3<T> : IVector<Vector3<T>, T>, IDivisionOpe
     /// <returns>The parsed vector</returns>
     /// <exception cref="ArgumentNullException">If <paramref name="value"/> or <paramref name="separator"/> is null or empty</exception>
     /// <exception cref="FormatException">If there isn't exactly two or three values present after the split</exception>
-    public static Vector3<T> Parse(ReadOnlySpan<char> value, string separator = ",", NumberStyles? style = null, IFormatProvider? provider = null)
+    public static Vector3<T> Parse(ReadOnlySpan<char> value, string separator = DEFAULT_SEPARATOR, NumberStyles? style = null, IFormatProvider? provider = null)
     {
         if (value.IsEmpty || value.IsWhiteSpace()) throw new ArgumentException("Value cannot be null or empty", nameof(value));
         if (string.IsNullOrEmpty(separator)) throw new ArgumentNullException(nameof(separator), "Separator cannot be null or empty");
+        if (value.Count(separator) is < 1 or > 2) throw new FormatException("String to parse not properly formatted");
 
         Span<Range> ranges = stackalloc Range[3];
         int written = value.Split(ranges, separator, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
@@ -573,9 +575,9 @@ public readonly partial struct Vector3<T> : IVector<Vector3<T>, T>, IDivisionOpe
     /// <param name="style">Number style</param>
     /// <param name="provider">Format provider</param>
     /// <returns><see langword="true"/> if the parse succeeded, otherwise <see langword="false"/></returns>
-    public static bool TryParse(string? value, out Vector3<T> result, string separator = ",", NumberStyles? style = null, IFormatProvider? provider = null)
+    public static bool TryParse(string? value, out Vector3<T> result, string separator = DEFAULT_SEPARATOR, NumberStyles? style = null, IFormatProvider? provider = null)
     {
-        if (string.IsNullOrEmpty(value) || string.IsNullOrEmpty(separator))
+        if (string.IsNullOrEmpty(value))
         {
             result = Zero;
             return false;
@@ -593,9 +595,9 @@ public readonly partial struct Vector3<T> : IVector<Vector3<T>, T>, IDivisionOpe
     /// <param name="style">Number style</param>
     /// <param name="provider">Format provider</param>
     /// <returns><see langword="true"/> if the parse succeeded, otherwise <see langword="false"/></returns>
-    public static bool TryParse(ReadOnlySpan<char> value, out Vector3<T> result, string separator = ",", NumberStyles? style = null, IFormatProvider? provider = null)
+    public static bool TryParse(ReadOnlySpan<char> value, out Vector3<T> result, string separator = DEFAULT_SEPARATOR, NumberStyles? style = null, IFormatProvider? provider = null)
     {
-        if (value.IsEmpty || value.IsWhiteSpace() || string.IsNullOrEmpty(separator))
+        if (value.IsEmpty || value.IsWhiteSpace() || string.IsNullOrEmpty(separator) || value.Count(separator) is < 1 or > 2)
         {
             result = Zero;
             return false;
