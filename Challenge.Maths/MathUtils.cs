@@ -82,6 +82,22 @@ public static class MathUtils
     }
 
     /// <summary>
+    /// Gets the unsigned magnitude of a number
+    /// </summary>
+    /// <remarks>You must ensure that <typeparamref name="TUnsigned"/> can fit the magnitude of <paramref name="value"/> within it</remarks>
+    /// <param name="value">Value to get the unsigned magnitude for</param>
+    /// <typeparam name="TSigned">Signed value type</typeparam>
+    /// <typeparam name="TUnsigned">Unsigned value type</typeparam>
+    /// <returns>The magnitude of <paramref name="value"/> as a <typeparamref name="TUnsigned"/></returns>
+    public static TUnsigned Magnitude<TSigned, TUnsigned>(TSigned value)
+        where TSigned : IBinaryInteger<TSigned>, ISignedNumber<TSigned>
+        where TUnsigned : IBinaryInteger<TUnsigned>, IUnsignedNumber<TUnsigned>
+    {
+        TUnsigned magnitude = TUnsigned.CreateTruncating(value);
+        return TSigned.IsNegative(value) ? TUnsigned.Zero - magnitude : magnitude;
+    }
+
+    /// <summary>
     /// Computes the integer square root of a number
     /// </summary>
     /// <param name="n">Value to computer the square root for</param>
