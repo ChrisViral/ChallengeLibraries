@@ -106,8 +106,48 @@ public static class MathUtils
     /// <param name="b">Power to raise the value to</param>
     /// <typeparam name="T">Integer type</typeparam>
     /// <returns>The result of <c>a^b</c></returns>
-    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T IntegerPow<T>(T a, int b) where T : IBinaryInteger<T> => a.Pow(b);
+    /// <exception cref="ArgumentOutOfRangeException">If <paramref name="b"/> is a negative value</exception>
+    [Pure]
+    public static T IntegerPow<T>(T a, int b) where T : IBinaryInteger<T>
+    {
+        if (b < 0) throw new ArgumentOutOfRangeException(nameof(b), "Power must be a positive value");
+        if (b is 0) return T.One;
+
+        T result = T.One;
+        while (b > 0)
+        {
+            if (b.IsOdd)
+            {
+                result = checked(result * a);
+            }
+
+            b /= 2;
+            a  = checked(a * a);
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Integer floor logarithm
+    /// </summary>
+    /// <param name="a">Log value</param>
+    /// <param name="b">Log base</param>
+    /// <returns>The result of <c>log_b(a)</c></returns>
+    /// <exception cref="ArgumentOutOfRangeException">If <paramref name="a"/> is zero or less, or if <paramref name="b"/> is one or less</exception>
+    public static T IntegerLog<T>(T a, T b) where T : IBinaryInteger<T>
+    {
+        if (a <= T.Zero) throw new ArgumentOutOfRangeException(nameof(a), "Value to log must be positive non-zero number");
+        if (b <= T.One) throw new ArgumentOutOfRangeException(nameof(b), "Log base must be greater than one");
+
+        T count = T.Zero;
+        while (a >= b)
+        {
+            a /= b;
+            count++;
+        }
+        return count;
+    }
 
     /// <summary>
     /// Computes the integer square root of a number

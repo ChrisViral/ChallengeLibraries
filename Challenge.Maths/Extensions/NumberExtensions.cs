@@ -162,45 +162,24 @@ public static class NumberExtensions
         /// <param name="pow">Power to apply</param>
         /// <returns>The result of <paramref name="value"/> ^ <paramref name="pow"/></returns>
         /// <exception cref="ArgumentOutOfRangeException">If <paramref name="pow"/> is a negative value</exception>
-        public T Pow(int pow)
-        {
-            if (pow < 0) throw new ArgumentOutOfRangeException(nameof(pow), "Power must be a positive value");
-            if (pow is 0) return T.One;
-
-            T result = T.One;
-            while (pow > 0)
-            {
-                if (pow.IsOdd)
-                {
-                    result = checked(result * value);
-                }
-
-                pow /= 2;
-                value = checked(value * value);
-            }
-
-            return result;
-        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public T Pow(int pow) => MathUtils.IntegerPow(value, pow);
 
         /// <summary>
         /// Integer floor logarithm
         /// </summary>
-        /// <param name="baseValue">Log base</param>
-        /// <returns>The result of the base <paramref name="baseValue"/> log of <paramref name="value"/></returns>
-        /// <exception cref="ArgumentOutOfRangeException">If <paramref name="value"/> is zero or less, or if <paramref name="baseValue"/> is one or less</exception>
-        public T Log(T baseValue)
-        {
-            if (value <= T.Zero) throw new ArgumentOutOfRangeException(nameof(value), "Value to log must be positive non-zero number");
-            if (baseValue <= T.One) throw new ArgumentOutOfRangeException(nameof(baseValue), "Log base must be greater than one");
+        /// <param name="base">Log base</param>
+        /// <returns>The result of the base <paramref name="base"/> log of <paramref name="value"/></returns>
+        /// <exception cref="ArgumentOutOfRangeException">If <paramref name="value"/> is zero or less, or if <paramref name="base"/> is one or less</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public T Log(T @base) => MathUtils.IntegerLog(value, @base);
 
-            T count = T.Zero;
-            while (value >= baseValue)
-            {
-                value /= baseValue;
-                count++;
-            }
-            return count;
-        }
+        /// <summary>
+        /// Computes the integer square root of a number
+        /// </summary>
+        /// <returns>The square root of <paramref name="value"/></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public T Sqrt() => MathUtils.IntegerSqrt(value);
 
         /// <summary>
         /// Greatest Common Divisor function
