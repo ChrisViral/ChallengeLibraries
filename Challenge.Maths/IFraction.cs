@@ -61,12 +61,22 @@ public interface IFraction<out T> : IFraction
     /// <summary>
     /// Decimal representation of this fraction
     /// </summary>
-    public decimal Decimal { get; }
+    decimal Decimal { get; }
+
+    /// <summary>
+    /// Whole part of this fraction
+    /// </summary>
+    T Whole { get; }
+
+    /// <summary>
+    /// Fractional part of this fraction
+    /// </summary>
+    decimal Fractional { get; }
 
     /// <summary>
     /// If this fraction is already in it's reduced form
     /// </summary>
-    public bool IsReduced { get; }
+    bool IsReduced { get; }
 }
 
 /// <summary>
@@ -82,7 +92,13 @@ public interface IFraction<TSelf, TValue> : IFraction<TValue>, INumber<TSelf>, I
     /// <summary>
     /// Reduced version of this fraction
     /// </summary>
-    public TSelf Reduced { get; }
+    TSelf Reduced { get; }
+
+    /// <summary>
+    /// Inverted version of this fraction
+    /// </summary>
+    /// <exception cref="DivideByZeroException">If trying to invert zero</exception>
+    TSelf Invert { get; }
 
     /// <summary>
     /// Tries to create a fraction with the given numerator and denominator
@@ -100,4 +116,20 @@ public interface IFraction<TSelf, TValue> : IFraction<TValue>, INumber<TSelf>, I
     /// <param name="denominator">fraction denominator</param>
     /// <returns>the created fraction, reduced</returns>
     static abstract TSelf CreateReduced(TValue numerator, TValue denominator);
+
+    /// <summary>
+    /// Multiplies both fractions and reduces them
+    /// </summary>
+    /// <param name="left">Left operand</param>
+    /// <param name="right">Right operand</param>
+    /// <returns>The reduced result of the fraction multiplication</returns>
+    static abstract TSelf MultiplyReduced(TSelf left, TSelf right);
+
+    /// <summary>
+    /// Divides both fractions and reduces them
+    /// </summary>
+    /// <param name="left">Left operand</param>
+    /// <param name="right">Right operand</param>
+    /// <returns>The reduced result of the fraction division</returns>
+    static abstract TSelf DivideReduced(TSelf left, TSelf right);
 }

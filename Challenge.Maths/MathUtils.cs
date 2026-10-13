@@ -60,7 +60,7 @@ public static class MathUtils
     /// <returns>The ceiling of <paramref name="value"/> as an integer</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult CeilToInt<TResult, TValue>(TValue value)
-        where TValue : IBinaryFloatingPointIeee754<TValue>
+        where TValue : IFloatingPoint<TValue>
         where TResult : IBinaryInteger<TResult>
     {
         return TResult.CreateChecked(TValue.Ceiling(value));

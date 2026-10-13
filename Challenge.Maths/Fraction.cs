@@ -12,7 +12,11 @@ namespace Challenge.Maths;
 /// </summary>
 /// <typeparam name="T">Fraction integer type</typeparam>
 [PublicAPI]
-public readonly struct Fraction<T> : IFraction<Fraction<T>, T>
+public readonly struct Fraction<T> : IFraction<Fraction<T>, T>,
+                                     IAdditionOperators<Fraction<T>, T, Fraction<T>>,
+                                     ISubtractionOperators<Fraction<T>, T, Fraction<T>>,
+                                     IMultiplyOperators<Fraction<T>, T, Fraction<T>>,
+                                     IDivisionOperators<Fraction<T>, T, Fraction<T>>
     where T : unmanaged, IBinaryInteger<T>, ISignedNumber<T>, IMinMaxValue<T>
 {
     /// <summary>
@@ -60,7 +64,21 @@ public readonly struct Fraction<T> : IFraction<Fraction<T>, T>
     public decimal Decimal
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get { return decimal.CreateChecked(this.Numerator) / decimal.CreateChecked(this.Denominator); }
+        get => decimal.CreateChecked(this.Numerator) / decimal.CreateChecked(this.Denominator);
+    }
+
+    /// <inheritdoc />
+    public T Whole
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => this.Numerator / this.Denominator;
+    }
+
+    /// <inheritdoc />
+    public decimal Fractional
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => decimal.CreateChecked(this.Numerator % this.Denominator) / decimal.CreateChecked(this.Denominator);
     }
 
     /// <inheritdoc />
@@ -68,6 +86,15 @@ public readonly struct Fraction<T> : IFraction<Fraction<T>, T>
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => CreateReduced(this.Numerator, this.Denominator);
+    }
+
+    /// <inheritdoc />
+    public Fraction<T> Invert
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => this.Numerator != T.Zero
+                   ? new Fraction<T>(this.Denominator, this.Numerator)
+                   : throw new DivideByZeroException("Cannot invert the fraction zero");
     }
 
     /// <inheritdoc />
@@ -264,19 +291,26 @@ public readonly struct Fraction<T> : IFraction<Fraction<T>, T>
 
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public override string ToString() => $"{this.Numerator} / {this.Denominator}";
+    public override string ToString()
+    {
+        return this.Denominator != T.One ? $"{this.Numerator} / {this.Denominator}" : this.Numerator.ToString() ?? string.Empty;
+    }
 
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public string ToString(string? format, IFormatProvider? formatProvider)
     {
-        return $"{this.Numerator.ToString(format, formatProvider)} / {this.Denominator.ToString(format, formatProvider)}";
+        return this.Denominator != T.One
+                   ? $"{this.Numerator.ToString(format, formatProvider)} / {this.Denominator.ToString(format, formatProvider)}"
+                   : this.Numerator.ToString(format, formatProvider);
     }
 
     /// <inheritdoc />
     public bool TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
     {
-        const string SEPARATOR = " / ";
+        if (this.Denominator == T.One) return this.Numerator.TryFormat(destination, out charsWritten, format, provider);
+
+        const string SEPARATOR = $" {DEFAULT_SEPARATOR} ";
         if (!this.Numerator.TryFormat(destination, out int numeratorWritten, format, provider))
         {
             charsWritten = 0;
@@ -371,6 +405,24 @@ public readonly struct Fraction<T> : IFraction<Fraction<T>, T>
     }
 
     /// <inheritdoc />
+    public static Fraction<T> MultiplyReduced(Fraction<T> left, Fraction<T> right)
+    {
+        T numerator   = left.Numerator * right.Numerator;
+        T denominator = left.Denominator * right.Denominator;
+        T gcd = MathUtils.GCD(numerator, denominator);
+        return new Fraction<T>(numerator / gcd, denominator / gcd);
+    }
+
+    /// <inheritdoc />
+    public static Fraction<T> DivideReduced(Fraction<T> left, Fraction<T> right)
+    {
+        T numerator   = left.Numerator * right.Denominator;
+        T denominator = left.Denominator * right.Numerator;
+        T gcd = MathUtils.GCD(numerator, denominator);
+        return new Fraction<T>(numerator / gcd, denominator / gcd);
+    }
+
+    /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Fraction<T> Abs(Fraction<T> value) => new(T.Abs(value.Numerator), value.Denominator);
 
@@ -418,7 +470,10 @@ public readonly struct Fraction<T> : IFraction<Fraction<T>, T>
     {
         if (value.IsEmpty || value.IsWhiteSpace()) throw new ArgumentException("Value cannot be empty", nameof(value));
         if (string.IsNullOrEmpty(separator)) throw new ArgumentNullException(nameof(separator), "Separator cannot be null or empty");
-        if (value.Count(separator) is not 1) throw new FormatException("String to parse not properly formatted");
+
+        int separatorCount = value.Count(separator);
+        if (separatorCount is 0) return new Fraction<T>(T.Parse(value, style, provider));
+        if (separatorCount is not 1) throw new FormatException("String to parse not properly formatted");
 
         Span<Range> ranges = stackalloc Range[2];
         int written = value.Split(ranges, separator, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
@@ -460,7 +515,26 @@ public readonly struct Fraction<T> : IFraction<Fraction<T>, T>
     /// <returns><see langword="true"/> if the parse succeeded, otherwise <see langword="false"/></returns>
     public static bool TryParse(ReadOnlySpan<char> value, out Fraction<T> result, string separator = DEFAULT_SEPARATOR, NumberStyles style = NumberStyles.Integer, IFormatProvider? provider = null)
     {
-        if (value.IsEmpty || value.IsWhiteSpace() || string.IsNullOrEmpty(separator) || value.Count(DEFAULT_SEPARATOR) is not 1)
+        if (value.IsEmpty || value.IsWhiteSpace() || string.IsNullOrEmpty(separator))
+        {
+            result = Zero;
+            return false;
+        }
+
+        int separatorCount = value.Count(separator);
+        if (separatorCount is 0)
+        {
+            if (T.TryParse(value, style, provider, out T number))
+            {
+                result = new Fraction<T>(number);
+                return true;
+            }
+
+            result = Zero;
+            return false;
+        }
+
+        if (separatorCount is not 1)
         {
             result = Zero;
             return false;
@@ -478,6 +552,14 @@ public readonly struct Fraction<T> : IFraction<Fraction<T>, T>
 
         return TryCreate(numerator, denominator, out result);
     }
+
+    /// <summary>
+    /// Converts the integer value to a unit fraction
+    /// </summary>
+    /// <param name="value">Value to convert</param>
+    /// <returns>The fraction representation of the given value</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static implicit operator Fraction<T>(T value) => new(value);
 
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -532,6 +614,30 @@ public readonly struct Fraction<T> : IFraction<Fraction<T>, T>
         T quotient = (left.Numerator * right.Denominator) / (left.Denominator * right.Numerator);
         return new Fraction<T>((left.Numerator * right.Denominator) - (quotient * left.Denominator * right.Numerator), left.Denominator * right.Denominator);
     }
+
+    /// <inheritdoc />
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Fraction<T> operator +(Fraction<T> left, T right) => new(left.Numerator + (right * left.Denominator), left.Denominator);
+
+    /// <inheritdoc />
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Fraction<T> operator -(Fraction<T> left, T right) => new(left.Numerator - (right * left.Denominator), left.Denominator);
+
+    /// <inheritdoc />
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Fraction<T> operator *(Fraction<T> left, T right) => new(left.Numerator * right, left.Denominator);
+
+    /// <inheritdoc />
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Fraction<T> operator /(Fraction<T> left, T right) => new(left.Numerator, left.Denominator * right);
+
+    /// <summary>
+    /// Divides an integer value by a fraction
+    /// </summary>
+    /// <param name="left">Integer value</param>
+    /// <param name="right">Fraction value</param>
+    /// <returns>Result of the division of the integer by the fraction</returns>
+    public static Fraction<T> operator /(T left, Fraction<T> right) => new(left * right.Denominator, right.Numerator);
 
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
