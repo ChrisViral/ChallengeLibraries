@@ -1,4 +1,4 @@
-using System.Buffers;
+﻿using System.Buffers;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using Challenge.Maths.Vectors;
@@ -23,6 +23,7 @@ public static class MathUtils
     /// <param name="b">Second number</param>
     /// <returns>Gets the GCD of a and b</returns>
     /// ReSharper disable once MemberCanBePrivate.Global
+    [Pure]
     public static T GCD<T>(T a, T b) where T : IBinaryInteger<T>
     {
         a = T.Abs(a);
@@ -48,7 +49,7 @@ public static class MathUtils
     /// <param name="a">First number</param>
     /// <param name="b">Second number</param>
     /// <returns>The LCM of a and b</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T LCM<T>(T a, T b) where T : IBinaryInteger<T> => a * b / GCD(a, b);
 
     /// <summary>
@@ -58,7 +59,7 @@ public static class MathUtils
     /// <typeparam name="TResult">Integer target type</typeparam>
     /// <param name="value">The value to get the ceiling for</param>
     /// <returns>The ceiling of <paramref name="value"/> as an integer</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult CeilToInt<TResult, TValue>(TValue value)
         where TValue : IFloatingPoint<TValue>
         where TResult : IBinaryInteger<TResult>
@@ -73,7 +74,7 @@ public static class MathUtils
     /// <typeparam name="TResult">Integer target type</typeparam>
     /// <param name="value">The value to get the floor for</param>
     /// <returns>The floor of <paramref name="value"/> as an integer</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult FloorToInt<TResult, TValue>(TValue value)
         where TValue : IBinaryFloatingPointIeee754<TValue>
         where TResult : IBinaryInteger<TResult>
@@ -89,6 +90,7 @@ public static class MathUtils
     /// <typeparam name="TSigned">Signed value type</typeparam>
     /// <typeparam name="TUnsigned">Unsigned value type</typeparam>
     /// <returns>The magnitude of <paramref name="value"/> as a <typeparamref name="TUnsigned"/></returns>
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TUnsigned Magnitude<TSigned, TUnsigned>(TSigned value)
         where TSigned : IBinaryInteger<TSigned>, ISignedNumber<TSigned>
         where TUnsigned : IBinaryInteger<TUnsigned>, IUnsignedNumber<TUnsigned>
@@ -114,6 +116,7 @@ public static class MathUtils
     /// <typeparam name="T">Integer value type</typeparam>
     /// <returns>The square root of <paramref name="n"/></returns>
     /// <exception cref="ArgumentOutOfRangeException">If <paramref name="n"/> is negative</exception>
+    [Pure]
     public static T IntegerSqrt<T>(T n) where T : IBinaryInteger<T>
     {
         if (n < T.Zero) throw new ArgumentOutOfRangeException(nameof(n), "Cannot computer the square root of a negative number");
@@ -157,6 +160,7 @@ public static class MathUtils
     /// <typeparam name="T">Integer type</typeparam>
     /// <returns>The smallest number that satisfies the input modular equations</returns>
     /// <exception cref="ArgumentException">If <paramref name="remainders"/> has a different length from <paramref name="moduli"/>, or if any value in <paramref name="moduli"/> is less than 1</exception>
+    [Pure]
     public static T ChineseRemainder<T>(ReadOnlySpan<T> remainders, ReadOnlySpan<T> moduli) where T : IBinaryInteger<T>
     {
         if (remainders.Length != moduli.Length) throw new ArgumentException("Remainders and moduli must be of the same length", nameof(remainders));
@@ -184,6 +188,7 @@ public static class MathUtils
     /// <param name="mod">Modulus</param>
     /// <typeparam name="T">Integer type</typeparam>
     /// <returns>The modular power <paramref name="a"/>^<paramref name="b"/> % <paramref name="mod"/></returns>
+    [Pure]
     public static T ModularPower<T>(T a, T b, T mod) where T : IBinaryInteger<T>
     {
         if (mod == T.One) return T.Zero;
@@ -209,6 +214,7 @@ public static class MathUtils
     /// <param name="mod">Modulus</param>
     /// <typeparam name="T">Integer type</typeparam>
     /// <returns>The modular inverse <paramref name="n"/>^(-1) % <paramref name="mod"/></returns>
+    [Pure]
     public static T ModularInverse<T>(T n, T mod) where T : IBinaryInteger<T> => ModularPower(n, mod - NumberUtils<T>.Two, mod);
 
     /// <summary>
@@ -218,7 +224,8 @@ public static class MathUtils
     /// <param name="coins">List of valid coins</param>
     /// <returns>An array containing the resulting coins that create <paramref name="n"/>, or an empty array if no solution is found</returns>
     /// <exception cref="ArgumentOutOfRangeException">If <paramref name="n"/> is negative, or any of the <paramref name="coins"/> zero or negative</exception>
-    /// ReSharper disable once CognitiveComplexity
+    [Pure]
+    // ReSharper disable once CognitiveComplexity
     public static int[] MinimumCoinChange(int n, ReadOnlySpan<int> coins)
     {
         if (n < 0) throw new ArgumentOutOfRangeException(nameof(n), "Value to separate into coins cannot be negative");
@@ -337,6 +344,7 @@ public static class MathUtils
     /// <param name="vertices">List of vertices</param>
     /// <returns>The total area of the polygon</returns>
     /// <exception cref="ArgumentOutOfRangeException">If there are not enough vertices to make a proper 2D polygon</exception>
+    [Pure]
     public static T Shoelace<T>(IList<Vector2<T>> vertices) where T : unmanaged, IBinaryInteger<T>, IMinMaxValue<T>
     {
         // Make sure we have enough vertices
@@ -367,7 +375,7 @@ public static class MathUtils
     /// <param name="interior">Number of interior points</param>
     /// <param name="border">Number of exterior points</param>
     /// <returns>The total area of the polygon</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Picks<T>(T interior, T border) where T : IBinaryInteger<T> => interior + (border / NumberUtils<T>.Two) + T.One;
 
     /// <summary>
@@ -377,7 +385,8 @@ public static class MathUtils
     /// <param name="vertices">The list of the polygon's vertices</param>
     /// <param name="edgesInside">If the point is considered inside the polygon when it lies on an edge</param>
     /// <returns><see langword="true"/> when the <paramref name="position"/> is within the polygon, otherwise <see langword="false"/></returns>
-    /// ReSharper disable once CognitiveComplexity
+    [Pure]
+    // ReSharper disable once CognitiveComplexity
     public static bool IsInsidePolygon<T>(Vector2<T> position, IReadOnlyList<Vector2<T>> vertices, bool edgesInside = false) where T : unmanaged, IBinaryInteger<T>, IMinMaxValue<T>
     {
         bool IsInsidePolygonNoEdges()
@@ -445,7 +454,8 @@ public static class MathUtils
     /// <param name="vertices">The list of the polygon's vertices</param>
     /// <param name="edgesInside">If the point is considered inside the polygon when it lies on an edge</param>
     /// <returns><see langword="true"/> when the <paramref name="position"/> is within the polygon, otherwise <see langword="false"/></returns>
-    /// ReSharper disable once CognitiveComplexity
+    [Pure]
+    // ReSharper disable once CognitiveComplexity
     public static bool IsInsideAxisAlignedPolygon<T>(Vector2<T> position, IReadOnlyList<Vector2<T>> vertices, bool edgesInside = false) where T : unmanaged, IBinaryInteger<T>, IMinMaxValue<T>
     {
         bool IsInsidePolygonNoEdges()
