@@ -200,20 +200,19 @@ public readonly struct Fraction<T> : IFraction<Fraction<T>, T>,
 
         // Get scale and negative flag
         int flags = bits[3];
-        int scale = (bits[3] >>> 16) & 0xFF;
+        int scale = (flags >> 16) & 0xFF;
         bool negative = flags < 0;
 
         // Nothing else to compute for integer values
         if (scale is 0)
         {
-            this.Numerator   = negative ? -T.CreateChecked(numerator) : T.CreateChecked(numerator);
+            this.Numerator   = negative ? checked(-T.CreateChecked(numerator)) : T.CreateChecked(numerator);
             this.Denominator = T.One;
             return;
         }
 
         // Calculate denominator
-        UInt128 denominator = 10;
-        denominator = denominator.Pow(scale);
+        UInt128 denominator = MathUtils.IntegerPow<UInt128>(10UL, scale);
 
         // Normalize the value
         UInt128 gcd = UInt128.GCD(numerator, denominator);
@@ -221,7 +220,7 @@ public readonly struct Fraction<T> : IFraction<Fraction<T>, T>,
         denominator /= gcd;
 
         // Create final values
-        this.Numerator   = negative ? -T.CreateChecked(numerator) : T.CreateChecked(numerator);
+        this.Numerator   = negative ? checked(-T.CreateChecked(numerator)) : T.CreateChecked(numerator);
         this.Denominator = T.CreateChecked(denominator);
     }
 
@@ -230,20 +229,20 @@ public readonly struct Fraction<T> : IFraction<Fraction<T>, T>,
     {
         if (IsInt128 || IsBigInt)
         {
-            BigInteger left  = BigInteger.CreateChecked(this.Numerator)  * BigInteger.CreateChecked(other.Denominator);
-            BigInteger right = BigInteger.CreateChecked(other.Numerator) * BigInteger.CreateChecked(this.Denominator);
+            BigInteger left  = MathUtils.BigMul<T, BigInteger>(this.Numerator, other.Denominator);
+            BigInteger right = MathUtils.BigMul<T, BigInteger>(other.Numerator, this.Denominator);
             return left == right;
         }
         if (IsInt64)
         {
-            Int128 left  = Int128.CreateChecked(this.Numerator)  * Int128.CreateChecked(other.Denominator);
-            Int128 right = Int128.CreateChecked(other.Numerator) * Int128.CreateChecked(this.Denominator);
+            Int128 left  = MathUtils.BigMul<T, Int128>(this.Numerator, other.Denominator);
+            Int128 right = MathUtils.BigMul<T, Int128>(other.Numerator, this.Denominator);
             return left == right;
         }
         else
         {
-            long left  = long.CreateChecked(this.Numerator)  * long.CreateChecked(other.Denominator);
-            long right = long.CreateChecked(other.Numerator) * long.CreateChecked(this.Denominator);
+            long left  = MathUtils.BigMul<T, long>(this.Numerator, other.Denominator);
+            long right = MathUtils.BigMul<T, long>(other.Numerator, this.Denominator);
             return left == right;
         }
     }
@@ -267,20 +266,20 @@ public readonly struct Fraction<T> : IFraction<Fraction<T>, T>,
     {
         if (IsInt128 || IsBigInt)
         {
-            BigInteger left  = BigInteger.CreateChecked(this.Numerator)  * BigInteger.CreateChecked(other.Denominator);
-            BigInteger right = BigInteger.CreateChecked(other.Numerator) * BigInteger.CreateChecked(this.Denominator);
+            BigInteger left  = MathUtils.BigMul<T, BigInteger>(this.Numerator, other.Denominator);
+            BigInteger right = MathUtils.BigMul<T, BigInteger>(other.Numerator, this.Denominator);
             return left.CompareTo(right);
         }
         if (IsInt64)
         {
-            Int128 left  = Int128.CreateChecked(this.Numerator)  * Int128.CreateChecked(other.Denominator);
-            Int128 right = Int128.CreateChecked(other.Numerator) * Int128.CreateChecked(this.Denominator);
+            Int128 left  = MathUtils.BigMul<T, Int128>(this.Numerator, other.Denominator);
+            Int128 right = MathUtils.BigMul<T, Int128>(other.Numerator, this.Denominator);
             return left.CompareTo(right);
         }
         else
         {
-            long left  = long.CreateChecked(this.Numerator)  * long.CreateChecked(other.Denominator);
-            long right = long.CreateChecked(other.Numerator) * long.CreateChecked(this.Denominator);
+            long left  = MathUtils.BigMul<T, long>(this.Numerator, other.Denominator);
+            long right = MathUtils.BigMul<T, long>(other.Numerator, this.Denominator);
             return left.CompareTo(right);
         }
     }
@@ -407,19 +406,25 @@ public readonly struct Fraction<T> : IFraction<Fraction<T>, T>,
     /// <inheritdoc />
     public static Fraction<T> MultiplyReduced(Fraction<T> left, Fraction<T> right)
     {
-        T numerator   = left.Numerator * right.Numerator;
-        T denominator = left.Denominator * right.Denominator;
-        T gcd = MathUtils.GCD(numerator, denominator);
-        return new Fraction<T>(numerator / gcd, denominator / gcd);
+        checked
+        {
+            T numerator   = left.Numerator * right.Numerator;
+            T denominator = left.Denominator * right.Denominator;
+            T gcd = MathUtils.GCD(numerator, denominator);
+            return new Fraction<T>(numerator / gcd, denominator / gcd);
+        }
     }
 
     /// <inheritdoc />
     public static Fraction<T> DivideReduced(Fraction<T> left, Fraction<T> right)
     {
-        T numerator   = left.Numerator * right.Denominator;
-        T denominator = left.Denominator * right.Numerator;
-        T gcd = MathUtils.GCD(numerator, denominator);
-        return new Fraction<T>(numerator / gcd, denominator / gcd);
+        checked
+        {
+            T numerator   = left.Numerator * right.Denominator;
+            T denominator = left.Denominator * right.Numerator;
+            T gcd = MathUtils.GCD(numerator, denominator);
+            return new Fraction<T>(numerator / gcd, denominator / gcd);
+        }
     }
 
     /// <inheritdoc />
