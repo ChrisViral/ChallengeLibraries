@@ -174,56 +174,6 @@ public readonly struct Fraction<T> : IFraction<Fraction<T>, T>,
         }
     }
 
-    /// <summary>
-    /// Creates a new integer fraction from a decimal value
-    /// </summary>
-    /// <param name="value">Decimal value to create the fraction from</param>
-    /// <exception cref="OverflowException">If the fraction values to not fit within <typeparamref name="T"/></exception>
-    public Fraction(decimal value)
-    {
-        // Avoid expensive math for zero
-        if (value is 0m)
-        {
-            this.Numerator   = T.Zero;
-            this.Denominator = T.One;
-            return;
-        }
-
-        // Get bits from decimal
-        Span<int> bits = stackalloc int[4];
-        decimal.GetBits(value, bits);
-
-        // Get numerator
-        UInt128 numerator = (uint)bits[2];
-        numerator = (numerator << 32) | (uint)bits[1];
-        numerator = (numerator << 32) | (uint)bits[0];
-
-        // Get scale and negative flag
-        int flags = bits[3];
-        int scale = (flags >> 16) & 0xFF;
-        bool negative = flags < 0;
-
-        // Nothing else to compute for integer values
-        if (scale is 0)
-        {
-            this.Numerator   = negative ? checked(-T.CreateChecked(numerator)) : T.CreateChecked(numerator);
-            this.Denominator = T.One;
-            return;
-        }
-
-        // Calculate denominator
-        UInt128 denominator = MathUtils.IntegerPow<UInt128>(10UL, scale);
-
-        // Normalize the value
-        UInt128 gcd = UInt128.GCD(numerator, denominator);
-        numerator   /= gcd;
-        denominator /= gcd;
-
-        // Create final values
-        this.Numerator   = negative ? checked(-T.CreateChecked(numerator)) : T.CreateChecked(numerator);
-        this.Denominator = T.CreateChecked(denominator);
-    }
-
     /// <inheritdoc />
     public bool Equals(Fraction<T> other)
     {
@@ -401,6 +351,45 @@ public readonly struct Fraction<T> : IFraction<Fraction<T>, T>,
         }
 
         return new Fraction<T>(numerator, denominator);
+    }
+
+    /// <summary>
+    /// Creates a new integer fraction from a decimal value
+    /// </summary>
+    /// <param name="value">Decimal value to create the fraction from</param>
+    /// <exception cref="OverflowException">If the fraction values to not fit within <typeparamref name="T"/></exception>
+    public static Fraction<T> FromDecimal(decimal value)
+    {
+        // Avoid expensive math for zero
+        if (value is 0m) return Zero;
+
+        // Get bits from decimal
+        Span<int> bits = stackalloc int[4];
+        decimal.GetBits(value, bits);
+
+        // Get numerator
+        UInt128 numerator = (uint)bits[2];
+        numerator = (numerator << 32) | (uint)bits[1];
+        numerator = (numerator << 32) | (uint)bits[0];
+
+        // Get scale and negative flag
+        int flags = bits[3];
+        int scale = (flags >> 16) & 0xFF;
+        bool negative = flags < 0;
+
+        // Nothing else to compute for integer values
+        if (scale is 0) return new Fraction<T>(negative ? checked(-T.CreateChecked(numerator)) : T.CreateChecked(numerator));
+
+        // Calculate denominator
+        UInt128 denominator = MathUtils.IntegerPow<UInt128>(10UL, scale);
+
+        // Normalize the value
+        UInt128 gcd = UInt128.GCD(numerator, denominator);
+        numerator   /= gcd;
+        denominator /= gcd;
+
+        // Create final values
+        return new Fraction<T>(negative ? checked(-T.CreateChecked(numerator)) : T.CreateChecked(numerator), T.CreateChecked(denominator));
     }
 
     /// <inheritdoc />
@@ -831,7 +820,7 @@ public readonly struct Fraction<T> : IFraction<Fraction<T>, T>,
         {
             try
             {
-                result = new Fraction<T>(decimalValue);
+                result = FromDecimal(decimalValue);
                 return true;
             }
             catch
@@ -871,7 +860,7 @@ public readonly struct Fraction<T> : IFraction<Fraction<T>, T>,
         {
             try
             {
-                result = new Fraction<T>(decimalValue);
+                result = FromDecimal(decimalValue);
                 return true;
             }
             catch
@@ -910,7 +899,7 @@ public readonly struct Fraction<T> : IFraction<Fraction<T>, T>,
         {
             try
             {
-                result = new Fraction<T>(decimalValue);
+                result = FromDecimal(decimalValue);
                 return true;
             }
             catch
