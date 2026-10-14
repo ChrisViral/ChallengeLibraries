@@ -111,7 +111,16 @@ public sealed class DefaultDictionary<TKey, TValue> : IDictionary<TKey, TValue>,
     public TValue this[TKey key]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => this.dictionary.TryGetValue(key, out TValue? value) ? value : this.Default.GetDefaultValue();
+        get
+        {
+            if (!this.dictionary.TryGetValue(key, out TValue? value))
+            {
+                value = this.Default.GetDefaultValue();
+                this.dictionary[key] = value;
+            }
+
+            return value;
+        }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         set => this.dictionary[key] = value;
     }
