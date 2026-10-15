@@ -285,6 +285,317 @@ public static class ParseUtils
     /// </summary>
     /// <param name="line">Line to parse</param>
     /// <param name="separator">Separator character</param>
+    /// <param name="result">Output collection</param>
+    /// <param name="options">String split options</param>
+    /// <returns>The parsed data count</returns>
+    public static int ParseCollection(ReadOnlySpan<char> line, char separator, in ICollection<string> result, StringSplitOptions options = DEFAULT_OPTIONS)
+    {
+        int count = line.Count(separator) + 1;
+        if (count is 1)
+        {
+            if (options.HasFlags(StringSplitOptions.TrimEntries))
+            {
+                line = line.Trim();
+            }
+
+            if (!line.IsEmpty || !options.HasFlags(StringSplitOptions.RemoveEmptyEntries))
+            {
+                result.Add(line.ToString());
+                return 1;
+            }
+
+            return 0;
+        }
+
+        Span<Range> splits = stackalloc Range[count];
+        count = line.Split(splits, separator, options);
+        foreach (int i in ..count)
+        {
+            result.Add(line[splits[i]].ToString());
+        }
+
+        return count;
+    }
+
+    /// <summary>
+    /// Parses the given array from a string
+    /// </summary>
+    /// <param name="line">Line to parse</param>
+    /// <param name="separator">Separator string</param>
+    /// <param name="result">Output collection</param>
+    /// <param name="options">String split options</param>
+    /// <returns>The parsed data count</returns>
+    public static int ParseCollection(ReadOnlySpan<char> line, ReadOnlySpan<char> separator, in ICollection<string> result, StringSplitOptions options = DEFAULT_OPTIONS)
+    {
+        int count = line.Count(separator) + 1;
+
+        if (count is 1)
+        {
+            if (options.HasFlags(StringSplitOptions.TrimEntries))
+            {
+                line = line.Trim();
+            }
+
+            if (!line.IsEmpty || !options.HasFlags(StringSplitOptions.RemoveEmptyEntries))
+            {
+                result.Add(line.ToString());
+                return 1;
+            }
+
+            return 0;
+        }
+
+        Span<Range> splits = stackalloc Range[count];
+        count = line.Split(splits, separator, options);
+        foreach (int i in ..count)
+        {
+            result.Add(line[splits[i]].ToString());
+        }
+
+        return count;
+    }
+
+    /// <summary>
+    /// Parses the given array from a string
+    /// </summary>
+    /// <param name="line">Line to parse</param>
+    /// <param name="separator">Separator character</param>
+    /// <param name="converter">Final output conversion function</param>
+    /// <param name="result">Output collection</param>
+    /// <param name="options">String split options</param>
+    /// <typeparam name="T">Output type</typeparam>
+    /// <returns>The parsed data count</returns>
+    public static int ParseCollection<T>(ReadOnlySpan<char> line, char separator, Converter<ReadOnlySpan<char>, T> converter, in ICollection<T> result, StringSplitOptions options = DEFAULT_OPTIONS)
+    {
+        int count = line.Count(separator) + 1;
+
+        if (count is 1)
+        {
+            if (options.HasFlags(StringSplitOptions.TrimEntries))
+            {
+                line = line.Trim();
+            }
+
+            if (!line.IsEmpty || !options.HasFlags(StringSplitOptions.RemoveEmptyEntries))
+            {
+                result.Add(converter(line));
+                return 1;
+            }
+
+            return 0;
+        }
+
+        Span<Range> splits = stackalloc Range[count];
+        count = line.Split(splits, separator, options);
+        foreach (int i in ..count)
+        {
+            result.Add(converter(line[splits[i]]));
+        }
+
+        return count;
+    }
+
+    /// <summary>
+    /// Parses the given array from a string
+    /// </summary>
+    /// <param name="line">Line to parse</param>
+    /// <param name="separator">Separator string</param>
+    /// <param name="converter">Final output conversion function</param>
+    /// <param name="result">Output collection</param>
+    /// <param name="options">String split options</param>
+    /// <typeparam name="T">Output type</typeparam>
+    /// <returns>The parsed data count</returns>
+    public static int ParseCollection<T>(ReadOnlySpan<char> line, ReadOnlySpan<char> separator, Converter<ReadOnlySpan<char>, T> converter, in ICollection<T> result, StringSplitOptions options = DEFAULT_OPTIONS)
+    {
+        int count = line.Count(separator) + 1;
+
+        if (count is 1)
+        {
+            if (options.HasFlags(StringSplitOptions.TrimEntries))
+            {
+                line = line.Trim();
+            }
+
+            if (!line.IsEmpty || !options.HasFlags(StringSplitOptions.RemoveEmptyEntries))
+            {
+                result.Add(converter(line));
+                return 1;
+            }
+
+            return 0;
+        }
+
+        Span<Range> splits = stackalloc Range[count];
+        count = line.Split(splits, separator, options);
+        foreach (int i in ..count)
+        {
+            result.Add(converter(line[splits[i]]));
+        }
+
+        return count;
+    }
+
+    /// <summary>
+    /// Parses the given array from a string
+    /// </summary>
+    /// <param name="line">Line to parse</param>
+    /// <param name="separator">Separator character</param>
+    /// <param name="options">String split options</param>
+    /// <typeparam name="TCollection">Collection type</typeparam>
+    /// <returns>The parsed data count</returns>
+    public static TCollection ParseCollection<TCollection>(ReadOnlySpan<char> line, char separator, StringSplitOptions options = DEFAULT_OPTIONS)
+        where TCollection : ICollection<string>, new()
+    {
+        int count = line.Count(separator) + 1;
+        if (count is 1)
+        {
+            if (options.HasFlags(StringSplitOptions.TrimEntries))
+            {
+                line = line.Trim();
+            }
+
+            if (!line.IsEmpty || !options.HasFlags(StringSplitOptions.RemoveEmptyEntries))
+            {
+                return [line.ToString()];
+            }
+
+            return [];
+        }
+
+        TCollection result = [];
+        Span<Range> splits = stackalloc Range[count];
+        count = line.Split(splits, separator, options);
+        foreach (int i in ..count)
+        {
+            result.Add(line[splits[i]].ToString());
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Parses the given array from a string
+    /// </summary>
+    /// <param name="line">Line to parse</param>
+    /// <param name="separator">Separator character</param>
+    /// <param name="options">String split options</param>
+    /// <typeparam name="TCollection">Collection type</typeparam>
+    /// <returns>The parsed data count</returns>
+    public static TCollection ParseCollection<TCollection>(ReadOnlySpan<char> line, ReadOnlySpan<char> separator, StringSplitOptions options = DEFAULT_OPTIONS)
+        where TCollection : ICollection<string>, new()
+    {
+        int count = line.Count(separator) + 1;
+        if (count is 1)
+        {
+            if (options.HasFlags(StringSplitOptions.TrimEntries))
+            {
+                line = line.Trim();
+            }
+
+            if (!line.IsEmpty || !options.HasFlags(StringSplitOptions.RemoveEmptyEntries))
+            {
+                return [line.ToString()];
+            }
+
+            return [];
+        }
+
+        TCollection result = [];
+        Span<Range> splits = stackalloc Range[count];
+        count = line.Split(splits, separator, options);
+        foreach (int i in ..count)
+        {
+            result.Add(line[splits[i]].ToString());
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Parses the given array from a string
+    /// </summary>
+    /// <param name="line">Line to parse</param>
+    /// <param name="separator">Separator character</param>
+    /// <param name="converter">Final output conversion function</param>
+    /// <param name="options">String split options</param>
+    /// <typeparam name="TCollection">Collection type</typeparam>
+    /// <typeparam name="TValue">Collection value type</typeparam>
+    /// <returns>The parsed data count</returns>
+    public static TCollection ParseCollection<TCollection, TValue>(ReadOnlySpan<char> line, char separator, Converter<ReadOnlySpan<char>, TValue> converter, StringSplitOptions options = DEFAULT_OPTIONS)
+        where TCollection : ICollection<TValue>, new()
+    {
+        int count = line.Count(separator) + 1;
+        if (count is 1)
+        {
+            if (options.HasFlags(StringSplitOptions.TrimEntries))
+            {
+                line = line.Trim();
+            }
+
+            if (!line.IsEmpty || !options.HasFlags(StringSplitOptions.RemoveEmptyEntries))
+            {
+                return [converter(line)];
+            }
+
+            return [];
+        }
+
+        TCollection result = [];
+        Span<Range> splits = stackalloc Range[count];
+        count = line.Split(splits, separator, options);
+        foreach (int i in ..count)
+        {
+            result.Add(converter(line[splits[i]]));
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Parses the given array from a string
+    /// </summary>
+    /// <param name="line">Line to parse</param>
+    /// <param name="separator">Separator character</param>
+    /// <param name="converter">Final output conversion function</param>
+    /// <param name="options">String split options</param>
+    /// <typeparam name="TCollection">Collection type</typeparam>
+    /// <typeparam name="TValue">Collection value type</typeparam>
+    /// <returns>The parsed data count</returns>
+    public static TCollection ParseCollection<TCollection, TValue>(ReadOnlySpan<char> line, ReadOnlySpan<char> separator, Converter<ReadOnlySpan<char>, TValue> converter, StringSplitOptions options = DEFAULT_OPTIONS)
+        where TCollection : ICollection<TValue>, new()
+    {
+        int count = line.Count(separator) + 1;
+        if (count is 1)
+        {
+            if (options.HasFlags(StringSplitOptions.TrimEntries))
+            {
+                line = line.Trim();
+            }
+
+            if (!line.IsEmpty || !options.HasFlags(StringSplitOptions.RemoveEmptyEntries))
+            {
+                return [converter(line)];
+            }
+
+            return [];
+        }
+
+        TCollection result = [];
+        Span<Range> splits = stackalloc Range[count];
+        count = line.Split(splits, separator, options);
+        foreach (int i in ..count)
+        {
+            result.Add(converter(line[splits[i]]));
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Parses the given array from a string
+    /// </summary>
+    /// <param name="line">Line to parse</param>
+    /// <param name="separator">Separator character</param>
     /// <param name="result">Output result span</param>
     /// <param name="options">String split options</param>
     /// <returns>The parsed data count</returns>
@@ -439,165 +750,6 @@ public static class ParseUtils
         foreach (int i in ..count)
         {
             result[i] = converter(line[splits[i]]);
-        }
-
-        return count;
-    }
-
-    /// <summary>
-    /// Parses the given array from a string
-    /// </summary>
-    /// <param name="line">Line to parse</param>
-    /// <param name="separator">Separator character</param>
-    /// <param name="result">Output collection</param>
-    /// <param name="options">String split options</param>
-    /// <returns>The parsed data count</returns>
-    /// <exception cref="ArgumentException">If <paramref name="result"/> is too small to accomodate the parsed data</exception>
-    public static int ParseCollection(ReadOnlySpan<char> line, char separator, in ICollection<string> result, StringSplitOptions options = DEFAULT_OPTIONS)
-    {
-        int count = line.Count(separator) + 1;
-        if (count is 1)
-        {
-            if (options.HasFlags(StringSplitOptions.TrimEntries))
-            {
-                line = line.Trim();
-            }
-
-            if (!line.IsEmpty || !options.HasFlags(StringSplitOptions.RemoveEmptyEntries))
-            {
-                result.Add(line.ToString());
-                return 1;
-            }
-
-            return 0;
-        }
-
-        Span<Range> splits = stackalloc Range[count];
-        count = line.Split(splits, separator, options);
-        foreach (int i in ..count)
-        {
-            result.Add(line[splits[i]].ToString());
-        }
-
-        return count;
-    }
-
-    /// <summary>
-    /// Parses the given array from a string
-    /// </summary>
-    /// <param name="line">Line to parse</param>
-    /// <param name="separator">Separator string</param>
-    /// <param name="result">Output collection</param>
-    /// <param name="options">String split options</param>
-    /// <returns>The parsed data count</returns>
-    /// <exception cref="ArgumentException">If <paramref name="result"/> is too small to accomodate the parsed data</exception>
-    public static int ParseCollection(ReadOnlySpan<char> line, ReadOnlySpan<char> separator, in ICollection<string> result, StringSplitOptions options = DEFAULT_OPTIONS)
-    {
-        int count = line.Count(separator) + 1;
-
-        if (count is 1)
-        {
-            if (options.HasFlags(StringSplitOptions.TrimEntries))
-            {
-                line = line.Trim();
-            }
-
-            if (!line.IsEmpty || !options.HasFlags(StringSplitOptions.RemoveEmptyEntries))
-            {
-                result.Add(line.ToString());
-                return 1;
-            }
-
-            return 0;
-        }
-
-        Span<Range> splits = stackalloc Range[count];
-        count = line.Split(splits, separator, options);
-        foreach (int i in ..count)
-        {
-            result.Add(line[splits[i]].ToString());
-        }
-
-        return count;
-    }
-
-    /// <summary>
-    /// Parses the given array from a string
-    /// </summary>
-    /// <param name="line">Line to parse</param>
-    /// <param name="separator">Separator character</param>
-    /// <param name="converter">Final output conversion function</param>
-    /// <param name="result">Output collection</param>
-    /// <param name="options">String split options</param>
-    /// <typeparam name="T">Output type</typeparam>
-    /// <returns>The parsed data count</returns>
-    /// <exception cref="ArgumentException">If <paramref name="result"/> is too small to accomodate the parsed data</exception>
-    public static int ParseCollection<T>(ReadOnlySpan<char> line, char separator, Converter<ReadOnlySpan<char>, T> converter, in ICollection<T> result, StringSplitOptions options = DEFAULT_OPTIONS)
-    {
-        int count = line.Count(separator) + 1;
-
-        if (count is 1)
-        {
-            if (options.HasFlags(StringSplitOptions.TrimEntries))
-            {
-                line = line.Trim();
-            }
-
-            if (!line.IsEmpty || !options.HasFlags(StringSplitOptions.RemoveEmptyEntries))
-            {
-                result.Add(converter(line));
-                return 1;
-            }
-
-            return 0;
-        }
-
-        Span<Range> splits = stackalloc Range[count];
-        count = line.Split(splits, separator, options);
-        foreach (int i in ..count)
-        {
-            result.Add(converter(line[splits[i]]));
-        }
-
-        return count;
-    }
-
-    /// <summary>
-    /// Parses the given array from a string
-    /// </summary>
-    /// <param name="line">Line to parse</param>
-    /// <param name="separator">Separator string</param>
-    /// <param name="converter">Final output conversion function</param>
-    /// <param name="result">Output collection</param>
-    /// <param name="options">String split options</param>
-    /// <typeparam name="T">Output type</typeparam>
-    /// <returns>The parsed data count</returns>
-    /// <exception cref="ArgumentException">If <paramref name="result"/> is too small to accomodate the parsed data</exception>
-    public static int ParseCollection<T>(ReadOnlySpan<char> line, ReadOnlySpan<char> separator, Converter<ReadOnlySpan<char>, T> converter, in ICollection<T> result, StringSplitOptions options = DEFAULT_OPTIONS)
-    {
-        int count = line.Count(separator) + 1;
-
-        if (count is 1)
-        {
-            if (options.HasFlags(StringSplitOptions.TrimEntries))
-            {
-                line = line.Trim();
-            }
-
-            if (!line.IsEmpty || !options.HasFlags(StringSplitOptions.RemoveEmptyEntries))
-            {
-                result.Add(converter(line));
-                return 1;
-            }
-
-            return 0;
-        }
-
-        Span<Range> splits = stackalloc Range[count];
-        count = line.Split(splits, separator, options);
-        foreach (int i in ..count)
-        {
-            result.Add(converter(line[splits[i]]));
         }
 
         return count;
