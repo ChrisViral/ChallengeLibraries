@@ -139,6 +139,25 @@ public sealed class SparseGrid<T> : IGrid<T>
     }
 
     /// <summary>
+    /// Gets the position of the given value in the grid, if it exists
+    /// </summary>
+    /// <param name="predicate">Matcher predicate</param>
+    /// <returns>The first position in the grid that matches the given predicate</returns>
+    /// <exception cref="KeyNotFoundException">If the value was not found in the grid</exception>
+    public Vector2<int> FindPosition(Predicate<T> predicate)
+    {
+        foreach (KeyValuePair<Vector2<int>, T> pair in this.grid)
+        {
+            if (predicate(pair.Value))
+            {
+                return pair.Key;
+            }
+        }
+
+        throw new KeyNotFoundException($"A value matching the given predicate could not be found");
+    }
+
+    /// <summary>
     /// Checks if the given value is in the grid or not
     /// </summary>
     /// <param name="value">Value to find</param>

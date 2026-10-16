@@ -590,6 +590,24 @@ public class Grid<T> : IGrid<T>
     }
 
     /// <summary>
+    /// Gets the position of the given value in the grid, if it exists
+    /// </summary>
+    /// <param name="predicate">Matcher predicate</param>
+    /// <returns>The first position in the grid that the value is found at, or <c>(-1, -1)</c> if it wasn't</returns>
+    public virtual Vector2<int> FindPosition(Predicate<T> predicate)
+    {
+        foreach (Vector2<int> pos in Vector2<int>.EnumerateOver(this.Width, this.Height))
+        {
+            if (predicate(this[pos]))
+            {
+                return pos;
+            }
+        }
+
+        return -Vector2<int>.One;
+    }
+
+    /// <summary>
     /// Checks if the given value is in the grid or not
     /// </summary>
     /// <param name="value">Value to find</param>

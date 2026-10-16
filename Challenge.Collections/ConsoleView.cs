@@ -188,7 +188,19 @@ public sealed class ConsoleView<T> : Grid<T> where T : notnull
 
     /// <inheritdoc cref="Grid{T}.PositionOf"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public override Vector2<int> PositionOf(T value) => base.PositionOf(value) - this.anchor;
+    public override Vector2<int> PositionOf(T value)
+    {
+        Vector2<int> position = base.PositionOf(value);
+        return position != -Vector2<int>.One ? position - this.anchor : position;
+    }
+
+    /// <inheritdoc cref="Grid{T}.FindPosition"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public override Vector2<int> FindPosition(Predicate<T> predicate)
+    {
+        Vector2<int> position = base.FindPosition(predicate);
+        return position != -Vector2<int>.One ? position - this.anchor : position;
+    }
 
     /// <inheritdoc cref="Grid{T}.Populate"/>
     public new void Populate(ReadOnlySpan<string> input, [InstantHandle] Converter<string, T[]> converter)
