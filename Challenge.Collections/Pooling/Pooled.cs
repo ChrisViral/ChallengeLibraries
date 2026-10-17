@@ -27,7 +27,13 @@ public readonly ref struct Pooled<T>(T obj, ObjectPool<T> pool) : IDisposable wh
     /// Returns the object to the pool
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Dispose() => this.pool?.Return(this.Ref);
+    public void Return() => this.pool?.Return(this.Ref);
+
+    /// <summary>
+    /// Returns the object to the pool
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    void IDisposable.Dispose() => Return();
 
     /// <summary>
     /// Gets the pooled object
