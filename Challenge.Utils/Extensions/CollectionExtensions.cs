@@ -198,6 +198,30 @@ public static class CollectionExtensions
             stack.CopyTo(array, 0);
             return new Stack<T>(array.Reversed());
         }
+
+        /// <summary>
+        /// Pushes a a range of values to the stack
+        /// </summary>
+        /// <param name="enumerable">Value enumerable to push</param>
+        public void PushRange([InstantHandle] IEnumerable<T> enumerable)
+        {
+            foreach (T value in enumerable)
+            {
+                stack.Push(value);
+            }
+        }
+
+        /// <summary>
+        /// Pushes a a range of values to the stack
+        /// </summary>
+        /// <param name="span">Values span to push</param>
+        public void PushRange(ReadOnlySpan<T> span)
+        {
+            foreach (T value in span)
+            {
+                stack.Push(value);
+            }
+        }
     }
 
     /// <param name="queue">Queue instance</param>
@@ -209,6 +233,30 @@ public static class CollectionExtensions
         /// </summary>
         /// <value>True if the queue is empty, false otherwise</value>
         public bool IsEmpty => queue.Count is 0;
+
+        /// <summary>
+        /// Pushes a a range of values to the stack
+        /// </summary>
+        /// <param name="enumerable">Value enumerable to push</param>
+        public void EnqueueRange([InstantHandle] IEnumerable<T> enumerable)
+        {
+            foreach (T value in enumerable)
+            {
+                queue.Enqueue(value);
+            }
+        }
+
+        /// <summary>
+        /// Pushes a a range of values to the stack
+        /// </summary>
+        /// <param name="span">Values span to push</param>
+        public void EnqueueRange(ReadOnlySpan<T> span)
+        {
+            foreach (T value in span)
+            {
+                queue.Enqueue(value);
+            }
+        }
     }
 
     /// <param name="node">LinkedList node instance</param>
