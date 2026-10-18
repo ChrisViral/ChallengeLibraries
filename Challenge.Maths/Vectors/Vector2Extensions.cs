@@ -87,21 +87,30 @@ public static class Vector2Extensions
     /// <summary>
     /// Adjacent vector enumerator
     /// </summary>
-    /// <param name="vector">Vector to get the adjacent positions for</param>
-    /// <param name="options">Adjacent vector options</param>
     [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
-    public ref struct AdjacentEnumerator<T>(Vector2<T> vector, AdjacentOptions options) : IValueEnumerator<Vector2<T>>
+    public ref struct AdjacentEnumerator<T> : IValueEnumerator<Vector2<T>>
         where T : unmanaged, IBinaryInteger<T>, IMinMaxValue<T>
     {
         /// <summary>
-        /// Orthogonal offsets
+        /// Cardinal offsets
         /// </summary>
-        public static readonly ImmutableArray<Vector2<T>> Offsets =
+        public static readonly ImmutableArray<Vector2<T>> CardinalOffsets =
         [
             Vector2<T>.Up,
             Vector2<T>.Right,
             Vector2<T>.Down,
             Vector2<T>.Left
+        ];
+
+        /// <summary>
+        /// Diagonal offsets
+        /// </summary>
+        public static readonly ImmutableArray<Vector2<T>> DiagonalOffsets =
+        [
+            Vector2<T>.Up + Vector2<T>.Left,
+            Vector2<T>.Down + Vector2<T>.Left,
+            Vector2<T>.Down + Vector2<T>.Right,
+            Vector2<T>.Up + Vector2<T>.Right
         ];
 
         /// <summary>
@@ -119,10 +128,32 @@ public static class Vector2Extensions
             Vector2<T>.Up + Vector2<T>.Right
         ];
 
-        private readonly bool withSelf = options.HasFlags(AdjacentOptions.WITH_SELF);
-        private readonly Vector2<T> vector = vector;
-        private readonly ReadOnlySpan<Vector2<T>> offsets = options.HasFlags(AdjacentOptions.WITH_DIAGONALS) ? AllOffsets.AsSpan() : Offsets.AsSpan();
+        private readonly bool withSelf;
+        private readonly ReadOnlySpan<Vector2<T>> offsets;
         private int index = 0;
+        private readonly Vector2<T> vector;
+
+        /// <summary>
+        /// Adjacent vector enumerator
+        /// </summary>
+        /// <param name="vector">Vector to get the adjacent positions for</param>
+        /// <param name="options">Adjacent vector options</param>
+        public AdjacentEnumerator(Vector2<T> vector, AdjacentOptions options)
+        {
+            this.vector   = vector;
+            this.withSelf = options.HasFlags(AdjacentOptions.WITH_SELF);
+
+            bool withCardinal  = !options.HasFlags(AdjacentOptions.NO_CARDINAL);
+            bool withDiagonals = options.HasFlags(AdjacentOptions.WITH_DIAGONALS);
+            if (withCardinal)
+            {
+                this.offsets = withDiagonals ? AllOffsets.AsSpan() : CardinalOffsets.AsSpan();
+            }
+            else
+            {
+                this.offsets = withDiagonals ? DiagonalOffsets.AsSpan() : ReadOnlySpan<Vector2<T>>.Empty;
+            }
+        }
 
         /// <inheritdoc />
         public bool TryGetNext(out Vector2<T> current)
@@ -194,16 +225,35 @@ public static class Vector2Extensions
     /// <summary>
     /// Adjacent vector enumerator
     /// </summary>
-    /// <param name="vector">Vector to get the adjacent positions for</param>
-    /// <param name="options">Adjacent vector options</param>
     [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
-    public sealed class AdjacentEnumerable<T>(Vector2<T> vector, AdjacentOptions options) : IEnumerable<Vector2<T>>, IEnumerator<Vector2<T>>
+    public sealed class AdjacentEnumerable<T> : IEnumerable<Vector2<T>>, IEnumerator<Vector2<T>>
         where T : unmanaged, IBinaryInteger<T>, IMinMaxValue<T>
     {
-        private readonly bool withSelf = options.HasFlags(AdjacentOptions.WITH_SELF);
-        private readonly Vector2<T> vector = vector;
-        private readonly ImmutableArray<Vector2<T>> offsets = options.HasFlags(AdjacentOptions.WITH_DIAGONALS) ? AdjacentEnumerator<T>.AllOffsets : AdjacentEnumerator<T>.Offsets;
+        private readonly bool withSelf;
+        private readonly ImmutableArray<Vector2<T>> offsets;
         private int index = -1;
+
+        /// <summary>
+        /// Adjacent vector enumerator
+        /// </summary>
+        /// <param name="vector">Vector to get the adjacent positions for</param>
+        /// <param name="options">Adjacent vector options</param>
+        public AdjacentEnumerable(Vector2<T> vector, AdjacentOptions options)
+        {
+            this.withSelf = options.HasFlags(AdjacentOptions.WITH_SELF);
+            this.Current   = vector;
+
+            bool withCardinal  = !options.HasFlags(AdjacentOptions.NO_CARDINAL);
+            bool withDiagonals = options.HasFlags(AdjacentOptions.WITH_DIAGONALS);
+            if (withCardinal)
+            {
+                this.offsets = withDiagonals ? AdjacentEnumerator<T>.AllOffsets: AdjacentEnumerator<T>.CardinalOffsets;
+            }
+            else
+            {
+                this.offsets = withDiagonals ? AdjacentEnumerator<T>.DiagonalOffsets : ImmutableArray<Vector2<T>>.Empty;
+            }
+        }
 
         /// <summary>
         /// Current enumerator value
@@ -211,7 +261,7 @@ public static class Vector2Extensions
         public Vector2<T> Current
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => this.withSelf && this.index == this.offsets.Length ? this.vector : this.vector + this.offsets[this.index];
+            get => this.withSelf && this.index == this.offsets.Length ? field : field + this.offsets[this.index];
         }
 
         /// <inheritdoc />

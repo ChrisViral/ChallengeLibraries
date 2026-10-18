@@ -10,17 +10,26 @@ namespace Challenge.Maths.Vectors;
 public enum AdjacentOptions
 {
     /// <summary>
-    /// Only cardinally adajacent vectors
+    /// Cardinal offsets only
     /// </summary>
-    CARDINAL_ONLY  = 0b00,
+    CARDINAL_ONLY  = 0b000,
     /// <summary>
     /// Diagonally adjacent vectors including
     /// </summary>
-    WITH_DIAGONALS = 0b01,
+    WITH_DIAGONALS = 0b001,
     /// <summary>
     /// Self vector included
     /// </summary>
-    WITH_SELF      = 0b10,
+    WITH_SELF      = 0b010,
+    /// <summary>
+    /// No cardinal offsets
+    /// </summary>
+    NO_CARDINAL    = 0b100,
+
+    /// <summary>
+    /// Diagonal offsets only
+    /// </summary>
+    DIAGONAL_ONLY = WITH_DIAGONALS | NO_CARDINAL
 }
 
 /// <summary>
