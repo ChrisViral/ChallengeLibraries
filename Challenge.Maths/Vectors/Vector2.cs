@@ -295,7 +295,7 @@ public readonly partial struct Vector2<T> : IVector<Vector2<T>, T>, IDivisionOpe
     {
         (double aX, double aY) = Vector2<double>.CreateChecked(a);
         (double bX, double bY) = Vector2<double>.CreateChecked(b);
-        return Vectors.Angle.FromRadians(Math.Atan2(aX * bY - aY * bX, aX * bX + aY * bY));
+        return Maths.Angle.FromRadians(Math.Atan2(aX * bY - aY * bX, aX * bX + aY * bY));
     }
 
     /// <summary>
@@ -307,7 +307,7 @@ public readonly partial struct Vector2<T> : IVector<Vector2<T>, T>, IDivisionOpe
     public static Angle AbsoluteAngle(Vector2<T> a, Vector2<T> b)
     {
         double dot = Vector2<double>.Dot(Vector2<double>.CreateChecked(a), Vector2<double>.CreateChecked(b));
-        return Vectors.Angle.FromRadians(Math.Acos(dot / (a.Length * b.Length)));
+        return Maths.Angle.FromRadians(Math.Acos(dot / (a.Length * b.Length)));
     }
 
     /// <summary>
