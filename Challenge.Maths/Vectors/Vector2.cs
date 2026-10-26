@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
+using Challenge.Maths.Directions;
 using Challenge.Utils.Extensions.Strings;
 using Challenge.Utils.Extensions.Types;
 using JetBrains.Annotations;

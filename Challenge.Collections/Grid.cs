@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using Challenge.Collections.DebugViews;
 using Challenge.Collections.Pooling;
+using Challenge.Maths.Directions;
 using Challenge.Maths.Vectors;
 using Challenge.Utils;
 using Challenge.Utils.Extensions.Enums;

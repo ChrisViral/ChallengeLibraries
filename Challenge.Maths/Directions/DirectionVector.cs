@@ -1,8 +1,9 @@
 ﻿using System.Numerics;
 using System.Runtime.CompilerServices;
+using Challenge.Maths.Vectors;
 using JetBrains.Annotations;
 
-namespace Challenge.Maths.Vectors;
+namespace Challenge.Maths.Directions;
 
 /// <summary>
 /// Component-wise direction based vector

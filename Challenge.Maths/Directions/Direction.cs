@@ -2,10 +2,11 @@
 using System.ComponentModel;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using Challenge.Maths.Vectors;
 using Challenge.Utils.Extensions.Enums;
 using JetBrains.Annotations;
 
-namespace Challenge.Maths.Vectors;
+namespace Challenge.Maths.Directions;
 
 /// <summary>
 /// Cardinal Directions
