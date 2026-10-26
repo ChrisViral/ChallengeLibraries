@@ -1,7 +1,7 @@
 ﻿using System.Numerics;
 using JetBrains.Annotations;
 
-namespace Challenge.Maths.Vectors.BitVectors;
+namespace Challenge.Maths.BitVectors;
 
 /// <summary>
 /// BitVector interface

@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 using Challenge.Utils.Extensions.Numbers;
 using JetBrains.Annotations;
 
-namespace Challenge.Maths.Vectors.BitVectors;
+namespace Challenge.Maths.BitVectors;
 
 /// <summary>
 /// 16 wide bit vector

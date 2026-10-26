@@ -3,47 +3,47 @@ using System.Runtime.CompilerServices;
 using Challenge.Utils.Extensions.Numbers;
 using JetBrains.Annotations;
 
-namespace Challenge.Maths.Vectors.BitVectors;
+namespace Challenge.Maths.BitVectors;
 
 /// <summary>
-/// 32 wide bit vector
+/// 128 wide bit vector
 /// </summary>
 /// <param name="data">Initial data</param>
 [PublicAPI]
-public struct BitVector32(uint data) : IBitVector<uint, BitVector32>
+public struct BitVector128(UInt128 data) : IBitVector<UInt128, BitVector128>
 {
     /// <inheritdoc />
-    public static int Size => 32;
+    public static int Size => 128;
 
     /// <summary>
     /// Creates a new BitVector via copy
     /// </summary>
     /// <param name="other">Other bit vector to copy</param>
-    public BitVector32(BitVector32 other) : this(other.Data) { }
+    public BitVector128(BitVector128 other) : this(other.Data) { }
 
     /// <inheritdoc />
-    public uint Data { get; set; } = data;
+    public UInt128 Data { get; set; } = data;
 
     /// <inheritdoc />
     public bool this[int index]
     {
         get
         {
-            if (index < 0 || index >= Size) throw new ArgumentOutOfRangeException(nameof(index), index, $"Index outside of {nameof(BitVector32)} range");
+            if (index < 0 || index >= Size) throw new ArgumentOutOfRangeException(nameof(index), index, $"Index outside of {nameof(BitVector128)} range");
 
-            return (this.Data & 1U.MaskBit(index)) is not 0U;
+            return (this.Data & ((UInt128)1UL).MaskBit(index)) != (UInt128)0;
         }
         set
         {
-            if (index < 0 || index >= Size) throw new ArgumentOutOfRangeException(nameof(index), index, $"Index outside of {nameof(BitVector32)} range");
+            if (index < 0 || index >= Size) throw new ArgumentOutOfRangeException(nameof(index), index, $"Index outside of {nameof(BitVector128)} range");
 
             if (value)
             {
-                this.Data |= 1U.MaskBit(index);
+                this.Data |= ((UInt128)1UL).MaskBit(index);
             }
             else
             {
-                this.Data &= 1U.InverseMaskBit(index);
+                this.Data &= ((UInt128)1UL).InverseMaskBit(index);
             }
         }
     }
@@ -58,7 +58,7 @@ public struct BitVector32(uint data) : IBitVector<uint, BitVector32>
     }
 
     /// <inheritdoc />
-    public BitVector32 this[Range range]
+    public BitVector128 this[Range range]
     {
         get
         {
@@ -67,10 +67,10 @@ public struct BitVector32(uint data) : IBitVector<uint, BitVector32>
             int end = start + length;
 
             // Check range
-            if (start < 0 || end >= Size) throw new ArgumentOutOfRangeException(nameof(range), range, $"Range outside of {nameof(BitVector32)} range");
+            if (start < 0 || end >= Size) throw new ArgumentOutOfRangeException(nameof(range), range, $"Range outside of {nameof(BitVector128)} range");
 
             // Create mask over range
-            uint mask = uint.MaxValue;
+            UInt128 mask = UInt128.MaxValue;
             int endCrop = Size - end;
             mask <<= endCrop;
             mask >>= endCrop + start - 1;
@@ -101,18 +101,18 @@ public struct BitVector32(uint data) : IBitVector<uint, BitVector32>
     }
 
     /// <inheritdoc />
-    public static BitVector32 FromBitArray(ReadOnlySpan<bool> bits)
+    public static BitVector128 FromBitArray(ReadOnlySpan<bool> bits)
     {
-        if (bits.Length > Size) throw new ArgumentException($"{nameof(BitVector32)} only supports up to {Size} bits", nameof(bits));
+        if (bits.Length > Size) throw new ArgumentException($"{nameof(BitVector128)} only supports up to {Size} bits", nameof(bits));
 
         // Mask out data
-        uint data = 0U;
+        UInt128 data = 0UL;
         for (int i = bits.Length - 1; i >= 0; i--)
         {
             data <<= 1;
             if (bits[i])
             {
-                data |= 1U;
+                data |= 1;
             }
         }
 
@@ -122,11 +122,11 @@ public struct BitVector32(uint data) : IBitVector<uint, BitVector32>
 
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool Equals(BitVector32 other) => this == other;
+    public bool Equals(BitVector128 other) => this == other;
 
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public override bool Equals([NotNullWhen(true)] object? obj) => obj is BitVector32 value && Equals(value);
+    public override bool Equals([NotNullWhen(true)] object? obj) => obj is BitVector128 value && Equals(value);
 
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -143,7 +143,7 @@ public struct BitVector32(uint data) : IBitVector<uint, BitVector32>
     /// <param name="b">Second vector</param>
     /// <returns>A new vector made of the bitwise or of both vectors</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static BitVector32 operator |(BitVector32 a, BitVector32 b) => new() { Data = a.Data | b.Data };
+    public static BitVector128 operator |(BitVector128 a, BitVector128 b) => new() { Data = a.Data | b.Data };
 
     /// <summary>
     /// Bitwise and operator
@@ -152,7 +152,7 @@ public struct BitVector32(uint data) : IBitVector<uint, BitVector32>
     /// <param name="b">Second vector</param>
     /// <returns>A new vector made of the bitwise and of both vectors</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static BitVector32 operator &(BitVector32 a, BitVector32 b) => new() { Data = a.Data & b.Data };
+    public static BitVector128 operator &(BitVector128 a, BitVector128 b) => new() { Data = a.Data & b.Data };
 
     /// <summary>
     /// Bitwise xor operator
@@ -161,7 +161,7 @@ public struct BitVector32(uint data) : IBitVector<uint, BitVector32>
     /// <param name="b">Second vector</param>
     /// <returns>A new vector made of the bitwise xor of both vectors</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static BitVector32 operator ^(BitVector32 a, BitVector32 b) => new() { Data = a.Data ^ b.Data };
+    public static BitVector128 operator ^(BitVector128 a, BitVector128 b) => new() { Data = a.Data ^ b.Data };
 
     /// <summary>
     /// Left shift operator
@@ -170,7 +170,7 @@ public struct BitVector32(uint data) : IBitVector<uint, BitVector32>
     /// <param name="shift">Shift amount</param>
     /// <returns>A new vector made of the left-shifted data of this vector</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static BitVector32 operator <<(BitVector32 vector, int shift) => new() { Data = vector.Data << shift };
+    public static BitVector128 operator <<(BitVector128 vector, int shift) => new() { Data = vector.Data << shift };
 
     /// <summary>
     /// Right shift operator
@@ -179,7 +179,7 @@ public struct BitVector32(uint data) : IBitVector<uint, BitVector32>
     /// <param name="shift">Shift amount</param>
     /// <returns>A new vector made of the right-shifted data of this vector</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static BitVector32 operator >>(BitVector32 vector, int shift) => new() { Data = vector.Data >> shift };
+    public static BitVector128 operator >>(BitVector128 vector, int shift) => new() { Data = vector.Data >> shift };
 
     /// <summary>
     /// Unsigned right shift operator
@@ -188,7 +188,7 @@ public struct BitVector32(uint data) : IBitVector<uint, BitVector32>
     /// <param name="shift">Shift amount</param>
     /// <returns>A new vector made of the unsigned right-shifted data of this vector</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static BitVector32 operator >>>(BitVector32 vector, int shift) => new() { Data = vector.Data >>> shift };
+    public static BitVector128 operator >>>(BitVector128 vector, int shift) => new() { Data = vector.Data >>> shift };
 
     /// <summary>
     /// Equality operator
@@ -197,7 +197,7 @@ public struct BitVector32(uint data) : IBitVector<uint, BitVector32>
     /// <param name="b">Second vector</param>
     /// <returns><see langword="true"/> if both vectors have identical data, otherwise <see langword="false"/></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool operator ==(BitVector32 a, BitVector32 b) => a.Data == b.Data;
+    public static bool operator ==(BitVector128 a, BitVector128 b) => a.Data == b.Data;
 
     /// <summary>
     /// Inequality operator
@@ -206,7 +206,7 @@ public struct BitVector32(uint data) : IBitVector<uint, BitVector32>
     /// <param name="b">Second vector</param>
     /// <returns><see langword="true"/> if both vectors do not have identical data, otherwise <see langword="false"/></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool operator !=(BitVector32 a, BitVector32 b) => a.Data != b.Data;
+    public static bool operator !=(BitVector128 a, BitVector128 b) => a.Data != b.Data;
 
     /// <summary>
     /// Truthiness
@@ -214,7 +214,7 @@ public struct BitVector32(uint data) : IBitVector<uint, BitVector32>
     /// <param name="vector">Vector</param>
     /// <returns><see langword="true"/> if the vector has a nonzero value, otherwise <see langword="false"/></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool operator true(BitVector32 vector) => vector.Data != 0U;
+    public static bool operator true(BitVector128 vector) => vector.Data != 0UL;
 
     /// <summary>
     /// Falsiness
@@ -222,7 +222,7 @@ public struct BitVector32(uint data) : IBitVector<uint, BitVector32>
     /// <param name="vector">Vector</param>
     /// <returns><see langword="true"/> if the vector has a zero value, otherwise <see langword="false"/></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool operator false(BitVector32 vector) => vector.Data == 0U;
+    public static bool operator false(BitVector128 vector) => vector.Data == 0UL;
 
     /// <summary>
     /// Implicit cast from data type
@@ -230,7 +230,7 @@ public struct BitVector32(uint data) : IBitVector<uint, BitVector32>
     /// <param name="value">Data value</param>
     /// <returns>Creates a new vector with the specified data</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static implicit operator BitVector32(uint value) => new() { Data = value };
+    public static implicit operator BitVector128(UInt128 value) => new() { Data = value };
 
     /// <summary>
     /// Explicit cast from to type
@@ -238,5 +238,5 @@ public struct BitVector32(uint data) : IBitVector<uint, BitVector32>
     /// <param name="vector">Vector</param>
     /// <returns>Extracts the data from this vector</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static explicit operator uint(BitVector32 vector) => vector.Data;
+    public static explicit operator UInt128(BitVector128 vector) => vector.Data;
 }
