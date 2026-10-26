@@ -12,13 +12,11 @@ namespace Challenge.Maths.Vectors;
 public sealed class DistanceComponentComparer<T>(Vector2<T> from) : IComparer<Vector2<T>>
     where T : unmanaged, IBinaryInteger<T>, IMinMaxValue<T>
 {
-    private readonly Vector2<T> from = from;
-
     /// <inheritdoc />
     public int Compare(Vector2<T> x, Vector2<T> y)
     {
-        T xDistance = Vector2<T>.ManhattanDistance(this.from, x);
-        T yDistance = Vector2<T>.ManhattanDistance(this.from, y);
+        T xDistance = Vector2<T>.ManhattanDistance(from, x);
+        T yDistance = Vector2<T>.ManhattanDistance(from, y);
 
         // Check distance first
         int comp = xDistance.CompareTo(yDistance);
