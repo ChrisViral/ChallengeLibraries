@@ -47,6 +47,11 @@ public class Grid<T> : IGrid<T>
 {
     private static readonly EqualityComparer<T> Comparer = EqualityComparer<T>.Default;
 
+    /// <summary>
+    /// Empty grid
+    /// </summary>
+    public static Grid<T> Empty { get; } = new();
+
     /// <summary> Grid backing array </summary>
     protected readonly T[,] grid;
     /// <summary> Grid row buffer size, in bytes </summary>
@@ -184,6 +189,20 @@ public class Grid<T> : IGrid<T>
 
             return this.grid.AsSpan2D(row, column, height, width);
         }
+    }
+
+    /// <summary>
+    /// Empty grid constructor
+    /// </summary>
+    private Grid()
+    {
+        this.Width         = 0;
+        this.Height        = 0;
+        this.Size          = 0;
+        this.grid          = new T[0, 0];
+        this.Dimensions    = Vector2<int>.Zero;
+        this.rowBufferSize = 0;
+        this.toString      = null!;
     }
 
     /// <summary>
@@ -824,6 +843,8 @@ public class Grid<T> : IGrid<T>
     /// <inheritdoc cref="object.ToString"/>
     public override string ToString()
     {
+        if (this == Empty) return string.Empty;
+
         using Pooled<StringBuilder> sb = StringBuilderObjectPool.Shared.Get();
         foreach (int j in ..this.Height)
         {
