@@ -137,6 +137,13 @@ public readonly partial struct Vector3<T> : IVector<Vector3<T>, T>, IDivisionOpe
         get => GetLength<double>();
     }
 
+    /// <inheritdoc />
+    public T SquaredLength
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => (this.X * this.X) + (this.Y * this.Y) + (this.Z * this.Z);
+    }
+
     /// <summary>
     /// Vector swizzling to XZY
     /// </summary>

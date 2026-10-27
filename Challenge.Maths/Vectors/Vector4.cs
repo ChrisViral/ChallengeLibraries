@@ -144,6 +144,13 @@ public readonly struct Vector4<T> : IVector<Vector4<T>, T>, IDivisionOperators<V
         get => GetLength<double>();
     }
 
+    /// <inheritdoc />
+    public T SquaredLength
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => (this.X * this.X) + (this.Y * this.Y) + (this.Z * this.Z) + (this.W * this.W);
+    }
+
     /// <summary>
     /// Creates a new <see cref="Vector4{T}"/> with the specified components
     /// </summary>

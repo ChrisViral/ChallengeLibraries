@@ -101,6 +101,11 @@ public interface IVector<out T> : IVector
     /// </summary>
     /// <param name="index">Component's index</param>
     T this[Index index] { get; }
+
+    /// <summary>
+    /// The squared length of the Vector
+    /// </summary>
+    T SquaredLength { get; }
 }
 
 /// <summary>
