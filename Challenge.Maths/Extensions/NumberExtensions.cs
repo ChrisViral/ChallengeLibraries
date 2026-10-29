@@ -41,21 +41,6 @@ public static class NumberExtensions
         }
 
         /// <summary>
-        /// Concatenates the specified number at the end of the current number
-        /// </summary>
-        /// <param name="other">Number to concatenate</param>
-        /// <returns>The concatenated result</returns>
-        public T ConcatNum(T other)
-        {
-            T pow = T.One;
-            while (pow <= other)
-            {
-                pow *= NumberUtils<T>.Ten;
-            }
-            return (value * pow) + other;
-        }
-
-        /// <summary>
         /// Gets the <paramref name="value"/>th triangular number
         /// </summary>
         /// <value>The <paramref name="value"/>th triangular number</value>
@@ -86,6 +71,21 @@ public static class NumberExtensions
         }
 
         /// <summary>
+        /// Concatenates the specified number at the end of the current number
+        /// </summary>
+        /// <param name="other">Number to concatenate</param>
+        /// <returns>The concatenated result</returns>
+        public T ConcatNum(T other)
+        {
+            T pow = T.One;
+            while (pow <= other)
+            {
+                pow *= NumberUtils<T>.Ten;
+            }
+            return (value * pow) + other;
+        }
+
+        /// <summary>
         /// Checks if an integer is prime or not
         /// </summary>
         /// <returns><see langword="true"/> if the number is prime, otherwise <see langword="false"/></returns>
@@ -112,6 +112,18 @@ public static class NumberExtensions
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Gets the digit at a given zero-based index in the number
+        /// </summary>
+        /// <param name="index">Index to get the digit at</param>
+        /// <returns>The digit at the given index</returns>
+        public T GetDigit(int index)
+        {
+            int pow = index.Pow10;
+            value /= T.CreateChecked(pow);
+            return value - ((value / NumberUtils<T>.Ten) * NumberUtils<T>.Ten);
         }
 
         /// <summary>
