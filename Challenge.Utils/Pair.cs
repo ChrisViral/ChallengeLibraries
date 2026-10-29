@@ -15,6 +15,11 @@ public readonly record struct Pair<T>(T First, T Second)
     private static readonly EqualityComparer<T> Comparer = EqualityComparer<T>.Default;
 
     /// <summary>
+    /// Copy of this pair, but with it's first and second element inverted
+    /// </summary>
+    public Pair<T> Inverted => new(this.Second, this.First);
+
+    /// <summary>
     /// Enumerate the members of this pair
     /// </summary>
     /// <returns>An enumerable containing the first and second element in sequence</returns>
