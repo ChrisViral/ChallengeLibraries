@@ -235,15 +235,46 @@ public class Counter<TKey, TCount> : IDictionary<TKey, TCount>, IReadOnlyDiction
         return new ValueEnumerable<FromDictionary<TKey, TCount>, KeyValuePair<TKey, TCount>>(new FromDictionary<TKey, TCount>(this.dictionary));
     }
 
-    /// <inheritdoc cref="ICollection{T}.Remove"/>
+    /// <summary>
+    /// Removes one instance of the given value from the Counter
+    /// </summary>
+    /// <param name="value">Value to remove</param>
+    /// <returns><see langword="true"/> if an instance was successfully removed, otherwise <see langword="false"/></returns>
     public bool Remove(TKey value)
     {
         if (!this.dictionary.TryGetValue(value, out TCount count)) return false;
         if (count is 1) return this.dictionary.Remove(value);
 
         this.dictionary[value]--;
-        return false;
+        return true;
     }
+
+    /// <summary>
+    /// Removes the given amount of the given value from the Counter
+    /// </summary>
+    /// <param name="value">Value to remove</param>
+    /// <param name="amount">Amount to remove</param>
+    /// <returns>How many instances were removed from the Counter</returns>
+    public TCount RemoveAmount(TKey value, TCount amount)
+    {
+        if (!this.dictionary.TryGetValue(value, out TCount count)) return TCount.Zero;
+
+        if (count < amount)
+        {
+            this.dictionary.Remove(value);
+            return count;
+        }
+
+        this.dictionary[value] -= amount;
+        return amount;
+    }
+
+    /// <summary>
+    /// Tries to remove all instances of a given value from the Counter
+    /// </summary>
+    /// <param name="value">Value to remove</param>
+    /// <returns><see langword="true"/> if the value was fully removed from the Coutner, otherwise <see langword="false"/></returns>
+    public bool RemoveAll(TKey value) => this.dictionary.Remove(value);
 
     /// <summary>
     /// Tries to get the item count for a given value
