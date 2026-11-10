@@ -109,6 +109,7 @@ public sealed class DefaultDictionary<TKey, TValue> : IDictionary<TKey, TValue>,
     }
 
     /// <inheritdoc cref="Dictionary{TKey, TValue}.this[TKey]"/>
+    [CollectionAccess(CollectionAccessType.UpdatedContent)]
     public TValue this[TKey key]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
