@@ -38,6 +38,27 @@ public readonly record struct Pair<T>(T First, T Second)
                                   || Comparer.Equals(this.Second, value);
 
     /// <summary>
+    /// Gets the counterpart of the value in a pair
+    /// </summary>
+    /// <param name="value">Value to get the counterpart for</param>
+    /// <returns>The found pair counterpart</returns>
+    /// <exception cref="InvalidOperationException">If <paramref name="value"/> was not a member of the pair</exception>
+    public T? GetCounterpart(T? value)
+    {
+        if (Comparer.Equals(this.First, value))
+        {
+            return this.Second;
+        }
+
+        if (Comparer.Equals(this.Second, value))
+        {
+            return this.First;
+        }
+
+        throw new InvalidOperationException("Could not find pair counterpart");
+    }
+
+    /// <summary>
     /// Tries to get the counterpart of the value if found in the pair
     /// </summary>
     /// <param name="value">Value to get the counterpart for</param>
@@ -105,6 +126,28 @@ public readonly record struct UnorderedPair<T>(T First, T Second)
     /// <returns><see langword="true"/> if <paramref name="value"/> is a member of this pair, otherwise <see langword="false"/></returns>
     public bool HasValue(T? value) => Comparer.Equals(this.First, value)
                                    || Comparer.Equals(this.Second, value);
+
+    /// <summary>
+    /// Gets the counterpart of the value in a pair
+    /// </summary>
+    /// <param name="value">Value to get the counterpart for</param>
+    /// <returns>The found pair counterpart</returns>
+    /// <exception cref="InvalidOperationException">If <paramref name="value"/> was not a member of the pair</exception>
+    public T? GetCounterpart(T? value)
+    {
+        if (Comparer.Equals(this.First, value))
+        {
+            return this.Second;
+        }
+
+        if (Comparer.Equals(this.Second, value))
+        {
+            return this.First;
+        }
+
+        throw new InvalidOperationException("Could not find pair counterpart");
+    }
+
 
     /// <summary>
     /// Tries to get the counterpart of the value if found in the pair
