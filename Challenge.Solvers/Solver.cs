@@ -213,6 +213,11 @@ public abstract class Solver<[MeansImplicitUse(ImplicitUseTargetFlags.WithMember
     protected new T Data { get; private set; } = default!;
 
     /// <summary>
+    /// Original, unmodified solver data
+    /// </summary>
+    protected string[] OriginalData => base.Data;
+
+    /// <summary>
     /// If the Solver has been disposed or not
     /// </summary>
     private bool IsDisposed { get; set; }
